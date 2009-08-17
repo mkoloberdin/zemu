@@ -11,7 +11,7 @@ list_files()
 		ext=${fname##*.}
 		ext=`echo $ext | tr A-Z a-z`
 
-		if [ "$ext" = "scl" ] || [ "$ext" = "trd" ] || [ "$ext" = "z80" ] || [ "$ext" = "p" ] ; then
+		if [ "$ext" = "scl" ] || [ "$ext" = "trd" ] || [ "$ext" = "z80" ] || [ "$ext" = "p" ] || [ "$ext" = "tap" ] ; then
 			echo $fname >> $2
 		fi
 	done
