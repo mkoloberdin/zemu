@@ -2,7 +2,7 @@
 
 list_files()
 {
-	tmp=`tempfile`
+	tmp="/tmp/zemu-"$$"-"$RANDOM".txt"
 	unzip -l $1 > $tmp
 	rm $2 &> /dev/null
 
