@@ -1,0 +1,19 @@
+context:
+  * ray position (tstates / ticks)
+  * fill pointer (
+  * last screen switch position
+
+events:
+  frame start   -> ray position = 0
+		   
+  frame end ->
+
+  border change -> change border from current ray position
+
+  screen switch -> * if buffer is empty/invalid -> fill it in from current screen up to current ray position
+		   * switch source screen from current ray position
+		   * raise next frame invalidation flag?
+
+  memory write  -> if behind ray positon -> * raise next frame invalidation flag?
+					    * fill the buffer in until current ray position (should be done before memory write occurs!)
+		   if ahead of r.p.      -> flush (what?), perform write to screen buffer
