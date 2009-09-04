@@ -655,8 +655,6 @@ void DebugIt(void)
 	char buf[100];
 	s_Instruction* dispBuf = new s_Instruction[mx];
 
-	// lastCommandAddr
-
 	WORD curAddr = z80ex_get_reg(cpu, regPC);
 	WORD userAddr = curAddr;
 	bool correctAddr = true;

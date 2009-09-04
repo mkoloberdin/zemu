@@ -537,7 +537,6 @@ s_Action cfgActions[] =
 //--------------------------------------------------------------------------------------------------------------
 
 bool runDebuggerFlag = false;
-Z80EX_WORD lastCommandAddr = 0;
 bool breakpoints[0x10000];
 
 WORD watches[MAX_WATCHES];
@@ -571,7 +570,6 @@ Z80EX_BYTE ReadByte(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *use
 {
 	Z80EX_BYTE retval;
 
-	if (m1_state) lastCommandAddr = addr;
 	unsigned raddr = addr + (m1_state ? 0x10000 : 0);
 
 	for (;;)

@@ -109,7 +109,6 @@ extern unsigned turboMultiplierNx;
 
 //--------------------------------------------------------------------------------------------------------------
 
-extern Z80EX_WORD lastCommandAddr;
 extern bool breakpoints[0x10000];
 
 #define MAX_WATCHES 0x10
