@@ -75,7 +75,9 @@ extern s_Action cfgActions[];
 
 #define MAX_HANDLERS 64
 
-void AttachZ80ReadHandler(bool (* check)(Z80EX_WORD, bool), bool (* func)(Z80EX_WORD, bool, Z80EX_BYTE&));
+typedef Z80EX_BYTE(*onReadByteFunc)(Z80EX_WORD, bool);
+
+void AttachZ80ReadHandler(onReadByteFunc (* check)(Z80EX_WORD, bool));
 void AttachZ80WriteHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE));
 void AttachZ80InputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE&));
 void AttachZ80OutputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE));
@@ -85,17 +87,17 @@ void AttachSDLHandler(int eventType, bool (* func)(SDL_Event&));
 void AttachResetHandler(void (* func)(void));
 void RegisterSndRenderer(C_SndRenderer *sndr);
 
-extern bool (** devMapRead)(Z80EX_WORD, bool, Z80EX_BYTE&);
+extern onReadByteFunc * devMapRead;
 extern bool (** devMapWrite)(Z80EX_WORD, Z80EX_BYTE);
 extern bool (** devMapInput)(Z80EX_WORD, Z80EX_BYTE&);
 extern bool (** devMapOutput)(Z80EX_WORD, Z80EX_BYTE);
 
-extern bool (* devMapRead_base[0x20000])(Z80EX_WORD, bool, Z80EX_BYTE&);
+extern onReadByteFunc devMapRead_base[0x20000];
 extern bool (* devMapWrite_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 extern bool (* devMapInput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
 extern bool (* devMapOutput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
-extern bool (* devMapRead_trdos[0x20000])(Z80EX_WORD, bool, Z80EX_BYTE&);
+extern onReadByteFunc devMapRead_trdos[0x20000];
 extern bool (* devMapInput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
 extern bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 

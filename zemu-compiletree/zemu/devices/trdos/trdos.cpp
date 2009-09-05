@@ -23,7 +23,7 @@ void C_TrDos::Init(void)
 {
 	ReadFile();
 
-	AttachZ80ReadHandler(ReadByteCheckAddr, OnReadByte);
+	AttachZ80ReadHandler(ReadByteCheckAddr);
 	AttachZ80InputHandler(InputOutputByteCheckPort, OnInputByte);
 	AttachZ80OutputHandler(InputOutputByteCheckPort, OnOutputByte);
 	AttachResetHandler(OnReset);
@@ -35,33 +35,49 @@ void C_TrDos::Close(void)
 {
 }
 
-bool C_TrDos::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
-{
-	return (trdos || (m1 && ((addr & 0xFF00) == 0x3D00)));
-}
-
-bool C_TrDos::OnReadByte(Z80EX_WORD addr, bool m1, Z80EX_BYTE &retval)
+onReadByteFunc C_TrDos::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
 {
 	if (m1)
 	{
-		if (addr > 0x3FFF)
+		if (trdos && addr > 0x3FFF)
 		{
-			Disable();
-			return false;
+            return OnReadByte_RAM_M1;
 		}
 
-		if ((addr & 0xFF00)==0x3D00 && (dev_mman.port7FFD & 0x10)) {
-			Enable();
+		if (!trdos && (addr & 0xFF00)==0x3D00) {
+			return C_TrDos::OnReadByte_3Dxx_M1;
 		}
 	}
 
 	if (trdos && addr<0x4000) {
-		retval = rom[addr];
-	} else {
-		C_MemoryManager::OnReadByte(addr, m1, retval);
+        return OnReadByte_ROM;
 	}
+    return NULL;
+}
 
-	return true;
+Z80EX_BYTE C_TrDos::OnReadByte_3Dxx_M1(Z80EX_WORD addr, bool m1)
+{
+    if (dev_mman.port7FFD & 0x10) { // TRDOS should not be activated if 128 Basic ROM is on
+        Enable();
+		return rom[addr];
+    }
+    else {
+        return C_MemoryManager::OnReadByte_ROM(addr, m1);
+    }
+}
+
+Z80EX_BYTE C_TrDos::OnReadByte_RAM_M1(Z80EX_WORD addr, bool m1)
+{
+    Disable();
+	if (addr < 0x8000) return C_MemoryManager::OnReadByte_Bank5(addr, m1);
+	else
+	if (addr < 0xC000) return C_MemoryManager::OnReadByte_Bank2(addr, m1);
+	else return C_MemoryManager::OnReadByte_C000(addr, m1);
+}
+
+Z80EX_BYTE C_TrDos::OnReadByte_ROM(Z80EX_WORD addr, bool m1)
+{
+    return rom[addr];
 }
 
 bool C_TrDos::InputOutputByteCheckPort(Z80EX_WORD port)

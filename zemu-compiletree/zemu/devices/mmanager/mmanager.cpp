@@ -51,7 +51,7 @@ void C_MemoryManager::Init(void)
 {
 	ReadFile();
 
-	AttachZ80ReadHandler(ReadByteCheckAddr, OnReadByte);
+	AttachZ80ReadHandler(ReadByteCheckAddr);
 	AttachZ80WriteHandler(WriteByteCheckAddr, OnWriteByte);
 	AttachZ80OutputHandler(OutputByteCheckPort, OnOutputByte);
 	AttachResetHandler(OnReset);
@@ -74,21 +74,34 @@ void C_MemoryManager::Remap(void)
 	rom_map = &rom[(port7FFD & 16) ? 0x4000 : 0];
 }
 
-bool C_MemoryManager::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
+onReadByteFunc C_MemoryManager::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
 {
-	return true;
+	if (addr < 0x4000) return OnReadByte_ROM;
+	else
+	if (addr < 0x8000) return OnReadByte_Bank5;
+	else
+	if (addr < 0xC000) return OnReadByte_Bank2;
+	else return OnReadByte_C000;
 }
 
-bool C_MemoryManager::OnReadByte(Z80EX_WORD addr, bool m1, Z80EX_BYTE &retval)
+Z80EX_BYTE C_MemoryManager::OnReadByte_ROM(Z80EX_WORD addr, bool m1)
 {
-	if (addr < 0x4000) retval = (dev_extport.IsRamMapRom() ? ram[addr] : rom_map[addr]);
-	else
-	if (addr < 0x8000) retval = ram[addr-0x4000 + RAM_BANK5];
-	else
-	if (addr < 0xC000) retval = ram[addr-0x8000 + RAM_BANK2];
-	else retval = ram_map[addr-0xC000];
+	return (dev_extport.IsRamMapRom() ? ram[addr] : rom_map[addr]);
+}
 
-	return true;
+Z80EX_BYTE C_MemoryManager::OnReadByte_Bank5(Z80EX_WORD addr, bool m1)
+{
+	return ram[addr-0x4000 + RAM_BANK5];
+}
+
+Z80EX_BYTE C_MemoryManager::OnReadByte_Bank2(Z80EX_WORD addr, bool m1)
+{
+	return ram[addr-0x8000 + RAM_BANK2];
+}
+
+Z80EX_BYTE C_MemoryManager::OnReadByte_C000(Z80EX_WORD addr, bool m1)
+{
+	return ram_map[addr-0xC000];
 }
 
 bool C_MemoryManager::WriteByteCheckAddr(Z80EX_WORD addr)

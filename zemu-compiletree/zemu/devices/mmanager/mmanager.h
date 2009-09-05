@@ -28,8 +28,11 @@ class C_MemoryManager : public C_Device
 	void Close(void);
 
 	static void Remap(void);
-	static bool ReadByteCheckAddr(Z80EX_WORD addr, bool m1);
-	static bool OnReadByte(Z80EX_WORD addr, bool m1, Z80EX_BYTE &retval);
+	static onReadByteFunc ReadByteCheckAddr(Z80EX_WORD addr, bool m1);
+    static Z80EX_BYTE OnReadByte_ROM(Z80EX_WORD addr, bool m1);
+    static Z80EX_BYTE OnReadByte_Bank5(Z80EX_WORD addr, bool m1);
+    static Z80EX_BYTE OnReadByte_Bank2(Z80EX_WORD addr, bool m1);
+    static Z80EX_BYTE OnReadByte_C000(Z80EX_WORD addr, bool m1);
 	static bool WriteByteCheckAddr(Z80EX_WORD addr);
 	static bool OnWriteByte(Z80EX_WORD addr, Z80EX_BYTE value);
 	static bool OutputByteCheckPort(Z80EX_WORD port);

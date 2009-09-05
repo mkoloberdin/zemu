@@ -61,12 +61,12 @@ bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 
 		WORD sp = z80ex_get_reg(cpu, regSP);
 
-		mmgr.OnReadByte(sp, false, retval);
+		retval = ReadByteDasm(sp, NULL);
 		WORD pc = retval;
 		mmgr.OnWriteByte(sp, 0);
 		sp++;
 
-		mmgr.OnReadByte(sp, false, retval);
+		retval = ReadByteDasm(sp, NULL);
 		pc |= ((WORD)retval << 8);
 		mmgr.OnWriteByte(sp, 0);
 		sp++;

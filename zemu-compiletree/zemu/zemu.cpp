@@ -67,17 +67,17 @@ C_File wavFl;
 
 //--------------------------------------------------------------------------------------------------------------
 
-bool (** devMapRead)(Z80EX_WORD, bool, Z80EX_BYTE&);
+onReadByteFunc * devMapRead;
 bool (** devMapWrite)(Z80EX_WORD, Z80EX_BYTE);
 bool (** devMapInput)(Z80EX_WORD, Z80EX_BYTE&);
 bool (** devMapOutput)(Z80EX_WORD, Z80EX_BYTE);
 
-bool (* devMapRead_base[0x20000])(Z80EX_WORD, bool, Z80EX_BYTE&);
+onReadByteFunc devMapRead_base[0x20000];
 bool (* devMapWrite_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 bool (* devMapInput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
 bool (* devMapOutput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
-bool (* devMapRead_trdos[0x20000])(Z80EX_WORD, bool, Z80EX_BYTE&);
+onReadByteFunc devMapRead_trdos[0x20000];
 bool (* devMapInput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
 bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
@@ -85,8 +85,8 @@ bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
 struct s_ReadItem
 {
-	bool (* check)(Z80EX_WORD, bool);
-	bool (* func)(Z80EX_WORD, bool, Z80EX_BYTE&);
+	onReadByteFunc (* check)(Z80EX_WORD, bool);
+//	bool (* func)(Z80EX_WORD, bool, Z80EX_BYTE&);
 };
 
 struct s_WriteItem
@@ -131,13 +131,12 @@ int cnt_sdl = 0;
 int cnt_reset = 0;
 int cnt_sndRenderers = 0;
 
-void AttachZ80ReadHandler(bool (* check)(Z80EX_WORD, bool), bool (* func)(Z80EX_WORD, bool, Z80EX_BYTE&))
+void AttachZ80ReadHandler(onReadByteFunc (* check)(Z80EX_WORD, bool))
 {
 	if (cnt_z80read >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
 	s_ReadItem item;
 	item.check = check;
-	item.func = func;
 
 	hnd_z80read[cnt_z80read++] = item;
 }
@@ -544,15 +543,8 @@ unsigned watchesCount = 0;
 
 Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void *userData)
 {
-	Z80EX_BYTE retval;
-
-	for (;;)
-	{
-		bool (* func)(Z80EX_WORD, bool, Z80EX_BYTE&) = devMapRead[addr];
-
-		if (func == NULL) return 0xFF;
-		if (func(addr, false, retval)) return retval;
-	}
+    onReadByteFunc func = devMapRead[addr];
+    return func(addr, false);
 }
 
 void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value)
@@ -568,17 +560,9 @@ void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value)
 
 Z80EX_BYTE ReadByte(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *userData)
 {
-	Z80EX_BYTE retval;
-
 	unsigned raddr = addr + (m1_state ? 0x10000 : 0);
-
-	for (;;)
-	{
-		bool (* func)(Z80EX_WORD, bool, Z80EX_BYTE&) = devMapRead[raddr];
-
-		if (func == NULL) return 0xFF;
-		if (func(addr, m1_state, retval)) return retval;
-	}
+    onReadByteFunc func = devMapRead[raddr];
+    return func(addr, m1_state);
 }
 
 void WriteByte(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *userData)
@@ -623,8 +607,9 @@ Z80EX_BYTE ReadIntVec(Z80EX_CONTEXT *cpu, void *userData)
 
 //--------------------------------------------------------------------------------------------------------------
 
-void InitDevMapRead(bool (** map)(Z80EX_WORD, bool, Z80EX_BYTE&))
+void InitDevMapRead(onReadByteFunc * map)
 {
+	onReadByteFunc func;
 	for (unsigned m1_state = 0; m1_state < 2; m1_state++)
 	{
 		for (unsigned addr = 0; addr < 0x10000; addr++)
@@ -633,9 +618,9 @@ void InitDevMapRead(bool (** map)(Z80EX_WORD, bool, Z80EX_BYTE&))
 
 			for (int i = 0; i < cnt_z80read; i++)
 			{
-				if (hnd_z80read[i].check(addr, m1_state))
+				if ((func = hnd_z80read[i].check(addr, m1_state)) != NULL)
 				{
-					map[addr + (m1_state ? 0x10000 : 0)] = hnd_z80read[i].func;
+					map[addr + (m1_state ? 0x10000 : 0)] = func;
 					break;
 				}
 			}
