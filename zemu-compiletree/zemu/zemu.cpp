@@ -67,17 +67,17 @@ C_File wavFl;
 
 //--------------------------------------------------------------------------------------------------------------
 
-onReadByteFunc * devMapRead;
+ptrOnReadByteFunc * devMapRead;
 bool (** devMapWrite)(Z80EX_WORD, Z80EX_BYTE);
 bool (** devMapInput)(Z80EX_WORD, Z80EX_BYTE&);
 bool (** devMapOutput)(Z80EX_WORD, Z80EX_BYTE);
 
-onReadByteFunc devMapRead_base[0x20000];
+ptrOnReadByteFunc devMapRead_base[0x20000];
 bool (* devMapWrite_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 bool (* devMapInput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
 bool (* devMapOutput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
-onReadByteFunc devMapRead_trdos[0x20000];
+ptrOnReadByteFunc devMapRead_trdos[0x20000];
 bool (* devMapInput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
 bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
@@ -85,7 +85,7 @@ bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
 struct s_ReadItem
 {
-	onReadByteFunc (* check)(Z80EX_WORD, bool);
+	ptrOnReadByteFunc (* check)(Z80EX_WORD, bool);
 //	bool (* func)(Z80EX_WORD, bool, Z80EX_BYTE&);
 };
 
@@ -131,7 +131,7 @@ int cnt_sdl = 0;
 int cnt_reset = 0;
 int cnt_sndRenderers = 0;
 
-void AttachZ80ReadHandler(onReadByteFunc (* check)(Z80EX_WORD, bool))
+void AttachZ80ReadHandler(ptrOnReadByteFunc (* check)(Z80EX_WORD, bool))
 {
 	if (cnt_z80read >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
@@ -543,7 +543,7 @@ unsigned watchesCount = 0;
 
 Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void *userData)
 {
-    onReadByteFunc func = devMapRead[addr];
+    ptrOnReadByteFunc func = devMapRead[addr];
     return func(addr, false);
 }
 
@@ -561,7 +561,7 @@ void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value)
 Z80EX_BYTE ReadByte(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *userData)
 {
 	unsigned raddr = addr + (m1_state ? 0x10000 : 0);
-    onReadByteFunc func = devMapRead[raddr];
+    ptrOnReadByteFunc func = devMapRead[raddr];
     return func(addr, m1_state);
 }
 
@@ -607,9 +607,9 @@ Z80EX_BYTE ReadIntVec(Z80EX_CONTEXT *cpu, void *userData)
 
 //--------------------------------------------------------------------------------------------------------------
 
-void InitDevMapRead(onReadByteFunc * map)
+void InitDevMapRead(ptrOnReadByteFunc * map)
 {
-	onReadByteFunc func;
+	ptrOnReadByteFunc func;
 	for (unsigned m1_state = 0; m1_state < 2; m1_state++)
 	{
 		for (unsigned addr = 0; addr < 0x10000; addr++)

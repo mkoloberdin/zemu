@@ -35,7 +35,7 @@ void C_TrDos::Close(void)
 {
 }
 
-onReadByteFunc C_TrDos::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
+ptrOnReadByteFunc C_TrDos::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
 {
 	if (m1)
 	{

@@ -74,7 +74,7 @@ void C_MemoryManager::Remap(void)
 	rom_map = &rom[(port7FFD & 16) ? 0x4000 : 0];
 }
 
-onReadByteFunc C_MemoryManager::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
+ptrOnReadByteFunc C_MemoryManager::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
 {
 	if (addr < 0x4000) return OnReadByte_ROM;
 	else
