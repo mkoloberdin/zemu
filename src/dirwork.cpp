@@ -250,7 +250,7 @@ void C_DirWork::EnumClose(void)
 
 char* C_DirWork::Normalize(const char *path)
 {
-	static char result[PATH_MAX];
+	static char result[MAX_PATH];
 
 	if (realpath(path, result) == NULL)
 	{
@@ -409,7 +409,7 @@ char* C_DirWork::ExtractFileName(const char *path)
 
 char* C_DirWork::LastDirName(const char *path)
 {
-	static char result[PATH_MAX];
+	static char result[MAX_PATH];
 
 #ifdef _LINUX
 	if (realpath(C_DirWork::ExtractPath(path), result) == NULL)
