@@ -5,7 +5,7 @@
 #include "dirwork.h"
 #include "graphics.h"
 #include "lib_wd1793/wd1793_chip.h"
-#include "lib_z80ex/z80ex_dasm.h"
+#include <z80ex_dasm.h>
 #include "devs.h"
 #include "tape/tape.h"
 #include "labels.h"

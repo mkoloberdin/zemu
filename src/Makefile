@@ -1,6 +1,6 @@
 CXX = g++
-CXXFLAGS += ${shell sdl-config --cflags} -O2 -fomit-frame-pointer -Wall -g -pipe
-LDFLAGS += -Llib_z80ex
+CXXFLAGS += ${shell sdl-config --cflags} -O2 -fomit-frame-pointer -Wall -pipe -I${Z80EX_PATH}/include
+LDFLAGS += -L${Z80EX_PATH}/lib
 LIBS = ${shell sdl-config --libs} -lz80ex -lz80ex_dasm
 
 ifeq ("${OSTYPE}","msys")

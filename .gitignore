@@ -1,8 +1,7 @@
 *.o
 *.a
 callgrind.out.*
-zemu-compiletree/lib_z80ex
-zemu-compiletree/zemu/zemu
+src/zemu
 .cproject
 .project
 Debug

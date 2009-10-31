@@ -3,7 +3,7 @@
 
 #include "defines.h"
 #include <SDL.h>
-#include "lib_z80ex/z80ex.h"
+#include <z80ex.h>
 #include "sound/snd_renderer.h"
 #include "config.h"
 
