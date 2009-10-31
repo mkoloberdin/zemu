@@ -3,3 +3,6 @@
 callgrind.out.*
 zemu-compiletree/lib_z80ex
 zemu-compiletree/zemu/zemu
+.cproject
+.project
+Debug
