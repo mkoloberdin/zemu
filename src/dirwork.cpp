@@ -4,6 +4,19 @@
 
 #ifdef _WIN32
 
+char *realpath(const char *path, char *resolved_path) {
+	char *c;
+	char *r = _fullpath(resolved_path, path, _MAX_PATH);
+	if (!r) return NULL;
+	if (_access(r, 0) != 0) return NULL; // path does not exist
+	while ((c = strchr(r, '\\')) != NULL) {
+		*c = '/';
+	}
+	return r;
+}
+
+//#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+
 C_DirWork::C_DirWork()
 {
 	hFile = -1;
@@ -29,8 +42,12 @@ bool C_DirWork::EnumFiles(const char *path)
 		{
 			root_path[0] = drv_lett;
 			unsigned drv_type = GetDriveType(root_path);
-	
-			if (drv_type==DRIVE_FIXED || drv_type==DRIVE_REMOVABLE) {
+
+			if (drv_type == DRIVE_FIXED ||
+				drv_type == DRIVE_REMOVABLE ||
+				drv_type == DRIVE_REMOTE ||
+				drv_type == DRIVE_CDROM ||
+				drv_type == DRIVE_RAMDISK) {
 				availDrives.push_back(drv_lett);
 			}
 		}
@@ -156,20 +173,6 @@ void C_DirWork::EnumClose(void)
 	enumMode = 0;
 }
 
-char* C_DirWork::Normalize(const char *path)
-{
-	static char result[MAX_PATH];
-
-	strcpy(result, path);
-	unsigned sz = strlen(result);
-
-	if (!sz || (strcmp(result, "/") && result[sz-1]!='/')) {
-		strcat(result, "/");
-	}
-
-	return result;
-}
-
 #endif	// _WIN32
 
 #ifdef _LINUX
@@ -248,6 +251,8 @@ void C_DirWork::EnumClose(void)
 	hDir = NULL;
 }
 
+#endif	// _LINUX
+
 char* C_DirWork::Normalize(const char *path)
 {
 	static char result[MAX_PATH];
@@ -258,11 +263,14 @@ char* C_DirWork::Normalize(const char *path)
 		return result;
 	}
 
-	if (strcmp(result, "/")) strcat(result, "/");
+	size_t rlen = strlen(result);
+	if (rlen > 0 && result[rlen-1] != '/') strcat(result, "/");
+	if (rlen >= 3 && result[2] == '/' && result[1] == ':') {
+		result[1] = result[0];
+		result[0] = result[2] = '/';
+	}
 	return result;
 }
-
-#endif	// _LINUX
 
 char* C_DirWork::LevelUp(const char *path)
 {
