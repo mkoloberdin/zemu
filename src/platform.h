@@ -18,16 +18,6 @@
 	//---------------
 
 	#include <windows.h>
-	#define _I386
-	#define OS_WINDOWS
-#else
-	//------------------
-	// x86Linux-specific
-	//------------------
-
-	#define _LINUX
-	#define _I386
-	#define OS_LINUX
 #endif
 
 //------

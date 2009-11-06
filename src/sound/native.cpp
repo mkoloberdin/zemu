@@ -1,7 +1,7 @@
 #include "../defines.h"
 #include "native.h"
 
-#ifdef OS_LINUX
+#ifndef _WIN32
 
 #include <sys/ioctl.h>
 #include <sys/stat.h>

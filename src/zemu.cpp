@@ -1394,7 +1394,7 @@ void FreeAll(void)
 
 	C_Tape::Close();
 
-	#ifdef OS_LINUX
+	#ifdef __linux__
 		// TODO: do in in more portable way
 		char cmd[MAX_PATH];
 		strcpy(cmd, "rm -rf ");
@@ -1522,17 +1522,17 @@ int main(int argc, char *argv[])
 		// sound
 		params.sound = config.GetBool("sound", "enable", true);
 		params.mixerMode = config.GetInt("sound", "mixermode", 1);
-#ifdef OS_WINDOWS
+#ifdef _WIN32
 		bool sdlsound_default = false;
 #else
 		bool sdlsound_default = true;
 #endif
 		params.sdlSound = config.GetBool("sound", "usesdl", sdlsound_default);
 		params.sdlBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
-#ifdef OS_LINUX
+#ifdef __linux__
 	params.soundParam = config.GetInt("sound", "ossfragnum", 8);
 #endif
-#ifdef OS_WINDOWS
+#ifdef _WIN32
 	params.soundParam = config.GetInt("sound", "wqsize", 4);
 #endif
 
@@ -1587,10 +1587,9 @@ int main(int argc, char *argv[])
 		SDL_WM_SetCaption("ZEmu", "ZEmu");
 		SDL_ShowCursor(SDL_DISABLE);
 
-		#ifdef OS_WINDOWS
+		#ifdef _WIN32
 			strcpy(tempFolderName, "./_temp");
-		#endif
-		#ifdef OS_LINUX
+		#else
 			strcpy(tempFolderName, "/tmp/zemu-XXXXXX");
 			if (!mkdtemp(tempFolderName)) _DEBUG("mkdtemp failed");
 		#endif

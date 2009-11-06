@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#ifdef _LINUX
+#ifdef __linux__
 	#include <limits.h>
 #endif
 
@@ -49,10 +49,10 @@
 	#define SleepX() sleep(0)
 #endif
 
-#ifdef _LINUX
-	// it's seems that stricmp is not ANSI, but strcasecmp is
+#ifdef __linux__
+	// it seems that stricmp is not ANSI, but strcasecmp is
 	#define stricmp(s1,s2) strcasecmp((s1),(s2))
-	// it's also seems that unistd is need for sleep and some others functions
+	// it also seems that unistd is need for sleep and some others functions
 	#include <unistd.h>
 #endif
 

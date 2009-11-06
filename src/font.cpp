@@ -146,7 +146,7 @@ void C_Font::PrintString(int x, int y, const char *str)
 {
 	if (!str) return;
 
-	#ifdef OS_WINDOWS
+	#ifdef _WIN32
 		while (*str)
 		{
 			PrintChar(x, y, *str);

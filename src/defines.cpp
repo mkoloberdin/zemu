@@ -140,10 +140,8 @@ void StrikeError(const char *fmt, ...)
 	MessageBox(HWND_DESKTOP, buf, "Error", 0);
 	exit(1);
 #else
-	#ifdef _LINUX
-		fprintf(stderr, "[Error] %s\n", buf);
-		exit(1);
-	#endif
+	fprintf(stderr, "[Error] %s\n", buf);
+	exit(1);
 #endif
 }
 
@@ -159,9 +157,7 @@ void StrikeMessage(const char *fmt, ...)
 #ifdef _WIN32
 	MessageBox(HWND_DESKTOP, buf, "Message", 0);
 #else
-	#ifdef _LINUX
-		printf("Message: %s\n", buf);
-	#endif
+	printf("Message: %s\n", buf);
 #endif
 }
 
