@@ -903,8 +903,9 @@ int TraceCpuStep(Z80EX_CONTEXT *cpu)
 
 int TraceCpuInt(Z80EX_CONTEXT *cpu)
 {
-	// CpuTrace_Log();
-	cpuTrace_dT = z80ex_int(cpu);
+	CpuTrace_Log();
+	int dt = z80ex_int(cpu);
+	cpuTrace_dT += dt;
 	return cpuTrace_dT;
 }
 
