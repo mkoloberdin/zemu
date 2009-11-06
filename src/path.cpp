@@ -1,6 +1,6 @@
 #include "path.h"
 
-#ifdef __WIN32__
+#ifdef _WIN32
 
 #include <shlwapi.h>
 #define PATH_SEP '\\'
@@ -19,7 +19,7 @@ string path_append(const string &p1, const string &p2) {
 	} else if (p2.empty()) {
 		return p1;
 	}
-#ifdef __WIN32__
+#ifdef _WIN32
 	TCHAR buffer[MAX_PATH];
 	strcpy(buffer, p1.c_str());
 	PathAppend(buffer, p2.c_str());

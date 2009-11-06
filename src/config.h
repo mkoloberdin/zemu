@@ -1,5 +1,5 @@
-#ifndef __ZEMU_CONFIG_H
-#define __ZEMU_CONFIG_H
+#ifndef ZEMU_CONFIG_H
+#define ZEMU_CONFIG_H
 
 #include "SimpleIni.h"
 #include <string>
@@ -32,4 +32,4 @@ private:
 	CSimpleIni ini;
 };
 
-#endif // __ZEMU_CONFIG_H
+#endif // ZEMU_CONFIG_H
