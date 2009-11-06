@@ -48,7 +48,7 @@ void wd1793_out(unsigned char port, unsigned char val, unsigned long long time, 
 /*
 wd1793_load_dimage: load disk image <filename> to <drive=0,1,2 or 3>
 */
-int wd1793_load_dimage(char *filename, int drive);
+int wd1793_load_dimage(const char *filename, int drive);
 
 /*
 wd1793_eject_dimage: eject disk image from <drive>
@@ -63,7 +63,7 @@ unsigned char wd1793_get_status_reg();
 /*
 wd1793_set_appendboot: automatically append boot from file <boot_name> to TRDOS-disks, if there's no boot.B
 */
-void wd1793_set_appendboot(char *boot_name);
+void wd1793_set_appendboot(const char *boot_name);
 
 /*
 wd1793_set_trd_interleave: set interleave for trd disks

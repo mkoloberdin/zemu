@@ -117,7 +117,7 @@ class C_Wd1793
 
 	// load disk image to drive
 	// drive - from 0 to 3
-	int load_dimage(char *filename, int drive);
+	int load_dimage(const char *filename, int drive);
 
 	// eject disk image from drive
 	void eject_dimage(int drive);
@@ -131,7 +131,7 @@ class C_Wd1793
 	// get wd1793 status register
 	unsigned char get_status_reg();
 
-	void set_appendboot(char *boot_name);
+	void set_appendboot(const char *boot_name);
 	void set_trd_interleave(int iv);
 	int save_dimage(char *filename, int drive, enum DIMAGE_TYPE type);
 	int is_disk_loaded(int drive);

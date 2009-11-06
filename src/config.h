@@ -1,72 +1,35 @@
-/*
-    Tanks - Tank arcade game
-    Copyright (c) 2005 ProZroks
+#ifndef __ZEMU_CONFIG_H
+#define __ZEMU_CONFIG_H
 
-    <<< LICENSE >>>
+#include "SimpleIni.h"
+#include <string>
 
-    ProZroks
-    support@prozroks.com
+using namespace std;
 
-    Last modifed: Restorer (16 Jun, 2005)
-*/
+class CConfig {
+public:
+	CConfig(const char *app_name);
+	~CConfig();
 
-/*
-    Whatsnew.
+	int GetInt(const char *section, const char *key, int default_value);
+	void SetInt(const char *section, const char *key, int value);
+	string GetString(const char *section, const char *key, const string &default_value);
+	void SetString(const char *section, const char *key, const string &value);
+	bool GetBool(const char *section, const char *key, bool default_value);
+	void SetBool(const char *section, const char *key, bool value);
 
-    Restorer (24 May, 2005)
-        Только начало.
+	size_t LoadDataFile(const char *prefix, const char *filename,
+			unsigned char *buffer, size_t size, size_t offset = 0);
+	bool SaveDataFile(const char *prefix, const char *filename,
+			const unsigned char *buffer, size_t size);
+	string FindDataFile(const char *prefix, const char *filename);
 
-    Restorer (2 Jun, 2005)
-        [add] Load
-        [fix] Save
-
-    Restorer (8 Jun, 2005)
-    	[add] FindItem, CreateNode
-        [add] GetInt, SetInt, GetString, SetString, GetBool, SetBool, Remove
-
-    Restorer (16 Jun, 2005)
-	    [fix] Теперь адекватно реагирует на TAB (код 9)
-*/
-
-#ifndef _CONFIG_H_
-#define _CONFIG_H_ 1
-
-#include "file.h"
-
-class C_Config
-{
-	public:
-
-	C_Config();
-	~C_Config();
-
-	void Load(const char *filename);
-	void Save(const char *filename);
-	bool GetInt(const char *path, int *value);	// "root/server/max_connections"
-	void SetInt(const char *path, int value);
-	bool GetString(const char *path, char **value);
-	void SetString(const char *path, const char *value);
-	bool GetBool(const char *path, bool *value);
-	void SetBool(const char *path, bool value);
-	void Remove(const char *path);
-
-	private:
-
-	struct s_config_item
-	{
-		char *name;
-		char *value;
-		s_config_item *child;
-		s_config_item *next;
-	};
-
-	void DeleteTree(s_config_item *f);
-	void SaveItem(C_File &fl, s_config_item *f, int depth);
-	s_config_item* LoadItem(C_File &fl);
-	s_config_item* FindItem(const char *path, s_config_item*** prev);
-	s_config_item* CreateNode(const char *path);
-
-	s_config_item *root;
+private:
+	bool changed;
+	string app_name;
+	string user_path;
+	string share_path;
+	CSimpleIni ini;
 };
 
-#endif
+#endif // __ZEMU_CONFIG_H

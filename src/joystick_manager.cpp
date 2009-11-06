@@ -15,12 +15,12 @@ C_JoystickManager* C_JoystickManager::Instance()
 // [rst]
 void C_JoystickManager::Init()
 {
-	if (!config.GetBool("root/Joysticks/Kempston/Enable", &params.kempstonEnable)) params.kempstonEnable = false;
+	params.kempstonEnable = config.GetBool("kempstonjoystick", "enable", false);
 
 	if (params.kempstonEnable)
 	{
-		if (!config.GetInt("root/Joysticks/Kempston/SysJoystickNum", &params.kempstonOnStickNum)) StrikeError("root/Joysticks/Kempston/SysJoystickNum not found");
-		if (!config.GetInt("root/Joysticks/Kempston/AxisTreshold", &params.kempstonAxisTreshold)) params.kempstonAxisTreshold = DEF_JOY_AXIS_TRESHOLD;
+		params.kempstonOnStickNum = config.GetInt("kempstonjoystick", "sysjoysticknum", -1);
+		params.kempstonAxisTreshold = config.GetInt("kempstonjoystick", "axisthreshold", DEF_JOY_AXIS_TRESHOLD);
 
 		// если номер джойстика < 0, то кемпстоном можно будет управлять только с клавиатуры
 		if (params.kempstonOnStickNum >= 0)
@@ -85,7 +85,7 @@ bool C_JoystickManager::ProcessJoystickEvent(SDL_Event &event)
 	switch(event.type)
 	{
 		case SDL_JOYAXISMOTION:
-			// printf("joy %d axis %d moved by %d\n",event.jaxis.which,event.jaxis.axis,event.jaxis.value);		
+			// printf("joy %d axis %d moved by %d\n",event.jaxis.which,event.jaxis.axis,event.jaxis.value);
 			joy_num = event.jaxis.which;
 			if (joy_num>=num_joysticks || !jstate[joy_num].init_ok) break;
 

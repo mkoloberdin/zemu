@@ -11,6 +11,8 @@
 #define RAM_BANK4 (0x4000 * 4)
 #define RAM_BANK6 (0x4000 * 6)
 
+string split_romname(string &romname, size_t *offset);
+
 class C_MemoryManager : public C_Device
 {
 	public:

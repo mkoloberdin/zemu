@@ -13,7 +13,7 @@ void wd1793_out(unsigned char port, unsigned char val, unsigned long long time, 
 	wd.out(port, val, time, err);
 }
 
-int wd1793_load_dimage(char *filename, int drive)
+int wd1793_load_dimage(const char *filename, int drive)
 {
 	return wd.load_dimage(filename, drive);
 }
@@ -28,7 +28,7 @@ unsigned char wd1793_get_status_reg()
 	return wd.get_status_reg();
 }
 
-void wd1793_set_appendboot(char *boot_name)
+void wd1793_set_appendboot(const char *boot_name)
 {
 	wd.set_appendboot(boot_name);
 }

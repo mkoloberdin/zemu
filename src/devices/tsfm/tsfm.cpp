@@ -15,7 +15,7 @@ int C_TsFm::selectedReg;
 
 void C_TsFm::Init(void)
 {
-	char *str;
+	const char *str;
 
 	mode = TSFM_MODE_TSFM;
 	pseudoReg = 7;
@@ -27,12 +27,11 @@ void C_TsFm::Init(void)
 	AttachAfterFrameRenderHandler(OnAfterFrameRender);
 	AttachResetHandler(OnReset);
 
-	if (config.GetString("root/TsfmMode", &str))
-	{
-		if (!strcasecmp(str, "ay")) mode = TSFM_MODE_AY;
-		else
-		if (!strcasecmp(str, "ts")) mode = TSFM_MODE_TS;
-	}
+	string s = config.GetString("sound", "tsfmmode", "tsfm");
+	str = s.c_str();
+	if (!strcasecmp(str, "ay")) mode = TSFM_MODE_AY;
+	else
+	if (!strcasecmp(str, "ts")) mode = TSFM_MODE_TS;
 
 	ayChip[0].Init();
 	RegisterSndRenderer(&ayChip[0].sndRenderer);

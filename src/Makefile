@@ -24,16 +24,14 @@ else
 endif
 
 ROMS_PATH = ${SHARE_PATH}/roms
-CONFIG_PATH = ${SHARE_PATH}/config
+CONFIG_PATH = ${SHARE_PATH}
 ARC_PATH = ${SHARE_PATH}/arc
 BOOT_PATH = ${SHARE_PATH}/boot
 
 # ------------------------------------------------------------
 
 ifdef FOR_INSTALL
-	ADDITIONAL_PARAMS += -DCONFIG_PATH=\"${CONFIG_PATH}\"
-else
-	ADDITIONAL_PARAMS += -DCONFIG_PATH=\".\"
+	ADDITIONAL_PARAMS += -DSHARE_PATH=\"${SHARE_PATH}\" -DFOR_INSTALL=\"${FOR_INSTALL}\"
 endif
 
 # ------------------------------------------------------------

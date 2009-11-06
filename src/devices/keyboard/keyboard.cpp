@@ -16,7 +16,8 @@ void C_Keyboard::ReadKbdConfig(void)
 	C_File fl;
 	s_HostKey hk;
 	s_ZxKeys zxk;
-	char buf[0x100], *s, *p, *fname;
+	char buf[0x100], *s, *p;
+	const char *fname;
 	void (* act)(void);
 	bool canAct;
 
@@ -30,7 +31,9 @@ void C_Keyboard::ReadKbdConfig(void)
 		hostKeyPressed[i] = false;
 	}
 
-	if (!config.GetString("root/Keys", &fname)) throw C_E(E_General, "root/Keys not found in config");
+	string value = config.GetString("input", "keymap", "keys.config");
+	value = config.FindDataFile("", value.c_str());
+	fname = value.c_str();
 
 	ln = 0;
 	fl.Read(fname);

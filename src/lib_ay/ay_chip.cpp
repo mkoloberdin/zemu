@@ -19,32 +19,32 @@ C_AyChipConfig::C_AyChipConfig()
 
 void C_AyChipConfig::ReadConfig(void)
 {
-	char *str;
+	const char *str;
+	string s;
 
-	if (config.GetString("root/AyChip/Chip", &str)) {
-		chipType = (!strcasecmp(str, "ay") ? TypeAy : TypeYm);
-	}
+	s = config.GetString("sound", "aychiptype", "ym");
+	str = s.c_str();
+	chipType = (!strcasecmp(str, "ay") ? TypeAy : TypeYm);
 
-	if (config.GetString("root/AyChip/Vol", &str)) {
-		volType = (!strcasecmp(str, "ay") ? VolAy : VolYm);
-	}
+	s = config.GetString("sound", "aychipvol", "ym");
+	str = s.c_str();
+	volType = (!strcasecmp(str, "ay") ? VolAy : VolYm);
 
-	if (config.GetString("root/AyChip/Pan", &str))
-	{
-		if (!strcasecmp(str, "mono")) panType = PanMono;
-		else
-		if (!strcasecmp(str, "abc")) panType = PanABC;
-		else
-		if (!strcasecmp(str, "acb")) panType = PanACB;
-		else
-		if (!strcasecmp(str, "bac")) panType = PanBAC;
-		else
-		if (!strcasecmp(str, "bca")) panType = PanBCA;
-		else
-		if (!strcasecmp(str, "cab")) panType = PanCAB;
-		else
-		if (!strcasecmp(str, "cba")) panType = PanCBA;
-	}
+	s = config.GetString("sound", "aychippan", "acb");
+	str = s.c_str();
+	if (!strcasecmp(str, "mono")) panType = PanMono;
+	else
+	if (!strcasecmp(str, "abc")) panType = PanABC;
+	else
+	if (!strcasecmp(str, "acb")) panType = PanACB;
+	else
+	if (!strcasecmp(str, "bac")) panType = PanBAC;
+	else
+	if (!strcasecmp(str, "bca")) panType = PanBCA;
+	else
+	if (!strcasecmp(str, "cab")) panType = PanCAB;
+	else
+	if (!strcasecmp(str, "cba")) panType = PanCBA;
 }
 
 const unsigned * C_AyChipConfig::GetVolTab(void)

@@ -491,9 +491,10 @@ void FileDialog(void)
 
 void FileDialogInit(void)
 {
-	char *str;
+	string str;
 
-	if (config.GetString("root/Drives/A", &str)) strcpy(oldFileName[0], str);
+	str = config.GetString("beta128", "diskA", "/");
+	if (!str.empty()) strcpy(oldFileName[0], str.c_str());
 	else strcpy(oldFileName[0], "/");
 }
 
@@ -742,7 +743,7 @@ void DebugIt(void)
 				if (event.type == SDL_QUIT) exit(0);
 				if (event.type == SDL_KEYDOWN) key = event.key.keysym.sym;
 			}
- 
+
 	 		DlgClearScreen();
 			Bar(0, scrEnd, WIDTH-1, HEIGHT-1, DRGB(0x80, 0x20, 0x20));
 
@@ -963,7 +964,7 @@ void DebugIt(void)
 		{
 			wdDebug = !wdDebug;
 			DlgConfirm(wdDebug ? "WD1793 debug enabled" : "WD1793 debug disabled");
-			
+
 		}
 
 	} while (key != SDLK_ESCAPE);

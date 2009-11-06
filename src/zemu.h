@@ -58,7 +58,7 @@ struct s_Params
 };
 
 extern s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
-extern C_Config config;
+extern CConfig config;
 extern Z80EX_CONTEXT *cpu;
 extern unsigned long long clk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;

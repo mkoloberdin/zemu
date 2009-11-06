@@ -42,6 +42,13 @@ C_E::C_E(int exc, const char *param)
 	else strcpy(this->param, "[DoubleException] Param too long");
 }
 
+C_E::C_E(int exc, string param)
+{
+	this->exc = exc;
+	if (param.size() < sizeof(this->param)) strcpy(this->param, param.c_str());
+	else strcpy(this->param, "[DoubleException] Param too long");
+}
+
 const char * C_E::Descr(void) const
 {
 	switch (exc)

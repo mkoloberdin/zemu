@@ -5,7 +5,7 @@ bool C_Covox::enabled = false;
 
 void C_Covox::Init(void)
 {
-	if (!config.GetBool("root/EnableCovox", &enabled)) enabled = false;
+	enabled = config.GetBool("sound", "enablecovox", false);
 
 	if (enabled)
 	{

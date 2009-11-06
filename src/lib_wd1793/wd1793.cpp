@@ -19,7 +19,7 @@ C_Wd1793::C_Wd1793()
 	wd93_nodelay = 0;
 }
 
-int C_Wd1793::load_dimage(char *filename, int drive)
+int C_Wd1793::load_dimage(const char *filename, int drive)
 {
 	return fdd[drive].load_dimage(filename);
 }
@@ -44,7 +44,7 @@ unsigned char C_Wd1793::get_status_reg()
 	return status;
 }
 
-void C_Wd1793::set_appendboot(char *boot_name)
+void C_Wd1793::set_appendboot(const char *boot_name)
 {
 	for (int i = 0; i < 4; i++) fdd[i].set_appendboot(boot_name);
 }

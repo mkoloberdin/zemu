@@ -1,4 +1,5 @@
 #include "tap_format.h"
+#include "../file.h"
 
 #define TAPE_STATE_STOP 0
 #define TAPE_STATE_PLAY 1

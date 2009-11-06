@@ -14,18 +14,21 @@
     Whatsnew.
 
     Restorer (24 May, 2005)
-        Только начало. Общий интерфейс.
+        РўРѕР»СЊРєРѕ РЅР°С‡Р°Р»Рѕ. РћР±С‰РёР№ РёРЅС‚РµСЂС„РµР№СЃ.
 
     Restorer (2 Jun, 2005)
-        Enum нафих, заменил define-ами
+        Enum РЅР°С„РёС…, Р·Р°РјРµРЅРёР» define-Р°РјРё
 */
 
 #ifndef _EXCEPTION_H_
 #define _EXCEPTION_H_ 1
 
+#include <string>
+using namespace std;
+
 #define E_None					0	// 0..99 - Reserved
 #define E_General				1
-#define E_NotImplemented			100	// 100..199 - Общие исключения
+#define E_NotImplemented			100	// 100..199 - РћР±С‰РёРµ РёСЃРєР»СЋС‡РµРЅРёСЏ
 #define E_FileNotFound				200	// 200.299 - File
 #define E_ReadError				201
 #define E_WriteError				202
@@ -51,6 +54,7 @@ class C_E
 	C_E();
 	C_E(int exc);
 	C_E(int exc, const char *param);
+	C_E(int exc, string param);
 	const char* Descr(void) const;
 
 	int exc;

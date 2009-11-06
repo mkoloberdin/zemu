@@ -92,7 +92,7 @@ int C_Fdd::save_dimage(char *filename, enum DIMAGE_TYPE type)
 	return ret;
 }
 
-void C_Fdd::set_appendboot(char *boot_name)
+void C_Fdd::set_appendboot(const char *boot_name)
 {
 	if (boot_name) strncpy(appendboot, boot_name, sizeof(appendboot)-1);
 	else appendboot[0] = 0;
@@ -174,7 +174,7 @@ int C_Fdd::read(unsigned char type)
 	return ok;
 }
 
-int C_Fdd::load_dimage(char *filename)
+int C_Fdd::load_dimage(const char *filename)
 {
 	unsigned char type = what_is(filename);
 	if (!read(type)) return 0;
@@ -194,7 +194,7 @@ int C_Fdd::load_dimage(char *filename)
 	return 1;
 }
 
-unsigned char C_Fdd::what_is(char *filename)
+unsigned char C_Fdd::what_is(const char *filename)
 {
 	FILE *ff = fopen(filename, "rb");
 	if (!ff) return snNOFILE;
@@ -207,7 +207,7 @@ unsigned char C_Fdd::what_is(char *filename)
 	unsigned char type = snUNKNOWN;
 	if (snapsize < 32) return type;
 
-	char *ptr = strrchr(filename, '.');
+	const char *ptr = strrchr(filename, '.');
 	unsigned ext = ((ptr && ((unsigned)((ptr-filename)+3)<strlen(filename))) ? WORD4(ptr[1]|0x20, ptr[2]|0x20, ptr[3]|0x20, ptr[4]|0x20) : 0);
 
 	// [rst] я тут вставил else между if-ами, но может быть такое дело, что этого не надо было делать.

@@ -22,15 +22,15 @@ bool C_ExtPort::enabled;
 void C_ExtPort::Init(void)
 {
 	portEFF7 = 0;
-	if (!config.GetBool("root/EnableEFF7", &enabled)) enabled = false;
+	enabled = config.GetBool("core", "enableEFF7", false);
 
 	if (enabled)
 	{
 		AttachZ80OutputHandler(OutputByteCheckPort, OnOutputByte);
 		AttachResetHandler(OnReset);
 
-		if (!config.GetBool("root/OldEFF7Mode", &oldEFF7Mode)) oldEFF7Mode = false;
-		if (!config.GetBool("root/UseEFF7Turbo", &useEFF7Turbo)) useEFF7Turbo = false;
+		oldEFF7Mode = config.GetBool("core", "oldEFF7mode", false);
+		useEFF7Turbo = config.GetBool("core", "useEFF7turbo", false);
 
 		if (useEFF7Turbo) turboMultiplierNx = 2;
 	}

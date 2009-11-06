@@ -1,5 +1,4 @@
 #include "trdos.h"
-#include "../../file.h"
 #include "../../exceptions.h"
 #include "../mmanager/mmanager.h"
 
@@ -10,13 +9,14 @@ BYTE C_TrDos::rom[0x4000];
 
 void C_TrDos::ReadFile(void)
 {
-	C_File fl;
-	char *fname;
+	string filename;
+	size_t offset;
 
-	if (!config.GetString("root/Roms/TrDos", &fname)) throw C_E(E_General, "root/Roms/TrDos not found in config");
-	fl.Read(fname);
-	fl.ReadBlock(rom, 0x4000);
-	fl.Close();
+	filename = config.GetString("beta128", "rom", "trdos.rom");
+	filename = split_romname(filename, &offset);
+	if (config.LoadDataFile("roms", filename.c_str(), rom, 0x4000, offset) != 0x4000) {
+		throw C_E(E_General, "Error loading " + filename);
+	}
 }
 
 void C_TrDos::Init(void)

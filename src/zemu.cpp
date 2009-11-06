@@ -27,6 +27,8 @@
 #include "ftbos_font.h"
 #include "font_64.h"
 
+#include "file.h"
+
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
 
@@ -49,7 +51,7 @@ SDL_Surface *screen, *realScreen, *scrSurf[2];
 int PITCH, REAL_PITCH;
 bool drawFrame;
 int frames;
-C_Config config;
+CConfig config("zemu");
 C_Font font, fixed;
 bool disableSound = false;
 bool doCopyAfSurfaces = false;
@@ -1019,7 +1021,7 @@ void DrawIndicators(void)
 	else if (params.showInactiveIcons) OutputGimpImage(8, 0, (s_GimpImage *) &img_floppy);
 
 	if (params.maxSpeed) OutputGimpImage(32, 0, (s_GimpImage *) &img_turboOn);
-	else if (params.showInactiveIcons) OutputGimpImage(32, 0, (s_GimpImage *) &img_turboOff); 
+	else if (params.showInactiveIcons) OutputGimpImage(32, 0, (s_GimpImage *) &img_turboOff);
 
 	if (C_Tape::IsActive())
 	{
@@ -1472,100 +1474,76 @@ void OutputLogo(void)
 	printf("                                     \n");
 }
 
-void InitCfgName(char* cfg_fname)
-{
-	char* homePath = getenv("HOME");
-
-	if (homePath)
-	{
-		#ifdef OS_LINUX
-			// TODO: do in in more portable way
-			char cmd[MAX_PATH];
-			sprintf(cmd, "mkdir -p %s/.zemu", homePath);
-			if (system(cmd) == -1) _DEBUG("system failed");
-		#endif
-
-		strcat(cfg_fname, homePath);
-		strcat(cfg_fname, "/.zemu/config.xml");
-
-		if (C_File::FileExists(cfg_fname)) return;
-	}
-
-	strcpy(cfg_fname, CONFIG_PATH);
-	strcat(cfg_fname, "/config.xml");
-}
-
 int main(int argc, char *argv[])
 {
 	int spec;
-	char *str;
-	bool wd1793delay;
 
 	OutputLogo();
 
 	try
 	{
-		char cfg_fname[MAX_PATH] = "";
-		InitCfgName(cfg_fname);
+		strcpy(params.arcPluginsDir, "arc"); // FIXME
 
-		if (C_File::FileExists(cfg_fname)) config.Load(cfg_fname);
-		else StrikeError("Unable to load config from \"%s\"", cfg_fname);
+		string str;
+		// core
+		str = config.GetString("core", "snapformat", "sna");
+		if (str == "sna") params.snapFormat = SNAP_FORMAT_SNA;
+		else params.snapFormat = SNAP_FORMAT_Z80;
 
-		if (config.GetString("root/ArcPluginsDir", &str)) strcpy(params.arcPluginsDir, str);
-		else *params.arcPluginsDir = 0;
+		// beta128
+		str = config.GetString("beta128", "diskA", "");
+		if (!str.empty()) wd1793_load_dimage(str.c_str(), 0);
+		str = config.GetString("beta128", "diskB", "");
+		if (!str.empty()) wd1793_load_dimage(str.c_str(), 1);
+		str = config.GetString("beta128", "diskC", "");
+		if (!str.empty()) wd1793_load_dimage(str.c_str(), 2);
+		str = config.GetString("beta128", "diskD", "");
+		if (!str.empty()) wd1793_load_dimage(str.c_str(), 3);
 
-		if (config.GetString("root/CpuTrace/Format", &str)) strcpy(params.cpuTraceFormat, str);
-		else *params.cpuTraceFormat = 0;
+		wd1793_set_nodelay(config.GetBool("beta128", "nodelay", false));
 
-		if (config.GetString("root/CpuTrace/FileName", &str)) strcpy(params.cpuTraceFileName, str);
-		else *params.cpuTraceFileName = 0;
+		str = config.GetString("beta128", "sclboot", "boot.$b");
+		str = config.FindDataFile("boot", str.c_str());
+		if (!str.empty()) wd1793_set_appendboot(str.c_str());
 
-		if (!config.GetBool("root/UseFlipSurface", &params.useFlipSurface)) params.useFlipSurface = false;
-		if (!config.GetBool("root/SoundEnable", &params.sound)) params.sound = false;
-		if (!config.GetInt("root/MixerMode", &params.mixerMode)) params.mixerMode = 0;
-		if (!config.GetBool("root/FullScreen", &params.fullscreen)) params.fullscreen = false;
-		if (!config.GetBool("root/Scale2x", &params.scale2x)) params.scale2x = false;
-		if (!config.GetBool("root/Scanlines", &params.scanlines)) params.scanlines = false;
-		if (!config.GetBool("root/AntiFlicker", &params.antiFlicker)) params.antiFlicker = false;
-		if (!config.GetBool("root/UseSdlSound", &params.sdlSound)) params.sdlSound = false;
-		if (!config.GetBool("root/ShowInactiveIcons", &params.showInactiveIcons)) params.showInactiveIcons = true;
-		if (!config.GetBool("root/CpuTrace/Enabled", &params.cpuTraceEnabled)) params.cpuTraceEnabled = false;
+		// display
+		params.fullscreen = config.GetBool("display", "fullscreen", false);
+		params.scale2x = config.GetBool("display", "scale2x", true);
+		params.scanlines = config.GetBool("display", "scanlines", false);
+		params.useFlipSurface = config.GetBool("display", "sdl_useflipsurface", false);
+		params.antiFlicker = config.GetBool("display", "antiflicker", false);
+		params.showInactiveIcons = config.GetBool("display", "showinactiveicons", false);
 
-		if (config.GetString("root/SnapFormat", &str))
-		{
-			if (!strcasecmp(str, "sna")) params.snapFormat = SNAP_FORMAT_SNA;
-			else params.snapFormat = SNAP_FORMAT_Z80;
-		}
-		else
-		{
-			params.snapFormat = SNAP_FORMAT_Z80;
-		}
+		// input
+		params.mouseDiv = config.GetInt("input", "mousediv", 1);
+		if (params.mouseDiv <= 0) params.mouseDiv = 1;
+		else if (params.mouseDiv > 8) params.mouseDiv = 8;
 
-		if (config.GetString("root/Drives/A", &str)) wd1793_load_dimage(str, 0);
-		if (config.GetString("root/Drives/B", &str)) wd1793_load_dimage(str, 1);
-		if (config.GetString("root/Drives/C", &str)) wd1793_load_dimage(str, 2);
-		if (config.GetString("root/Drives/D", &str)) wd1793_load_dimage(str, 3);
+		// sound
+		params.sound = config.GetBool("sound", "enable", true);
+		params.mixerMode = config.GetInt("sound", "mixermode", 1);
+#ifdef OS_WINDOWS
+		bool sdlsound_default = false;
+#else
+		bool sdlsound_default = true;
+#endif
+		params.sdlSound = config.GetBool("sound", "usesdl", sdlsound_default);
+		params.sdlBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
+#ifdef OS_LINUX
+	params.soundParam = config.GetInt("sound", "ossfragnum", 8);
+#endif
+#ifdef OS_WINDOWS
+	params.soundParam = config.GetInt("sound", "wqsize", 4);
+#endif
 
-		if (config.GetBool("root/Drives/NoDelay", &wd1793delay)) wd1793_set_nodelay(wd1793delay);
+		// cputrace
+		params.cpuTraceEnabled = config.GetBool("cputrace", "enable", false);
+		str = config.GetString("cputrace", "format",
+				"[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] HL=[HL] IX=[IX] IY=[IY] SP=[SP] I=[I] R=[R]");
+		strcpy(params.cpuTraceFormat, str.c_str());
+		str = config.GetString("cputrace", "filename", "cputrace.log");
+		strcpy(params.cpuTraceFileName, str.c_str());
 
-		if (config.GetString("root/Drives/AppendBoot", &str)) {
-			if (strcmp(str, "")) wd1793_set_appendboot(str);
-		}
-
-		if (!config.GetInt("root/MouseDiv", &params.mouseDiv)) params.mouseDiv = 1;
-		else {
-			if (params.mouseDiv <= 0) params.mouseDiv = 1;
-			if (params.mouseDiv > 8) params.mouseDiv = 8;
-		}
-
-		if (!config.GetInt("root/SdlBufferSize", &params.sdlBufferSize)) params.sdlBufferSize = 4;
-
-		#ifdef OS_LINUX
-			if (!config.GetInt("root/OssFragNum", &params.soundParam)) params.soundParam = 8;
-		#endif
-		#ifdef OS_WINDOWS
-			if (!config.GetInt("root/WqSize", &params.soundParam)) params.soundParam = 4;
-		#endif
 
 		spec = SDL_INIT_VIDEO;
 		if (params.sound && params.sdlSound) spec |= SDL_INIT_AUDIO;

@@ -3,8 +3,10 @@
 #include "../../exceptions.h"
 #include "../extport/extport.h"
 
+#include <stdlib.h>
+
 extern C_ExtPort dev_extport;
- 
+
 Z80EX_BYTE C_MemoryManager::port7FFD;
 BYTE C_MemoryManager::rom[0x8000];
 BYTE C_MemoryManager::ram[0x4000*64];
@@ -13,36 +15,41 @@ BYTE* C_MemoryManager::ram_map;
 bool C_MemoryManager::enable512;
 bool C_MemoryManager::enable1024;
 
+string split_romname(string &romname, size_t *offset) {
+	size_t pos;
+	*offset = 0;
+	if ((pos = romname.rfind(':')) != string::npos) {
+		string str_offset = romname.substr(pos+1);
+		if (!str_offset.empty()) {
+			*offset = atoi(str_offset.c_str());
+			if (*offset < 32) { // assume that it is a page number, not a literal offset
+				*offset *= 0x4000;
+			}
+		}
+		return romname.substr(0, pos);
+	}
+	return romname;
+}
+
 void C_MemoryManager::ReadFile(void)
 {
-	C_File fl;
-	char *fname;
+	string filename;
+	size_t offset;
 
-	if (config.GetString("root/Roms/32k", &fname))
-	{
-		fl.Read(fname);
-		fl.ReadBlock(rom, 0x8000);
-		fl.Close();
+	filename = config.GetString("core", "rom_48", "pentagon.rom:1");
+	filename = split_romname(filename, &offset);
+	if (config.LoadDataFile("roms", filename.c_str(), &rom[0x4000], 0x4000, offset) != 0x4000) {
+		throw C_E(E_General, "Error loading " + filename);
 	}
-	else
-	if (config.GetString("root/Roms/48", &fname))
-	{
-		fl.Read(fname);
-		fl.ReadBlock(&rom[0x4000], 0x4000);
-		fl.Close();
 
-		if (config.GetString("root/Roms/128", &fname))
-		{
-			fl.Read(fname);
-			fl.ReadBlock(rom, 0x4000);
-			fl.Close();
-		}
-		else throw C_E(E_General, "(root/Roms/32k or (root/Roms/48 and root/Roms/128)) not found in config");
+	filename = config.GetString("core", "rom_128", "pentagon.rom:0");
+	filename = split_romname(filename, &offset);
+	if (config.LoadDataFile("roms", filename.c_str(), rom, 0x4000, offset) != 0x4000) {
+		throw C_E(E_General, "Error loading " + filename);
 	}
-	else throw C_E(E_General, "(root/Roms/32k or (root/Roms/48 and root/Roms/128)) not found in config");
 
-	if (!config.GetBool("root/Enable512", &enable512)) enable512 = false;
-	if (!config.GetBool("root/Enable1024", &enable1024)) enable1024 = false;
+	enable512 = config.GetBool("core", "enable512", false);
+	enable1024 = config.GetBool("core", "enable1024",  false);
 
 	if (!enable512) enable1024 = false;
 }

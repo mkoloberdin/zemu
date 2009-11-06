@@ -147,7 +147,7 @@ void C_File::Read(const char *filename)
 
 	if (!eof)
 	{
-		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != min(readSize, FILECACHE_SIZE)) {
+		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != min((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
 			_DEBUG("_read failed");
 		}
 
@@ -227,7 +227,7 @@ BYTE C_File::GetBYTE(void)
 
 	if (len >= FILECACHE_SIZE)
 	{
-		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != min(readSize, FILECACHE_SIZE)) {
+		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != min((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
 			_DEBUG("_read failed");
 		}
 
@@ -378,7 +378,7 @@ void C_File::GetS(char *buf, int size)
 			}
 		}
 	} while (r);
-	
+
 	buf[o] = 0;
 }
 
