@@ -18,7 +18,7 @@ int C_Fdd::write_td0(FILE *ff)
 
 	if (*dsc) td0hdr[7] = 0x80;
 
-	unsigned short crc16 = wd1793_crc16(td0hdr, 10);
+	uint16_t crc16 = wd1793_crc16(td0hdr, 10);
 	td0hdr[10] = (crc16 & 0xFF);
 	td0hdr[11] = (crc16 >> 8);
 
@@ -331,7 +331,7 @@ const int T = (N_CHAR * 2 - 1);           // size of table
 const int R = (T - 1);                    // position of root
 const int MAX_FREQ = 0x8000;              // updates tree when the root frequency comes to this value.
 
-unsigned short freq[T + 1];        // frequency table
+uint16_t freq[T + 1];        // frequency table
 
 short prnt[T + N_CHAR]; // pointers to parent nodes, except for the
                         // elements [T..T + N_CHAR - 1] which are used to get

@@ -196,7 +196,7 @@ int C_TrkCache::write_sector(unsigned sec, uint8_t *data)
 	unsigned sz = h->datlen;
 	memcpy(h->data, data, sz);
 
-	unsigned short crc = (unsigned short)wd1793_crc(h->data-1, sz+1);
+	uint16_t crc = wd1793_crc(h->data-1, sz+1);
 	h->data[sz] = (crc & 0xFF);
 	h->data[sz+1] = (crc >> 8);
 

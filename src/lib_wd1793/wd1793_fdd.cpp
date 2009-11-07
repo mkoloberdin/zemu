@@ -223,7 +223,7 @@ uint8_t C_Fdd::what_is(const char *filename)
 	if (WORD2(snbuf[0]|0x20,snbuf[1]|0x20)==WORD2('t','d') && snbuf[4]>=10 && snbuf[4]<=21 && snbuf[9]<=2) type = snTD0;
 	else
 	if (WORD4(snbuf[0],snbuf[1],snbuf[2],snbuf[3])==WORD4('U','D','I','!') &&
-		WORD4(snbuf[4],snbuf[5],snbuf[6],snbuf[7])==(snapsize-4) && snbuf[9]<MAX_CYLS && snbuf[10]<2 && !snbuf[8]) type = snUDI;
+		WORD4(snbuf[4],snbuf[5],snbuf[6],snbuf[7])==(unsigned)(snapsize-4) && snbuf[9]<MAX_CYLS && snbuf[10]<2 && !snbuf[8]) type = snUDI;
 
 	return type;
 }

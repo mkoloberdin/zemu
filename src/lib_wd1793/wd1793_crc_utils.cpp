@@ -1,11 +1,11 @@
 #include "wd1793_crc_utils.h"
 
-static unsigned short wd1793_byteswap_ushort(unsigned short w)
+static uint16_t wd1793_byteswap_ushort(uint16_t w)
 {
 	return ((w >> 8) | ((w & 0xFF) << 8));
 }
 
-unsigned wd1793_crc(uint8_t *ptr, unsigned size)
+uint16_t wd1793_crc(uint8_t *ptr, unsigned size)
 {
 	unsigned crc = 0xCDB4;
 
@@ -23,7 +23,7 @@ unsigned wd1793_crc(uint8_t *ptr, unsigned size)
 	return wd1793_byteswap_ushort(crc); // return crc & 0xFFFF;
 }
 
-unsigned short wd1793_crcTab[256] = {
+uint16_t wd1793_crcTab[256] = {
 	0x0000, 0x97A0, 0xB9E1, 0x2E41, 0xE563, 0x72C3, 0x5C82, 0xCB22,
 	0xCAC7, 0x5D67, 0x7326, 0xE486, 0x2FA4, 0xB804, 0x9645, 0x01E5,
 	0x032F, 0x948F, 0xBACE, 0x2D6E, 0xE64C, 0x71EC, 0x5FAD, 0xC80D,
@@ -59,7 +59,7 @@ unsigned short wd1793_crcTab[256] = {
 };
 
 // for TD0
-unsigned short wd1793_crc16(uint8_t *buf, unsigned size)
+uint16_t wd1793_crc16(uint8_t *buf, unsigned size)
 {
 	unsigned crc = 0;
 

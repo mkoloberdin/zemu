@@ -143,17 +143,17 @@ void C_AyChip::Write(unsigned devClk, uint8_t val)
 	{
 		case 0:
 		case 1:
-			fa = (unsigned short)regs[AYREG_fA] | (((unsigned short)regs[AYREG_fA+1]) << 8);
+			fa = (uint16_t)regs[AYREG_fA] | (((uint16_t)regs[AYREG_fA+1]) << 8);
 			break;
 
 		case 2:
 		case 3:
-			fb = (unsigned short)regs[AYREG_fB] | (((unsigned short)regs[AYREG_fB+1]) << 8);
+			fb = (uint16_t)regs[AYREG_fB] | (((uint16_t)regs[AYREG_fB+1]) << 8);
 			break;
 
 		case 4:
 		case 5:
-			fc = (unsigned short)regs[AYREG_fC] | (((unsigned short)regs[AYREG_fC+1]) << 8);
+			fc = (uint16_t)regs[AYREG_fC] | (((uint16_t)regs[AYREG_fC+1]) << 8);
 			break;
 
 		case 6:
@@ -186,7 +186,7 @@ void C_AyChip::Write(unsigned devClk, uint8_t val)
 
 		case 11:
 		case 12:
-			fe = (unsigned short)regs[AYREG_envT] | (((unsigned short)regs[AYREG_envT+1]) << 8);
+			fe = (uint16_t)regs[AYREG_envT] | (((uint16_t)regs[AYREG_envT+1]) << 8);
 			break;
 
 		case 13:
