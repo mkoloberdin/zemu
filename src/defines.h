@@ -1,33 +1,12 @@
-/*
-    Tanks - Tank arcade game
-    Copyright (c) 2005 ProZroks
-
-    <<< LICENSE >>>
-
-    ProZroks
-    support@prozroks.com
-
-    Last modifed: Restorer (22 Jun, 2005)
-*/
-
-/*
-    Whatsnew.
-
-    Restorer (22 Jun, 2004)
-        v1.0 - initial release
-        v1.1 - Linux Port
-        v1.2 - SDL port
-*/
-
-
-#ifndef __DEFINES_RULEZ__
-#define __DEFINES_RULEZ__ 1
+#ifndef ZEMU_DEFINES_H
+#define ZEMU_DEFINES_H
 
 #include "platform.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdint.h> // TODO: For compilation with MSVC an external stdint.h will be needed
 
 #ifdef __linux__
 	#include <limits.h>
@@ -57,20 +36,16 @@
 #endif
 
 #ifndef BYTE
-	typedef unsigned char BYTE;
+	typedef uint8_t BYTE;
 #endif
 
 #ifndef WORD
-	typedef unsigned short WORD;
+	typedef uint16_t WORD;
 #endif
 
 #ifndef DWORD
-	typedef unsigned long DWORD;
+	typedef uint32_t DWORD;
 #endif
-
-#define byte BYTE
-#define word WORD
-#define dword DWORD
 
 #ifndef M_PI
 	#define M_PI 3.1415926535897932
@@ -114,4 +89,4 @@ void StrikeMessage(const char *fmt, ...);
 
 char* AllocNstrcpy(const char *str);
 
-#endif
+#endif // ZEMU_DEFINES_H
