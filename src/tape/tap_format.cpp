@@ -59,7 +59,7 @@ bool C_TapFormat::Load(const char *fname)
 	return true;
 }
 
-bool C_TapFormat::ProcessTicks(unsigned long long ticks)
+bool C_TapFormat::ProcessTicks(uint64_t ticks)
 {
 	for (;;)
 	{
@@ -146,13 +146,13 @@ bool C_TapFormat::ProcessTicks(unsigned long long ticks)
 				}
 
 			case TAPE_STATE_BIT_LW:
-				if (ticks < (unsigned long long)delay) return false;
+				if (ticks < (uint64_t)delay) return false;
 				tapeBit = 1;
 				state = TAPE_STATE_BIT_HW;
 				return true;
 
 			case TAPE_STATE_BIT_HW:
-				if (ticks < (unsigned long long)delay) return false;
+				if (ticks < (uint64_t)delay) return false;
 				tapeBit = 0;
 				state = TAPE_STATE_NEXT_BIT;
 				return true;

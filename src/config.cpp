@@ -132,7 +132,7 @@ void CConfig::SetBool(const char *section, const char *key, bool value) {
 
 // try user's home directory first, fall back to shared location
 size_t CConfig::LoadDataFile(const char *prefix, const char *filename,
-		unsigned char *buffer, size_t size, size_t offset) {
+		uint8_t *buffer, size_t size, size_t offset) {
 	string fn = path_append(user_path, path_append(prefix, filename));
 	FILE *f = fopen(fn.c_str(), "rb");
 	if (f == NULL) {
@@ -150,7 +150,7 @@ size_t CConfig::LoadDataFile(const char *prefix, const char *filename,
 
 // save to user's home directory only
 bool CConfig::SaveDataFile(const char *prefix, const char *filename,
-		const unsigned char *buffer, size_t size) {
+		const uint8_t *buffer, size_t size) {
 	string fn = path_append(user_path, path_append(prefix, filename));
 	FILE *f = fopen(fn.c_str(), "wb");
 	if (f == NULL) return false;

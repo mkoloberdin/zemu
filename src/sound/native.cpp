@@ -56,7 +56,7 @@ const unsigned MAXDSPIECE = (40000*4/20);
 
 HWAVEOUT hwo = 0;
 WAVEHDR wq[MAXWQSIZE];
-unsigned char wbuffer[MAXWQSIZE*MAXDSPIECE];
+uint8_t wbuffer[MAXWQSIZE*MAXDSPIECE];
 unsigned wqhead, wqtail;
 
 void wav_start(unsigned queue_size, unsigned frag_size)

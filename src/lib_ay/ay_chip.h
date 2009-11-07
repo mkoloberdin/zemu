@@ -80,9 +80,9 @@ class C_AyChip
 	void StartFrame(void);
 	void EndFrame(unsigned devClk);
 
-	void Select(unsigned char reg);
-	void Write(unsigned devClk, unsigned char val);
-	unsigned char Read(void);
+	void Select(uint8_t reg);
+	void Write(unsigned devClk, uint8_t val);
+	uint8_t Read(void);
 
 	void Reset(unsigned devClk=0);	// call with default parameter, when context outside StartFrame/EndFrame block
 
@@ -104,9 +104,9 @@ class C_AyChip
 
 	unsigned vols[6][32];
 
-	unsigned char r13Reloaded;
-	unsigned char selectedReg;
-	unsigned char regs[0x10];
+	uint8_t r13Reloaded;
+	uint8_t selectedReg;
+	uint8_t regs[0x10];
 
 	unsigned chipClockRate, systemClockRate;
 	uint64_t passedChipTicks, passedClkTicks;

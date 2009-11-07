@@ -60,7 +60,7 @@ struct s_Params
 extern s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
 extern CConfig config;
 extern Z80EX_CONTEXT *cpu;
-extern unsigned long long clk, devClk, lastDevClk, devClkCounter;
+extern uint64_t clk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;
 extern SDL_Surface *screen;
 extern int PITCH;

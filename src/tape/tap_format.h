@@ -24,7 +24,7 @@ class C_TapFormat : public C_TapeFormat
 	virtual ~C_TapFormat();
 
 	bool Load(const char *fname);
-	bool ProcessTicks(unsigned long long ticks);
+	bool ProcessTicks(uint64_t ticks);
 	bool GetCurrBit(void);
 	void Stop(void);
 	void Start(void);

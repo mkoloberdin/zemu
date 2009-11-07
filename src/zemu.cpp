@@ -45,7 +45,7 @@ bool isPausedNx = false;
 bool joyOnKeyb = false;
 
 Z80EX_CONTEXT *cpu;
-unsigned long long clk, devClk, lastDevClk, devClkCounter;
+uint64_t clk, devClk, lastDevClk, devClkCounter;
 s_Params params;
 SDL_Surface *screen, *realScreen, *scrSurf[2];
 int PITCH, REAL_PITCH;
@@ -831,29 +831,29 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
 }
 
-unsigned long long actDevClkCounter = 0;
-unsigned long long actClk = 0;
+uint64_t actDevClkCounter = 0;
+uint64_t actClk = 0;
 
 void InitActClk(void)
 {
-	actDevClkCounter = devClkCounter * (unsigned long long)turboMultiplier;
-	actClk = clk * (unsigned long long)turboMultiplier;
+	actDevClkCounter = devClkCounter * (uint64_t)turboMultiplier;
+	actClk = clk * (uint64_t)turboMultiplier;
 }
 
 inline void CpuCalcTacts(unsigned long cmdClk)
 {
 	if (turboMultiplier > 1)
 	{
-		actDevClkCounter += (unsigned long long)cmdClk;
-		actClk += (unsigned long long)cmdClk;
+		actDevClkCounter += (uint64_t)cmdClk;
+		actClk += (uint64_t)cmdClk;
 
-		devClkCounter = (actDevClkCounter + (unsigned long long)(turboMultiplier-1)) / (unsigned long long)turboMultiplier;
-		clk = (actClk + (unsigned long long)(turboMultiplier-1)) / (unsigned long long)turboMultiplier;
+		devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
+		clk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
 	}
 	else
 	{
-		devClkCounter += (unsigned long long)cmdClk;
-		clk += (unsigned long long)cmdClk;
+		devClkCounter += (uint64_t)cmdClk;
+		clk += (uint64_t)cmdClk;
 	}
 
 	devClk = clk;
@@ -875,16 +875,16 @@ inline void DebugCpuCalcTacts(unsigned long cmdClk)
 {
 	if (turboMultiplier > 1)
 	{
-		actDevClkCounter += (unsigned long long)cmdClk;
-		actClk += (unsigned long long)cmdClk;
+		actDevClkCounter += (uint64_t)cmdClk;
+		actClk += (uint64_t)cmdClk;
 
-		devClkCounter = (actDevClkCounter + (unsigned long long)(turboMultiplier-1)) / (unsigned long long)(turboMultiplier);
-		clk = (actClk + (unsigned long long)(turboMultiplier-1)) / (unsigned long long)(turboMultiplier);
+		devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier-1)) / (uint64_t)(turboMultiplier);
+		clk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)(turboMultiplier);
 	}
 	else
 	{
-		devClkCounter += (unsigned long long)cmdClk;
-		clk += (unsigned long long)cmdClk;
+		devClkCounter += (uint64_t)cmdClk;
+		clk += (uint64_t)cmdClk;
 	}
 
 	devClk = clk;

@@ -2,6 +2,7 @@
 #define ZEMU_CONFIG_H
 
 #include "SimpleIni.h"
+#include <stdint.h>
 #include <string>
 
 using namespace std;
@@ -19,9 +20,9 @@ public:
 	void SetBool(const char *section, const char *key, bool value);
 
 	size_t LoadDataFile(const char *prefix, const char *filename,
-			unsigned char *buffer, size_t size, size_t offset = 0);
+			uint8_t *buffer, size_t size, size_t offset = 0);
 	bool SaveDataFile(const char *prefix, const char *filename,
-			const unsigned char *buffer, size_t size);
+			const uint8_t *buffer, size_t size);
 	string FindDataFile(const char *prefix, const char *filename);
 
 private:

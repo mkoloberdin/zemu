@@ -9,8 +9,8 @@ int C_Fdd::read_fdi()
 	strncpy(dsc, (char *)snbuf + WORD2(snbuf[8], snbuf[9]), sizeof(dsc));
 
 	int res = 1;
-	unsigned char *trk = snbuf + 0x0E + WORD2(snbuf[0x0C], snbuf[0x0D]);
-	unsigned char *dat = snbuf + WORD2(snbuf[0x0A], snbuf[0x0B]);
+	uint8_t *trk = snbuf + 0x0E + WORD2(snbuf[0x0C], snbuf[0x0D]);
+	uint8_t *dat = snbuf + WORD2(snbuf[0x0A], snbuf[0x0B]);
 
 	for (unsigned c = 0; c < snbuf[4]; c++)
 	{
@@ -18,7 +18,7 @@ int C_Fdd::read_fdi()
 		{
 			t.seek(this, c,s, JUST_SEEK);
 
-			unsigned char *t0 = dat + WORD4(trk[0], trk[1], trk[2], trk[3]);
+			uint8_t *t0 = dat + WORD4(trk[0], trk[1], trk[2], trk[3]);
 			unsigned ns = trk[6];
 			trk += 7;
 

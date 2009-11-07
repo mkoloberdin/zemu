@@ -115,7 +115,7 @@ void C_AyChip::EndFrame(unsigned devClk)
 	t = 0;
 }
 
-void C_AyChip::Select(unsigned char reg)
+void C_AyChip::Select(uint8_t reg)
 {
 	if (conf.chipType == C_AyChipConfig::TypeAy) {
 		selectedReg = reg & 15;
@@ -124,7 +124,7 @@ void C_AyChip::Select(unsigned char reg)
 	}
 }
 
-void C_AyChip::Write(unsigned devClk, unsigned char val)
+void C_AyChip::Write(unsigned devClk, uint8_t val)
 {
 	if (selectedReg > 15) return;
 
@@ -204,7 +204,7 @@ void C_AyChip::Write(unsigned devClk, unsigned char val)
 	}
 }
 
-unsigned char C_AyChip::Read(void)
+uint8_t C_AyChip::Read(void)
 {
 	return (selectedReg>15 ? 0xFF : regs[selectedReg]);
 }
@@ -217,10 +217,10 @@ void C_AyChip::Reset(unsigned devClk)
 
 void C_AyChip::ApplyRegs(unsigned devClk)
 {
-	for (unsigned char r = 0; r < 16; r++)
+	for (uint8_t r = 0; r < 16; r++)
 	{
 		Select(r);
-		unsigned char p = regs[r];
+		uint8_t p = regs[r];
 
 		/* clr cached values */
 		Write(devClk, p ^ 1);

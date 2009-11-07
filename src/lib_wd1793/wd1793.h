@@ -10,22 +10,22 @@ class C_Wd1793
 {
 	private:
 
-	__int64 next;
-	__int64 time;
+	int64_t next;
+	int64_t time;
 	C_Fdd *seldrive;
 	unsigned tshift;
 
-	unsigned char state, state2, cmd;
-	unsigned char data, track, sector;
-	unsigned char rqs, status;
+	uint8_t state, state2, cmd;
+	uint8_t data, track, sector;
+	uint8_t rqs, status;
 
 	unsigned drive, side;                // update this with changing 'system'
 
-	signed char stepdirection;
-	unsigned char system;                // beta128 system register
+	int8_t stepdirection;
+	uint8_t system;                // beta128 system register
 
 	// read/write sector(s) data
-	__int64 end_waiting_am;
+	int64_t end_waiting_am;
 	unsigned foundid;                    // index in trkcache.hdr for next encountered ID and bytes before this ID
 	unsigned rwptr, rwlen;
 
@@ -109,11 +109,11 @@ class C_Wd1793
 
 	// read from wd port
 	// ttime - number of cpu tacts since computer start
-	unsigned char in(unsigned char port, __int64 ttime, int *err);
+	uint8_t in(uint8_t port, int64_t ttime, int *err);
 
 	// write to wd port
 	// ttime - number of cpu tacts since computer start
-	void out(unsigned char port, unsigned char val, __int64 ttime, int *err);
+	void out(uint8_t port, uint8_t val, int64_t ttime, int *err);
 
 	// load disk image to drive
 	// drive - from 0 to 3
@@ -129,16 +129,16 @@ class C_Wd1793
 	void set_nodelay(int nodelay);
 
 	// get wd1793 status register
-	unsigned char get_status_reg();
+	uint8_t get_status_reg();
 
 	void set_appendboot(const char *boot_name);
 	void set_trd_interleave(int iv);
 	int save_dimage(char *filename, int drive, enum DIMAGE_TYPE type);
 	int is_disk_loaded(int drive);
-	void set_disk_wprotected(int drive, int wp);
-	int is_disk_wprotected(int drive);
+	void set_disk_wprotected(int drive, bool wp);
+	bool is_disk_wprotected(int drive);
 	int get_current_drive();
-	int is_drive_spinning(int drive, __int64 tm);
+	int is_drive_spinning(int drive, int64_t tm);
 	unsigned get_state();
 
 	// get current track for a drive

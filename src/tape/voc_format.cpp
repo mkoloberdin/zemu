@@ -109,7 +109,7 @@ bool C_VocFormat::Load(const char *fname)
 	return true;
 }
 
-bool C_VocFormat::ProcessTicks(unsigned long long ticks)
+bool C_VocFormat::ProcessTicks(uint64_t ticks)
 {
 /*	if (!active)
 	{

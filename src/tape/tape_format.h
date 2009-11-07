@@ -9,7 +9,7 @@ class C_TapeFormat
 	virtual ~C_TapeFormat() {}
 
 	virtual bool Load(const char *fname) = 0;
-	virtual bool ProcessTicks(unsigned long long ticks) = 0;
+	virtual bool ProcessTicks(uint64_t ticks) = 0;
 	virtual bool GetCurrBit(void) = 0;
 	virtual void Stop(void) = 0;
 	virtual void Start(void) = 0;

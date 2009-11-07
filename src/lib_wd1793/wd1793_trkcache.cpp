@@ -18,12 +18,12 @@ void C_TrkCache::clr_i(unsigned pos)
 	trki[pos / 8] &= ~(1 << (pos & 7));
 }
 
-unsigned char C_TrkCache::test_i(unsigned pos)
+uint8_t C_TrkCache::test_i(unsigned pos)
 {
 	return (trki[pos / 8] & (1 << (pos & 7)));
 }
 
-void C_TrkCache::write(unsigned pos, unsigned char byte, char index)
+void C_TrkCache::write(unsigned pos, uint8_t byte, char index)
 {
 	trkd[pos] = byte;
 
@@ -114,7 +114,7 @@ void C_TrkCache::format()
 	memset(trkd, 0, trklen);
 	memset(trki, 0, (trklen / 8) + ((trklen & 7) ? 1 : 0));
 
-	unsigned char *dst = trkd;
+	uint8_t *dst = trkd;
 	unsigned i;
 
 	for (i = 0; i < 80; i++) *(dst++) = 0x4E; // 1st gap
@@ -156,7 +156,7 @@ void C_TrkCache::format()
 
 			unsigned len = (128 << sechdr->l);
 
-			if (sechdr->data && sechdr->data!=(unsigned char *)1) memcpy(dst, sechdr->data, len);
+			if (sechdr->data && sechdr->data!=(uint8_t *)1) memcpy(dst, sechdr->data, len);
 			else memset(dst, 0, len);
 
 			crc = wd1793_crc(dst-1, len+1);
@@ -188,7 +188,7 @@ void C_TrkCache::dump()
 }
 */
 
-int C_TrkCache::write_sector(unsigned sec, unsigned char *data)
+int C_TrkCache::write_sector(unsigned sec, uint8_t *data)
 {
 	s_SecHdr *h = get_sector(sec);
 	if (!h || !h->data) return 0;

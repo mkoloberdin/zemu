@@ -10,7 +10,7 @@ class C_WavFormat : public C_TapeFormat
 	public:
 
 	C_File fl;
-	unsigned long long allTicks;
+	uint64_t allTicks;
 	uint16_t compression;
 	uint16_t channels;
 	uint32_t rate;
@@ -27,7 +27,7 @@ class C_WavFormat : public C_TapeFormat
 	virtual ~C_WavFormat();
 
 	bool Load(const char *fname);
-	bool ProcessTicks(unsigned long long ticks);
+	bool ProcessTicks(uint64_t ticks);
 	bool GetCurrBit(void);
 	void Stop(void);
 	void Start(void);

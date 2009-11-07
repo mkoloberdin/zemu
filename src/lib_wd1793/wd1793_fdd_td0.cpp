@@ -5,8 +5,8 @@
 
 int C_Fdd::write_td0(FILE *ff)
 {
-	unsigned char zerosec[256] = { 0 };
-	unsigned char td0hdr[12] = { 0 };
+	uint8_t zerosec[256] = { 0 };
+	uint8_t td0hdr[12] = { 0 };
 	unsigned cc;
 
 	td0hdr[0] = 'T';
@@ -14,7 +14,7 @@ int C_Fdd::write_td0(FILE *ff)
 
 	td0hdr[4] = 21;
 	td0hdr[6] = 2;
-	td0hdr[9] = (unsigned char)sides;
+	td0hdr[9] = (uint8_t)sides;
 
 	if (*dsc) td0hdr[7] = 0x80;
 
@@ -26,7 +26,7 @@ int C_Fdd::write_td0(FILE *ff)
 
 	if (*dsc)
 	{
-		unsigned char inf[0x200] = { 0 };
+		uint8_t inf[0x200] = { 0 };
 		strcpy((char*)inf+10, dsc);
 		unsigned len = strlen(dsc) + 1;
 
@@ -48,11 +48,11 @@ int C_Fdd::write_td0(FILE *ff)
 		{
 			t.seek(this, cc, s, LOAD_SECTORS);
 
-			unsigned char bf[16];
+			uint8_t bf[16];
 			bf[0] = t.s;
 			bf[1] = cc;
 			bf[2] = s;
-			bf[3] = (unsigned char)wd1793_crc16(bf, 3);
+			bf[3] = (uint8_t)wd1793_crc16(bf, 3);
 			if (fwrite(bf, 1, 4, ff) != 4) _DEBUG("fwrite failed");
 
 			for (unsigned sec = 0; sec < t.s; sec++)
@@ -69,7 +69,7 @@ int C_Fdd::write_td0(FILE *ff)
 				bf[2] = t.hdr[sec].n;
 				bf[3] = t.hdr[sec].l;
 				bf[4] = 0; // flags
-				bf[5] = (unsigned char)wd1793_crc16(t.hdr[sec].data, t.hdr[sec].datlen);
+				bf[5] = (uint8_t)wd1793_crc16(t.hdr[sec].data, t.hdr[sec].datlen);
 				bf[6] = ((t.hdr[sec].datlen + 1) & 0xFF);
 				bf[7] = ((t.hdr[sec].datlen + 1) >> 8);
 				bf[8] = 0; // compression type = none
@@ -80,29 +80,29 @@ int C_Fdd::write_td0(FILE *ff)
 		}
 	}
 
-	unsigned char ccb[4] = { 0xFF, 0, 0, 0 };
+	uint8_t ccb[4] = { 0xFF, 0, 0, 0 };
 	if (fwrite(ccb, 1, 4, ff) != 4) return 0;
 
 	return 1;
 }
 
-unsigned unpack_lzh(unsigned char *src, unsigned size, unsigned char *buf);
+unsigned unpack_lzh(uint8_t *src, unsigned size, uint8_t *buf);
 
 int C_Fdd::read_td0()
 {
 	if (WORD2(snbuf[0], snbuf[1]) == WORD2('t','d'))
 	{
 		// packed disk
-		unsigned char *tmp = (unsigned char *)malloc(snapsize);
+		uint8_t *tmp = (uint8_t *)malloc(snapsize);
 		memcpy(tmp, snbuf+12, snapsize-12);
 		snapsize = 12 + unpack_lzh(tmp, snapsize-12, snbuf+12);
 		::free(tmp);
 	}
 
-	char dscbuffer[sizeof(dsc)];
+	uint8_t dscbuffer[sizeof(dsc)];
 	dscbuffer[0] = 0;
 
-	unsigned char *start = snbuf + 12;
+	uint8_t *start = snbuf + 12;
 
 	if (snbuf[7] & 0x80)
 	{
@@ -114,12 +114,12 @@ int C_Fdd::read_td0()
 		dscbuffer[len] = 0;
 	}
 
-	unsigned char *td0_src = start;
+	uint8_t *td0_src = start;
 	unsigned max_cyl = 0, max_head = 0;
 
 	for (;;)
 	{
-		unsigned char s = *td0_src;
+		uint8_t s = *td0_src;
 		if (s == 0xFF) break;
 
 		max_cyl = max(max_cyl, td0_src[1]);
@@ -141,8 +141,8 @@ int C_Fdd::read_td0()
 
 	for (;;)
 	{
-		unsigned char t0[16384], *dst = t0;
-		unsigned char *trkh = td0_src;
+		uint8_t t0[16384], *dst = t0;
+		uint8_t *trkh = td0_src;
 		td0_src += 4;
 
 		if (*trkh == 0xFF) break;
@@ -165,7 +165,7 @@ int C_Fdd::read_td0()
 			unsigned src_size = WORD2(td0_src[0], td0_src[1]);
 			td0_src += 2;
 
-			unsigned char *end_packed_data = td0_src + src_size;
+			uint8_t *end_packed_data = td0_src + src_size;
 			memset(dst, 0, size);
 
 			switch (*td0_src++)
@@ -178,7 +178,7 @@ int C_Fdd::read_td0()
 				{
 					unsigned n = WORD2(td0_src[0], td0_src[1]);
 					td0_src += 2;
-					unsigned short data = WORD2(td0_src[0], td0_src[1]);
+					uint16_t data = WORD2(td0_src[0], td0_src[1]);
 
 					for (unsigned i = 0; i < n; i--)
 					{
@@ -191,8 +191,8 @@ int C_Fdd::read_td0()
 
 				case 2:
 				{
-					unsigned short data;
-					unsigned char s, *d0 = dst;
+					uint16_t data;
+					uint8_t s, *d0 = dst;
 
 					do
 					{
@@ -239,7 +239,7 @@ shit:				return 0; //bad TD0 file
 
 // ------------------------------------------------------ LZH unpacker
 
-unsigned char *packed_ptr, *packed_end;
+uint8_t *packed_ptr, *packed_end;
 
 int readChar(void)
 {
@@ -247,7 +247,7 @@ int readChar(void)
 	else return -1;
 }
 
-unsigned char d_code[256] =
+uint8_t d_code[256] =
 {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -283,7 +283,7 @@ unsigned char d_code[256] =
 	0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
 };
 
-unsigned char d_len[256] =
+uint8_t d_len[256] =
 {
 	0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
 	0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
@@ -324,7 +324,7 @@ const int F = 60;       // lookahead buffer size
 const int THRESHOLD = 2;
 const int NIL = N;      // leaf of tree
 
-unsigned char text_buf[N + F - 1];
+uint8_t text_buf[N + F - 1];
 
 const int N_CHAR = (256 - THRESHOLD + F); // kinds of characters (character code = 0..N_CHAR-1)
 const int T = (N_CHAR * 2 - 1);           // size of table
@@ -341,7 +341,7 @@ short son[T];           // pointers to child nodes (son[], son[] + 1)
 int r;
 
 unsigned getbuf;
-unsigned char getlen;
+uint8_t getlen;
 
 int GetBit(void) // get one bit
 {
@@ -530,7 +530,7 @@ int DecodePosition(void)
 	return c | (i & 0x3f);
 }
 
-unsigned unpack_lzh(unsigned char *src, unsigned size, unsigned char *buf)
+unsigned unpack_lzh(uint8_t *src, unsigned size, uint8_t *buf)
 {
 	packed_ptr = src;
 	packed_end = src+size;

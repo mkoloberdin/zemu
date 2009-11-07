@@ -130,7 +130,7 @@ bool C_WavFormat::Load(const char *fname)
 	return true;
 }
 
-bool C_WavFormat::ProcessTicks(unsigned long long ticks)
+bool C_WavFormat::ProcessTicks(uint64_t ticks)
 {
 	if (!active)
 	{
@@ -153,7 +153,7 @@ bool C_WavFormat::ProcessTicks(unsigned long long ticks)
 
 	int samples = (pos - dataPos) / sampleSz;
 	int samplesCnt = samples;
-	long long allRes = 0;
+	int64_t allRes = 0;
 
 	/*
 	while (cnt--)
@@ -165,7 +165,7 @@ bool C_WavFormat::ProcessTicks(unsigned long long ticks)
 
 	while (samplesCnt--)
 	{
-		long long res = 0;
+		int64_t res = 0;
 
 		switch (bits)
 		{

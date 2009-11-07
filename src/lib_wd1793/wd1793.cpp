@@ -39,7 +39,7 @@ void C_Wd1793::set_nodelay(int nodelay)
 	wd93_nodelay = nodelay;
 }
 
-unsigned char C_Wd1793::get_status_reg()
+uint8_t C_Wd1793::get_status_reg()
 {
 	return status;
 }
@@ -64,12 +64,12 @@ int C_Wd1793::is_disk_loaded(int drive)
 	return fdd[drive].is_disk_loaded();
 }
 
-void C_Wd1793::set_disk_wprotected(int drive, int wp)
+void C_Wd1793::set_disk_wprotected(int drive, bool wp)
 {
 	fdd[drive].set_wprotected(wp);
 }
 
-int C_Wd1793::is_disk_wprotected(int drive)
+bool C_Wd1793::is_disk_wprotected(int drive)
 {
 	return fdd[drive].is_wprotected();
 }
@@ -79,7 +79,7 @@ int C_Wd1793::get_current_drive()
 	return (seldrive - fdd);
 }
 
-int C_Wd1793::is_drive_spinning(int drive, __int64 tm)
+int C_Wd1793::is_drive_spinning(int drive, int64_t tm)
 {
 	if (fdd[drive].motor < tm) fdd[drive].motor = 0;	// [rst]
 	return (fdd[drive].motor ? 1 : 0);
@@ -102,7 +102,7 @@ int C_Wd1793::process()
 
 	static unsigned last_track = 0;
 	static unsigned last_drvTrack = 0;
-	static __int64 last_stepTime = 0;
+	static int64_t last_stepTime = 0;
 
 	// inactive drives disregard HLT bit
 
@@ -401,7 +401,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 				else
 				{
 					unsigned len = (128 << trkcache.hdr[foundid].l) + 1;
-					unsigned char sc[2056];
+					uint8_t sc[2056];
 
 					if (rwptr < len) {
 						memcpy(sc, trkcache.trkd + trkcache.trklen - rwptr, rwptr), memcpy(sc + rwptr, trkcache.trkd, len - rwptr);
@@ -410,8 +410,8 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 					}
 
 					unsigned crc = wd1793_crc(sc, len);
-					trkcache.write(rwptr++, (BYTE)(crc & 0xFF), 0);
-					trkcache.write(rwptr++, (BYTE)(crc >> 8), 0);
+					trkcache.write(rwptr++, (uint8_t)(crc & 0xFF), 0);
+					trkcache.write(rwptr++, (uint8_t)(crc >> 8), 0);
 					trkcache.write(rwptr, 0xFF, 0);
 
 					if (cmd & CMD_MULTIPLE)
@@ -466,7 +466,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 					break;
 				}
 
-				unsigned char marker = 0, byte = data;
+				uint8_t marker = 0, byte = data;
 				unsigned crc = 0;
 
 				if (data == 0xF5)
@@ -493,7 +493,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 
 				if (data == 0xF7)
 				{
-					trkcache.write(rwptr++, (BYTE)(crc >> 8), 0);
+					trkcache.write(rwptr++, (uint8_t)(crc >> 8), 0);
 					rwlen--; // second byte of CRC16
 				}
 
@@ -552,7 +552,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 				}
 
 				seldrive->track += stepdirection;
-				if (seldrive->track == (unsigned char)-1) seldrive->track = 0;
+				if (seldrive->track == (uint8_t)-1) seldrive->track = 0;
 				if (seldrive->track >= MAX_PHYS_CYL) seldrive->track = MAX_PHYS_CYL-1;	// [rst] : was 'seldrive->track = MAX_PHYS_CYL;'
 
 				trkcache.clear();
@@ -725,13 +725,13 @@ void C_Wd1793::load()
 	trkcache.seek(seldrive, seldrive->track, side, LOAD_SECTORS);
 }
 
-unsigned char C_Wd1793::in(unsigned char port, __int64 ttime, int *err)
+uint8_t C_Wd1793::in(uint8_t port, int64_t ttime, int *err)
 {
 	time = ttime;
 	*err = 0;
 
 	if (wdDebug) {
-		AddLog("%08X %08X: %02X", (unsigned)(time >> 32), (unsigned)(time & (__int64)(0xFFFFFFFF)), port);
+		AddLog("%08X %08X: %02X", (unsigned)(time >> 32), (unsigned)(time & (int64_t)(0xFFFFFFFF)), port);
 	}
 
 	if (!process())
@@ -761,7 +761,7 @@ unsigned char C_Wd1793::in(unsigned char port, __int64 ttime, int *err)
 	return 0xFF;
 }
 
-void C_Wd1793::out(unsigned char port, unsigned char val, __int64 ttime, int *err)
+void C_Wd1793::out(uint8_t port, uint8_t val, int64_t ttime, int *err)
 {
 	time = ttime;
 	*err = 0;

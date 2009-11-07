@@ -20,7 +20,7 @@ enum DISKSNAP
 	snNOFILE
 };
 
-extern unsigned char snbuf[SNBUF_LEN]; // large temporary buffer
+extern uint8_t snbuf[SNBUF_LEN]; // large temporary buffer
 
 class C_Fdd
 {
@@ -28,37 +28,37 @@ class C_Fdd
 
 	// drive data
 
-	__int64 motor;       // 0 - not spinning, >0 - time when it'll stop
-	unsigned char track; // head position
+	int64_t motor;       // 0 - not spinning, >0 - time when it'll stop
+	uint8_t track; // head position
 
 	// disk data
 
-	unsigned char *rawdata;
-	unsigned rawsize;
+	uint8_t *rawdata;
+	size_t rawsize;
 	unsigned cyls, sides;
 	unsigned trklen[MAX_CYLS][2];
-	unsigned char *trkd[MAX_CYLS][2];
-	unsigned char *trki[MAX_CYLS][2];
-	unsigned char optype; // bits: 0-not modified, 1-write sector, 2-format track
-	unsigned char snaptype;
-	unsigned long snapsize;
-	int is_wp;
+	uint8_t *trkd[MAX_CYLS][2];
+	uint8_t *trki[MAX_CYLS][2];
+	uint8_t optype; // bits: 0-not modified, 1-write sector, 2-format track
+	uint8_t snaptype;
+	size_t snapsize;
+	bool is_wp;
 	int interleave;
 
 	C_TrkCache t; // used in read/write image
 	char name[0x200];
 	char dsc[0x200];
 	C_TrkCache *trkcache;
-	char appendboot[256];
+	char appendboot[1024];
 
 	void format_trd();
 	void emptydisk();
 	void newdisk(unsigned cyls, unsigned sides);
-	int addfile(unsigned char *hdr, unsigned char *data);
+	int addfile(uint8_t *hdr, uint8_t *data);
 	void addboot();
-	unsigned char what_is(const char *filename);
+	uint8_t what_is(const char *filename);
 
-	int read(unsigned char snType);
+	int read(uint8_t snType);
 
 	int read_scl();
 	int read_hob();
@@ -76,8 +76,8 @@ class C_Fdd
 
 	//
 
-	int is_wprotected();
-	void set_wprotected(int wp);
+	bool is_wprotected();
+	void set_wprotected(bool wp);
 	int load_dimage(const char *filename); /*load disk image*/
 	int save_dimage(char *filename, enum DIMAGE_TYPE type);
 	char is_changed(); /*whether disk in drive has been changed*/

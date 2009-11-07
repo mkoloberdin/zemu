@@ -2,7 +2,7 @@
 #include <string.h>
 #include "wd1793_fdd.h"
 
-unsigned char snbuf[SNBUF_LEN]; // large temporary buffer
+uint8_t snbuf[SNBUF_LEN]; // large temporary buffer
 
 C_Fdd::C_Fdd()
 {
@@ -10,7 +10,7 @@ C_Fdd::C_Fdd()
 	track = 0;
 	motor = 0;
 	rawdata = NULL;
-	set_wprotected(0);
+	set_wprotected(false);
 	appendboot[0] = 0;
 	interleave = 1;
 }
@@ -25,12 +25,12 @@ void C_Fdd::set_trkcache(C_TrkCache *tc)
 	trkcache = tc;
 }
 
-int C_Fdd::is_wprotected()
+bool C_Fdd::is_wprotected()
 {
 	return is_wp;
 }
 
-void C_Fdd::set_wprotected(int wp)
+void C_Fdd::set_wprotected(bool wp)
 {
 	is_wp = wp;
 }
@@ -124,7 +124,7 @@ void C_Fdd::free()
 	memset(name, 0, sizeof(name));
 	memset(dsc, 0, sizeof(dsc));
 
-	set_wprotected(0);
+	set_wprotected(false);
 
 	if (trkcache) trkcache->clear();
 	t.clear();
@@ -141,7 +141,7 @@ void C_Fdd::newdisk(unsigned cyls, unsigned sides)
 	unsigned len2 = len + (len/8) + ((len & 7) ? 1 : 0);
 
 	rawsize = align_by(cyls * sides * len2, 4096);
-	rawdata = (unsigned char *)malloc(rawsize);
+	rawdata = (uint8_t *)malloc(rawsize);
 	memset(rawdata,0,rawsize);
 
 	for (unsigned i = 0; i < cyls; i++)
@@ -155,7 +155,7 @@ void C_Fdd::newdisk(unsigned cyls, unsigned sides)
 	}
 }
 
-int C_Fdd::read(unsigned char type)
+int C_Fdd::read(uint8_t type)
 {
 	int ok = 0;
 
@@ -176,7 +176,7 @@ int C_Fdd::read(unsigned char type)
 
 int C_Fdd::load_dimage(const char *filename)
 {
-	unsigned char type = what_is(filename);
+	uint8_t type = what_is(filename);
 	if (!read(type)) return 0;
 
 	if (get_appendboot()) {
@@ -194,7 +194,7 @@ int C_Fdd::load_dimage(const char *filename)
 	return 1;
 }
 
-unsigned char C_Fdd::what_is(const char *filename)
+uint8_t C_Fdd::what_is(const char *filename)
 {
 	FILE *ff = fopen(filename, "rb");
 	if (!ff) return snNOFILE;
@@ -204,7 +204,7 @@ unsigned char C_Fdd::what_is(const char *filename)
 
 	if (snapsize >= sizeof(snbuf)) return snTOOLARGE;		// '>=' just for case
 
-	unsigned char type = snUNKNOWN;
+	uint8_t type = snUNKNOWN;
 	if (snapsize < 32) return type;
 
 	const char *ptr = strrchr(filename, '.');

@@ -5,7 +5,7 @@
 
 void C_Fdd::format_trd()
 {
-	static const unsigned char lv[3][16] = {
+	static const uint8_t lv[3][16] = {
 		{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 },
 		{ 1,9,2,10,3,11,4,12,5,13,6,14,7,15,8,16 },
 		{ 1,12,7,2,13,8,3,14,9,4,15,10,5,16,11,6 }
@@ -29,7 +29,7 @@ void C_Fdd::format_trd()
 				t.hdr[sn].c = c;
 				t.hdr[sn].s = 0;
 				t.hdr[sn].c1 = t.hdr[sn].c2 = 0;
-				t.hdr[sn].data = (unsigned char *)1;
+				t.hdr[sn].data = (uint8_t *)1;
 			}
 
 			t.format();
@@ -55,7 +55,7 @@ void C_Fdd::emptydisk()
 	t.write_sector(9, s8->data);        // update sector CRC
 }
 
-int C_Fdd::addfile(unsigned char *hdr, unsigned char *data)
+int C_Fdd::addfile(uint8_t *hdr, uint8_t *data)
 {
 	t.seek(this, 0, 0, LOAD_SECTORS);
 	s_SecHdr *s8 = t.get_sector(9);
@@ -139,7 +139,7 @@ int C_Fdd::read_scl()
 		t.write_sector(9,s8->data);         // update sector CRC
 	}
 
-	unsigned char *data = snbuf + 9 + 14*snbuf[8];
+	uint8_t *data = snbuf + 9 + 14*snbuf[8];
 
 	for (i = 0; i < snbuf[8]; i++)
 	{
@@ -172,14 +172,14 @@ int C_Fdd::read_trd()
 
 int C_Fdd::write_trd(FILE *ff)
 {
-	unsigned char zerosec[256] = { 0 };
+	uint8_t zerosec[256] = { 0 };
 
 	for (unsigned i = 0; i < 2560; i++)
 	{
 		t.seek(this, i>>5, (i>>4) & 1, LOAD_SECTORS);
 		s_SecHdr *hdr = t.get_sector((i & 0x0F) + 1);
 
-		unsigned char *ptr = zerosec;
+		uint8_t *ptr = zerosec;
 		if (hdr) ptr = hdr->data;
 		if (!ptr) ptr = zerosec;
 

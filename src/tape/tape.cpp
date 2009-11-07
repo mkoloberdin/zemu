@@ -4,7 +4,7 @@
 #include "wav_format.h"
 #include "voc_format.h"
 
-unsigned long long C_Tape::prevDevClkCounter = 0;
+uint64_t C_Tape::prevDevClkCounter = 0;
 C_TapeFormat *C_Tape::currentFormat = NULL;
 C_SndRenderer C_Tape::sndRenderer;
 

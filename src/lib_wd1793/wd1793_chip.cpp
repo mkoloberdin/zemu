@@ -3,12 +3,12 @@
 
 static C_Wd1793 wd;
 
-unsigned char wd1793_in(unsigned char port, unsigned long long time, int *err)
+uint8_t wd1793_in(uint8_t port, uint64_t time, int *err)
 {
 	return wd.in(port, time, err);
 }
 
-void wd1793_out(unsigned char port, unsigned char val, unsigned long long time, int *err)
+void wd1793_out(uint8_t port, uint8_t val, uint64_t time, int *err)
 {
 	wd.out(port, val, time, err);
 }
@@ -23,7 +23,7 @@ void wd1793_eject_dimage(int drive)
 	wd.eject_dimage(drive);
 }
 
-unsigned char wd1793_get_status_reg()
+uint8_t wd1793_get_status_reg()
 {
 	return wd.get_status_reg();
 }
@@ -38,12 +38,12 @@ void wd1793_set_trd_interleave(int iv)
 	wd.set_trd_interleave(iv);
 }
 
-void wd1793_set_nodelay(int nodelay)
+void wd1793_set_nodelay(bool nodelay)
 {
 	wd.set_nodelay(nodelay);
 }
 
-int wd1793_is_disk_changed(int drive)
+bool wd1793_is_disk_changed(int drive)
 {
 	return wd.is_disk_changed(drive);
 }
@@ -53,17 +53,17 @@ int wd1793_save_dimage(char *filename, int drive, enum DIMAGE_TYPE type)
 	return wd.save_dimage(filename, drive, type);
 }
 
-int wd1793_is_disk_loaded(int drive)
+bool wd1793_is_disk_loaded(int drive)
 {
 	return wd.is_disk_loaded(drive);
 }
 
-void wd1793_set_disk_wprotected(int drive, int wp)
+void wd1793_set_disk_wprotected(int drive, bool wp)
 {
 	wd.set_disk_wprotected(drive, wp);
 }
 
-int wd1793_is_disk_wprotected(int drive)
+bool wd1793_is_disk_wprotected(int drive)
 {
 	return wd.is_disk_wprotected(drive);
 }
@@ -73,7 +73,7 @@ int wd1793_get_current_drive()
 	return wd.get_current_drive();
 }
 
-enum DRIVE_STATE wd1793_get_drive_state(int drive, unsigned long long time)
+enum DRIVE_STATE wd1793_get_drive_state(int drive, uint64_t time)
 {
 	enum DRIVE_STATE st;
 

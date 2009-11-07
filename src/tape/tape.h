@@ -13,7 +13,7 @@ class C_Tape
 
 	static C_SndRenderer sndRenderer;
 
-	static unsigned long long prevDevClkCounter;
+	static uint64_t prevDevClkCounter;
 	static C_TapeFormat *currentFormat;
 
 	static void Init(void);

@@ -8,7 +8,7 @@ int C_Fdd::read_udi()
 
 	unsigned c, s;
 	unsigned mem = 0;
-	unsigned char *ptr = snbuf + 0x10;
+	uint8_t *ptr = snbuf + 0x10;
 
 	for (c = 0; c <= snbuf[9]; c++)
 	{
@@ -28,9 +28,9 @@ int C_Fdd::read_udi()
 	cyls = snbuf[9] + 1;
 	sides = snbuf[10] + 1;
 	rawsize = align_by(mem, 4096);
-	rawdata = (unsigned char *)malloc(rawsize);
+	rawdata = (uint8_t *)malloc(rawsize);
 	ptr = snbuf + 0x10;
-	unsigned char *dst = rawdata;
+	uint8_t *dst = rawdata;
 
 	for (c = 0; c < cyls; c++)
 	{
@@ -65,7 +65,7 @@ int C_Fdd::write_udi(FILE *ff)
 	snbuf[10] = sides-1;
 	*((unsigned *)(snbuf + 12)) = 0;
 
-	unsigned char *dst = snbuf + 0x10;
+	uint8_t *dst = snbuf + 0x10;
 
 	for (unsigned c = 0; c < cyls; c++)
 	{

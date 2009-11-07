@@ -10,7 +10,7 @@ class C_VocFormat : public C_TapeFormat
 	public:
 
 	C_File fl;
-	unsigned long long allTicks;
+	uint64_t allTicks;
 	bool active;
 	bool currBit;
 
@@ -31,7 +31,7 @@ class C_VocFormat : public C_TapeFormat
 	virtual ~C_VocFormat();
 
 	bool Load(const char *fname);
-	bool ProcessTicks(unsigned long long ticks);
+	bool ProcessTicks(uint64_t ticks);
 	bool GetCurrBit(void);
 	void Stop(void);
 	void Start(void);
