@@ -1337,7 +1337,7 @@ void Process(void)
 		}
 
 		if (quitMode) {
-			if (DlgConfirm("Are you really want to quit?")) {
+			if (DlgConfirm("Do you really want to quit?")) {
 				return;
 			}
 		}
