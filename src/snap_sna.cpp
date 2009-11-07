@@ -7,12 +7,12 @@
 bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mmgr, C_Border &border)
 {
 	C_File fl;
-	BYTE border_color;
+	Z80EX_BYTE border_color;
 	bool banks[8];
-	BYTE buffer[16384];
-	BYTE retval;
-	BYTE port_7ffd;
-	BYTE is_trdos;
+	Z80EX_BYTE buffer[16384];
+	Z80EX_BYTE retval;
+	Z80EX_BYTE port_7ffd;
+	Z80EX_BYTE is_trdos;
 
 	try {
 		fl.Read(filename);
@@ -31,7 +31,7 @@ bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 	z80ex_set_reg(cpu, regIY, fl.GetWORD());
 	z80ex_set_reg(cpu, regIX, fl.GetWORD());
 
-	BYTE intm = fl.GetBYTE();
+	Z80EX_BYTE intm = fl.GetBYTE();
 
 	z80ex_set_reg(cpu, regIFF1, intm & 1);
 	z80ex_set_reg(cpu, regIFF2, (intm >> 1) & 1);
@@ -59,15 +59,15 @@ bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 		mmgr.OnOutputByte(0x7ffd, 0x30);	// set 48k mode
 		for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 49152, buffer[i]);
 
-		WORD sp = z80ex_get_reg(cpu, regSP);
+		Z80EX_WORD sp = z80ex_get_reg(cpu, regSP);
 
 		retval = ReadByteDasm(sp, NULL);
-		WORD pc = retval;
+		Z80EX_WORD pc = retval;
 		mmgr.OnWriteByte(sp, 0);
 		sp++;
 
 		retval = ReadByteDasm(sp, NULL);
-		pc |= ((WORD)retval << 8);
+		pc |= ((Z80EX_WORD)retval << 8);
 		mmgr.OnWriteByte(sp, 0);
 		sp++;
 
@@ -122,7 +122,7 @@ void save_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 	fl.PutWORD(z80ex_get_reg(cpu, regIX));
 
 	fl.PutBYTE((z80ex_get_reg(cpu, regIFF1) ? 1 : 0) | (z80ex_get_reg(cpu, regIFF2) ? 2 : 0));
-	WORD sp = z80ex_get_reg(cpu, regSP);
+	Z80EX_WORD sp = z80ex_get_reg(cpu, regSP);
 
 	if (mmgr.port7FFD == 0x30)
 	{
@@ -137,7 +137,7 @@ void save_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 
 	fl.PutBYTE(border.portFB & 7);
 
-	BYTE buffer[0xC000];
+	Z80EX_BYTE buffer[0xC000];
 
 	for (int i = 0; i < 0x4000; i++) buffer[i] = mmgr.ram[5*0x4000 + i];
 	banks[5] = true;
@@ -145,15 +145,15 @@ void save_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 	for (int i = 0; i < 0x4000; i++) buffer[i + 0x4000] = mmgr.ram[2*0x4000 + i];
 	banks[2] = true;
 
-	WORD pc = z80ex_get_reg(cpu, regPC);
+	Z80EX_WORD pc = z80ex_get_reg(cpu, regPC);
 
 	if (mmgr.port7FFD == 0x30)  // 48k
 	{
 		for (int i = 0; i < 16384; i++) buffer[i + 0x8000] = mmgr.ram[0*0x4000 + i];
 
-		if (sp >= 0x4000) buffer[sp - 0x4000] = (BYTE)(pc & 0xFF);
+		if (sp >= 0x4000) buffer[sp - 0x4000] = (Z80EX_BYTE)(pc & 0xFF);
 		sp++;
-		if (sp >= 0x4000) buffer[sp - 0x4000] = (BYTE)(pc >> 8);
+		if (sp >= 0x4000) buffer[sp - 0x4000] = (Z80EX_BYTE)(pc >> 8);
 
 		fl.WriteBlock(buffer, 0xC000);
 	}

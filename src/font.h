@@ -10,7 +10,7 @@ class C_Font
 	C_Font();
 	~C_Font();
 
-	void Init(BYTE *data);
+	void Init(uint8_t *data);
 	void Init(SDL_Surface *surf);
 
 	void PrintChar(int x, int y, char c);

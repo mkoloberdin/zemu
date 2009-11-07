@@ -11,13 +11,13 @@ class C_TapFormat : public C_TapeFormat
 	int state;
 	int tapeBit;
 	int counter;
-	BYTE *data;
+	Z80EX_BYTE *data;
 	long size;
 
 	long blockPos;
 	int blockSize;
 	int posInBlock;
-	BYTE currentByte;
+	Z80EX_BYTE currentByte;
 	int delay;
 
 	C_TapFormat();
@@ -32,7 +32,7 @@ class C_TapFormat : public C_TapeFormat
 	unsigned int GetPosPerc(void);
 	bool IsActive(void);
 
-	BYTE Data(long pos);
+	Z80EX_BYTE Data(long pos);
 };
 
 #endif /* _TAP_FORMAT_H_ */

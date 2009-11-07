@@ -18,10 +18,10 @@ class C_MemoryManager : public C_Device
 	public:
 
 	static Z80EX_BYTE port7FFD;
-	static BYTE rom[0x8000];
-	static BYTE ram[0x4000*64];
+	static Z80EX_BYTE rom[0x8000];
+	static Z80EX_BYTE ram[0x4000*64];
 
-	static BYTE *rom_map, *ram_map;
+	static Z80EX_BYTE *rom_map, *ram_map;
 	static bool enable512;
 	static bool enable1024;
 

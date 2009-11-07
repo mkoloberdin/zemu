@@ -2,7 +2,7 @@
 
 //------------------------------------------------------------------------------------------------------------------------------
 
-SDL_Surface *ExtractImage(BYTE *data)
+SDL_Surface *ExtractImage(uint8_t *data)
 {
 	SDL_Surface *surf;
 	int hgt, wdt, i, j, r, g, b, spitch;
@@ -72,7 +72,7 @@ void C_Font::Init(SDL_Surface *surf)
 	CalcFont();
 }
 
-void C_Font::Init(BYTE *data)
+void C_Font::Init(uint8_t *data)
 {
 	surf = ExtractImage(data);
 	CalcFont();
@@ -128,7 +128,7 @@ void C_Font::CalcFont(void)
 
 void C_Font::PrintChar(int x, int y, char c)
 {
-	int n = (BYTE)c;
+	int n = (uint8_t)c;
 	SDL_Rect s, d;
 
 	s.x = off[n];
@@ -150,18 +150,18 @@ void C_Font::PrintString(int x, int y, const char *str)
 		while (*str)
 		{
 			PrintChar(x, y, *str);
-			x += len[(BYTE)(*str)];
+			x += len[(uint8_t)(*str)];
 			str++;
 		}
 	#else
 		while (*str)
 		{
-			BYTE ch = (BYTE)*str;
+			uint8_t ch = (uint8_t)*str;
 
 			if (ch >= 0xD0)
 			{
 				str++;
-				ch = ((BYTE)*str) + (ch==0xD1 ? 0x70 : 0x30);
+				ch = ((uint8_t)*str) + (ch==0xD1 ? 0x70 : 0x30);
 			}
 
 			PrintChar(x, y, ch);
@@ -180,7 +180,7 @@ int C_Font::StrLenPx(const char *str)
 {
 	int l = 0;
 	while (*str) {
-		l += len[(BYTE)(*str)];
+		l += len[(uint8_t)(*str)];
 		str++;
 	}
 	return l;
@@ -188,12 +188,12 @@ int C_Font::StrLenPx(const char *str)
 
 void C_Font::CopySym(char from, char to)
 {
-	off[(BYTE)to] = off[(BYTE)from];
-	len[(BYTE)to] = len[(BYTE)from];
+	off[(uint8_t)to] = off[(uint8_t)from];
+	len[(uint8_t)to] = len[(uint8_t)from];
 }
 
 void C_Font::SetSymOff(char c, int x, int y)
 {
-	xoff[(BYTE)c] = x;
-	yoff[(BYTE)c] = y;
+	xoff[(uint8_t)c] = x;
+	yoff[(uint8_t)c] = y;
 }

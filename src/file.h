@@ -64,15 +64,15 @@ class C_File
 	void Close(void);
 
 	void PrintF(const char *fmt, ...);
-	void PutBYTE(BYTE b);
-	void PutWORD(WORD w);
-	void PutDWORD(DWORD d);
+	void PutBYTE(uint8_t b);
+	void PutWORD(uint16_t w);
+	void PutDWORD(uint32_t d);
 	void PutC(int c);
 
 	void GetS(char *buf, int size);
-	BYTE GetBYTE(void);
-	WORD GetWORD(void);
-	DWORD GetDWORD(void);
+	uint8_t GetBYTE(void);
+	uint16_t GetWORD(void);
+	uint32_t GetDWORD(void);
 	int GetC(void);
 
 	int ReadBlock(void *buf, int size);
@@ -80,7 +80,7 @@ class C_File
 
 	bool IsOpened(void);
 	bool Eof(void);
-	void UnGetBYTE(BYTE b);
+	void UnGetBYTE(uint8_t b);
 	void UnGetC(int c);
 
 	static long FileSize(const char *filename);
@@ -93,7 +93,7 @@ class C_File
 
 	void TryNClose(void);
 
-	BYTE buffer[FILECACHE_SIZE];
+	uint8_t buffer[FILECACHE_SIZE];
 	int handle, len, accMode, un_ch;
 	unsigned long readSize, readFileSize;
 	bool eof, un_eof, isCompressed;

@@ -37,7 +37,7 @@ void wav_start(unsigned frag_num, unsigned frag_size)
 	if (ioctl (audio, SNDCTL_DSP_SPEED, &tmp) == -1) {close(audio); StrikeError("Unable to set audio speed = %d.",SND_FQ);}
 }
 
-void wav_play(BYTE *buf, unsigned spbsize)
+void wav_play(uint8_t *buf, unsigned spbsize)
 {
 	if (write(audio, buf, spbsize) != (int)spbsize) printf("Write to soundcard device failed\n");
 }
@@ -77,7 +77,7 @@ void wav_start(unsigned queue_size, unsigned frag_size)
 	wqhead = 0, wqtail = 0;
 }
 
-void wav_play(BYTE *buf, unsigned spbsize)
+void wav_play(uint8_t *buf, unsigned spbsize)
 {
 	for (;;)
 	{

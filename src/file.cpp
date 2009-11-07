@@ -133,7 +133,7 @@ bool C_File::FileExists(const char *filename)
 void C_File::Read(const char *filename)
 {
 #ifdef AUTO_DEHRUST
-	BYTE *tmp;
+	uint8_t *tmp;
 #endif
 
 	handle = _open(filename, _O_BINARY | _O_RDONLY);
@@ -158,7 +158,7 @@ void C_File::Read(const char *filename)
 		{
 			if (buffer[0]=='H' && buffer[1]=='R')
 			{
-				tmp = new BYTE[0x10000];
+				tmp = new uint8_t[0x10000];
 				readSize = dh.Extract(buffer, tmp);
 				memcpy(buffer, tmp, readSize);
 				delete tmp;
@@ -209,9 +209,9 @@ void C_File::Close(void)
 	}
 }
 
-BYTE C_File::GetBYTE(void)
+uint8_t C_File::GetBYTE(void)
 {
-	BYTE c;
+	uint8_t c;
 
 	if (accMode != ACC_READ) throw C_E(E_IncorrectAccMode);
 
@@ -240,7 +240,7 @@ BYTE C_File::GetBYTE(void)
 	return buffer[len++];
 }
 
-void C_File::PutBYTE(BYTE b)
+void C_File::PutBYTE(uint8_t b)
 {
 	if (accMode != ACC_WRITE) throw C_E(E_IncorrectAccMode);
 	buffer[len++] = b;
@@ -255,7 +255,7 @@ void C_File::PutBYTE(BYTE b)
 	}
 }
 
-void C_File::UnGetBYTE(BYTE b)
+void C_File::UnGetBYTE(uint8_t b)
 {
 	if (accMode != ACC_READ) throw C_E(E_IncorrectAccMode);
 	if (un_ch != -1) throw C_E(E_UnGetError);
@@ -279,40 +279,40 @@ int C_File::GetC(void)
 
 void C_File::UnGetC(int c)
 {
-	UnGetBYTE((BYTE)c);
+	UnGetBYTE((uint8_t)c);
 }
 
 void C_File::PutC(int c)
 {
-	PutBYTE((BYTE)c);
+	PutBYTE((uint8_t)c);
 }
 
-void C_File::PutWORD(WORD w)
+void C_File::PutWORD(uint16_t w)
 {
-	PutBYTE((BYTE)(w & 0xFF));
-	PutBYTE((BYTE)(w >> 8));
+	PutBYTE((uint8_t)(w & 0xFF));
+	PutBYTE((uint8_t)(w >> 8));
 }
 
-void C_File::PutDWORD(DWORD d)
+void C_File::PutDWORD(uint32_t d)
 {
-	PutWORD((WORD)(d & (DWORD)0xFFFF));
-	PutWORD((WORD)(d >> 0x10));
+	PutWORD((uint16_t)(d & (uint32_t)0xFFFF));
+	PutWORD((uint16_t)(d >> 0x10));
 }
 
-WORD C_File::GetWORD(void)
+uint16_t C_File::GetWORD(void)
 {
 	int dummy1, dummy2;
 	dummy1 = GetBYTE();
 	dummy2 = GetBYTE();
-	return (WORD)(dummy1 + 0x100*dummy2); // ��������� ����������� VisualC++6.0
+	return (uint16_t)(dummy1 + 0x100*dummy2); // ��������� ����������� VisualC++6.0
 }
 
-DWORD C_File::GetDWORD(void)
+uint32_t C_File::GetDWORD(void)
 {
-	DWORD dummy1, dummy2;
+	uint32_t dummy1, dummy2;
 	dummy1 = GetWORD();
 	dummy2 = GetWORD();
-	return (DWORD)(dummy1 + (DWORD)0x10000*dummy2); // ��������� ����������� VisualC++6.0
+	return (uint32_t)(dummy1 + (uint32_t)0x10000*dummy2); // ��������� ����������� VisualC++6.0
 }
 
 void C_File::PrintF(const char *fmt, ...)
@@ -406,7 +406,7 @@ void C_File::SetFilePointer(unsigned long fp)
 
 int C_File::ReadBlock(void *buf, int size)
 {
-	BYTE *bf = (BYTE *)buf;
+	uint8_t *bf = (uint8_t *)buf;
 	int act = 0;
 
 	for (; size && !Eof(); size--, act++) *(bf++) = GetBYTE();
@@ -415,7 +415,7 @@ int C_File::ReadBlock(void *buf, int size)
 
 void C_File::WriteBlock(void *buf, int size)
 {
-	BYTE *bf = (BYTE *)buf;
+	uint8_t *bf = (uint8_t *)buf;
 	if (!size) return;
 	while (size--) PutBYTE(*(bf++));
 }

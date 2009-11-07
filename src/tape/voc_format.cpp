@@ -32,11 +32,11 @@ bool C_VocFormat::Load(const char *fname)
 		return false;
 	}
 
-	WORD dataOffset = fl.GetWORD();
-	WORD verNum = fl.GetWORD();
-	WORD verChk = fl.GetWORD();
+	uint16_t dataOffset = fl.GetWORD();
+	uint16_t verNum = fl.GetWORD();
+	uint16_t verChk = fl.GetWORD();
 
-	if ((WORD)((0xFFFF - verNum) + 0x1234) != verChk)
+	if ((uint16_t)((0xFFFF - verNum) + 0x1234) != verChk)
 	{
 		fl.Close();
 		_DEBUG("Invalid voc file");
@@ -50,7 +50,7 @@ bool C_VocFormat::Load(const char *fname)
 
 	while (!fl.Eof())
 	{
-		BYTE type = fl.GetBYTE();
+		uint8_t type = fl.GetBYTE();
 
 		if (type == 0) {
 			break; /* Terminator */
@@ -118,7 +118,7 @@ bool C_VocFormat::ProcessTicks(unsigned long long ticks)
 	}
 
 	allTicks += ticks;
-	DWORD pos = (allTicks / divider) * sampleSz;
+	uint32_t pos = (allTicks / divider) * sampleSz;
 
 	if (pos > dataSize)
 	{
@@ -145,7 +145,7 @@ bool C_VocFormat::ProcessTicks(unsigned long long ticks)
 				res += fl.GetBYTE();
 			}
 			break;
-	
+
 		case 16:
 			for (int i = 0; i < channels; i++) {
 				res += (short)fl.GetWORD();
@@ -209,7 +209,7 @@ void C_VocFormat::Rewind(void)
 
 unsigned int C_VocFormat::GetPosPerc(void)
 {
-/*	DWORD pos = (allTicks / divider) * sampleSz;
+/*	uint32_t pos = (allTicks / divider) * sampleSz;
 	return ((pos >= dataSize) ? 100 : (pos * 100 / dataSize)); */
 	return 0;
 }

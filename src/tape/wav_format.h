@@ -11,13 +11,13 @@ class C_WavFormat : public C_TapeFormat
 
 	C_File fl;
 	unsigned long long allTicks;
-	WORD compression;
-	WORD channels;
-	DWORD rate;
-	WORD bits;
-	DWORD dataSize;
-	DWORD dataFp;
-	DWORD dataPos;
+	uint16_t compression;
+	uint16_t channels;
+	uint32_t rate;
+	uint16_t bits;
+	uint32_t dataSize;
+	uint32_t dataFp;
+	uint32_t dataPos;
 	unsigned int divider;
 	unsigned int sampleSz;
 	bool active;

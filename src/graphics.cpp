@@ -3,7 +3,7 @@
 void OutputGimpImage(int x, int y, s_GimpImage *img)
 {
 	int i, j, r, g, b, a;
-	BYTE *o;
+	uint8_t *o;
 
 	o = img->data;
 

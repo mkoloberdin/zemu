@@ -12,7 +12,7 @@ class SDLWavePlayer
 	virtual ~SDLWavePlayer();
 
 	void Init(void);
-	void Write(BYTE* data, unsigned len);
+	void Write(uint8_t* data, unsigned len);
 
 	protected:
 
@@ -28,7 +28,7 @@ class SDLWavePlayer
 	volatile unsigned int audioPtr, dataPtr;
 	unsigned int currentPreAgainCnt;
 
-	BYTE* ringBuffer;
+	uint8_t* ringBuffer;
 
 	private:
 

@@ -5,7 +5,7 @@
 extern C_MemoryManager dev_mman;
 
 bool C_TrDos::trdos;
-BYTE C_TrDos::rom[0x4000];
+Z80EX_BYTE C_TrDos::rom[0x4000];
 
 void C_TrDos::ReadFile(void)
 {

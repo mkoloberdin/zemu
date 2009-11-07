@@ -33,7 +33,7 @@
 #define SNAP_FORMAT_SNA 1
 
 s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
-WORD audioBuffer[MIX_BUFFER_SIZE * 2];
+uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
 volatile int audioCnt;
 
 unsigned turboMultiplier = 1;
@@ -540,7 +540,7 @@ s_Action cfgActions[] =
 bool runDebuggerFlag = false;
 bool breakpoints[0x10000];
 
-WORD watches[MAX_WATCHES];
+Z80EX_WORD watches[MAX_WATCHES];
 unsigned watchesCount = 0;
 
 Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void *userData)
@@ -771,8 +771,8 @@ bool attributesHack = false;
 void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 {
 	int i, j;
-	BYTE *s1, *s2, *sr;
-	BYTE *s1w, *s2w, *srw;
+	uint8_t *s1, *s2, *sr;
+	uint8_t *s1w, *s2w, *srw;
 
 	if (SDL_MUSTLOCK(screen)) {if (SDL_LockSurface(screen) < 0) return;}
 	if (SDL_MUSTLOCK(scrSurf[0])) {if (SDL_LockSurface(scrSurf[0]) < 0) return;}
@@ -780,13 +780,13 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 
 	if (doCopyAfSurfaces)
 	{
-		s1 = (BYTE *)copyFrom->pixels;
-		s2 = (BYTE *)copyTo->pixels;
+		s1 = (uint8_t *)copyFrom->pixels;
+		s2 = (uint8_t *)copyTo->pixels;
 
 		for (i = HEIGHT; i--;)
 		{
-			DWORD *s1dw = (DWORD *)s1;
-			DWORD *s2dw = (DWORD *)s2;
+			uint32_t *s1dw = (uint32_t *)s1;
+			uint32_t *s2dw = (uint32_t *)s2;
 
 			for (j = WIDTH; j--;) { *(s2dw++) = *(s1dw++); }
 
@@ -797,9 +797,9 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 		doCopyAfSurfaces = false;
 	}
 
-	sr = (BYTE *)screen->pixels;
-	s1 = (BYTE *)scrSurf[0]->pixels;
-	s2 = (BYTE *)scrSurf[1]->pixels;
+	sr = (uint8_t *)screen->pixels;
+	s1 = (uint8_t *)scrSurf[0]->pixels;
+	s2 = (uint8_t *)scrSurf[1]->pixels;
 
 	for (i = HEIGHT; i--;)
 	{
@@ -809,13 +809,13 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 
 		for (j = WIDTH; j--;)
 		{
-			*srw = (BYTE)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
 			srw++; s1w++; s2w++;
 
-			*srw = (BYTE)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
 			srw++; s1w++; s2w++;
 
-			*srw = (BYTE)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
 			srw++; s1w++; s2w++;
 
 			*(srw++) = 0; s1w++; s2w++;
@@ -1255,22 +1255,22 @@ void Process(void)
 					}
 
 					p = mixBuffer;
-					WORD* o = audioBuffer;
+					uint16_t *o = audioBuffer;
 
 					if (params.mixerMode & MIXER_HALF_VOL_MASK)
 					{
 						for (i = minSamples; i--; p++)
 						{
-							*(o++) = (WORD)(p->left >> 1);
-							*(o++) = (WORD)(p->right >> 1);
+							*(o++) = (uint16_t)(p->left >> 1);
+							*(o++) = (uint16_t)(p->right >> 1);
 						}
 					}
 					else
 					{
 						for (i = minSamples; i--; p++)
 						{
-							*(o++) = (WORD)((long)p->left - 0x8000L);
-							*(o++) = (WORD)((long)p->right - 0x8000L);
+							*(o++) = (uint16_t)((long)p->left - 0x8000L);
+							*(o++) = (uint16_t)((long)p->right - 0x8000L);
 						}
 					}
 
@@ -1285,8 +1285,8 @@ void Process(void)
 						}
 					}
 
-					if (params.sdlSound) sdlWp->Write((BYTE*)audioBuffer, minSamples*sizeof(WORD)*2);
-					else wav_play((BYTE*)audioBuffer, minSamples*sizeof(WORD)*2);
+					if (params.sdlSound) sdlWp->Write((uint8_t*)audioBuffer, minSamples*sizeof(uint16_t)*2);
+					else wav_play((uint8_t*)audioBuffer, minSamples*sizeof(uint16_t)*2);
 				}
 
 				if (maxSamples > minSamples) {

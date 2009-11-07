@@ -12,12 +12,12 @@ void CpuTrace_Init(void)
 	}
 }
 
-static void CpuTrace_PutByte(BYTE val)
+static void CpuTrace_PutByte(Z80EX_BYTE val)
 {
 	traceFile.PrintF("%02X", val);
 }
 
-static void CpuTrace_PutWord(WORD val)
+static void CpuTrace_PutWord(Z80EX_WORD val)
 {
 	traceFile.PrintF("%04X", val);
 }

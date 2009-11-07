@@ -34,7 +34,7 @@ C_TapFormat::~C_TapFormat()
 	if (data != NULL) delete[] data;
 }
 
-BYTE C_TapFormat::Data(long pos)
+Z80EX_BYTE C_TapFormat::Data(long pos)
 {
 	return ((pos>=0 && pos<size) ? data[pos] : 0);
 }
@@ -45,7 +45,7 @@ bool C_TapFormat::Load(const char *fname)
 	size = C_File::FileSize(fname);
 
 	if (data != NULL) delete[] data;
-	data = new BYTE[size];
+	data = new Z80EX_BYTE[size];
 
 	C_File fl;
 	fl.Read(fname);

@@ -36,7 +36,7 @@ void SDLWavePlayer::Init(void)
 	alreadyInited = true;
 }
 
-void SDLWavePlayer::Write(BYTE* data, unsigned len)
+void SDLWavePlayer::Write(uint8_t* data, unsigned len)
 {
 	if (!alreadyInited) StrikeError("[SDLWavePlayer::Write] Call Init first");
 	if (len <= 0) return;
@@ -108,7 +108,7 @@ void SDLWavePlayer::Initialize(unsigned int bufferSize, unsigned int preBufferSi
 	this->preBufferSize = preBufferSize;
 	this->preAgainCnt = preAgainCnt;
 
-	ringBuffer = new BYTE[bufferSize];
+	ringBuffer = new uint8_t[bufferSize];
 
 	audioPtr = 0;
 	dataPtr = 0;
@@ -172,14 +172,14 @@ void SDLWavePlayer::AudioCallback(void *userData, Uint8 *stream, int len)
 	if ((self->size - self->audioPtr) >= (unsigned)len)
 	{
 		int sz = len;
-		BYTE* ptr = &self->ringBuffer[self->audioPtr];
+		uint8_t* ptr = &self->ringBuffer[self->audioPtr];
 
 		while (sz--) *(stream++) = *(ptr++);
 	}
 	else
 	{
 		int sz = self->size - self->audioPtr;
-		BYTE* ptr = &self->ringBuffer[self->audioPtr];
+		uint8_t* ptr = &self->ringBuffer[self->audioPtr];
 
 		if (sz > 0) {
 			while (sz--) *(stream++) = *(ptr++);

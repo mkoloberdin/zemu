@@ -10,7 +10,7 @@ class C_TrDos : public C_Device
 	public:
 
 	static bool trdos;
-	static BYTE rom[0x4000];
+	static Z80EX_BYTE rom[0x4000];
 
 	static void ReadFile(void);
 	void Init(void);

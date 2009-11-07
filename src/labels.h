@@ -11,7 +11,7 @@
 
 struct s_LabelItem
 {
-	WORD addr;
+	Z80EX_WORD addr;
 	std::string label;
 };
 

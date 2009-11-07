@@ -35,18 +35,6 @@
 	#include <unistd.h>
 #endif
 
-#ifndef BYTE
-	typedef uint8_t BYTE;
-#endif
-
-#ifndef WORD
-	typedef uint16_t WORD;
-#endif
-
-#ifndef DWORD
-	typedef uint32_t DWORD;
-#endif
-
 #ifndef M_PI
 	#define M_PI 3.1415926535897932
 #endif

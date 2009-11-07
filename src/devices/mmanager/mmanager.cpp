@@ -7,10 +7,10 @@
 extern C_ExtPort dev_extport;
 
 Z80EX_BYTE C_MemoryManager::port7FFD;
-BYTE C_MemoryManager::rom[0x8000];
-BYTE C_MemoryManager::ram[0x4000*64];
-BYTE* C_MemoryManager::rom_map;
-BYTE* C_MemoryManager::ram_map;
+Z80EX_BYTE C_MemoryManager::rom[0x8000];
+Z80EX_BYTE C_MemoryManager::ram[0x4000*64];
+Z80EX_BYTE* C_MemoryManager::rom_map;
+Z80EX_BYTE* C_MemoryManager::ram_map;
 bool C_MemoryManager::enable512;
 bool C_MemoryManager::enable1024;
 

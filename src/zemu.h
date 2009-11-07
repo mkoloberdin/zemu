@@ -114,7 +114,7 @@ extern unsigned turboMultiplierNx;
 extern bool breakpoints[0x10000];
 
 #define MAX_WATCHES 0x10
-extern WORD watches[MAX_WATCHES];
+extern uint16_t watches[MAX_WATCHES];
 extern unsigned watchesCount;
 
 Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void *userData);

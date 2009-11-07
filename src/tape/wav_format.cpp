@@ -49,7 +49,7 @@ bool C_WavFormat::Load(const char *fname)
 		fl.ReadBlock(chunkName, 4);
 		if (fl.Eof()) break;
 
-		DWORD size = fl.GetDWORD();
+		uint32_t size = fl.GetDWORD();
 		if (fl.Eof()) break;
 
 		if (strcmp(chunkName, "fmt "))
@@ -139,7 +139,7 @@ bool C_WavFormat::ProcessTicks(unsigned long long ticks)
 	}
 
 	allTicks += ticks;
-	DWORD pos = (allTicks / divider) * sampleSz;
+	uint32_t pos = (allTicks / divider) * sampleSz;
 
 	if (pos > dataSize)
 	{
@@ -228,7 +228,7 @@ void C_WavFormat::Rewind(void)
 
 unsigned int C_WavFormat::GetPosPerc(void)
 {
-	DWORD pos = (allTicks / divider) * sampleSz;
+	uint32_t pos = (allTicks / divider) * sampleSz;
 	return ((pos >= dataSize) ? 100 : (pos * 100 / dataSize));
 }
 
