@@ -100,13 +100,13 @@ int C_Fdd::write_udi(FILE *ff)
 	snbuf[6] = ((sz >> 16) & 0xFF);
 	snbuf[7] = (sz >> 24);
 
-	int crc = -1;
+	int32_t crc = -1;
 	wd1793_crc32(crc, snbuf, dst-snbuf);
 
-	*(dst++) = (((unsigned)crc) & 0xFF);
-	*(dst++) = ((((unsigned)crc) >> 8) & 0xFF);
-	*(dst++) = ((((unsigned)crc) >> 16) & 0xFF);
-	*(dst++) = (((unsigned)crc) >> 24);
+	*(dst++) = (((uint32_t)crc) & 0xFF);
+	*(dst++) = ((((uint32_t)crc) >> 8) & 0xFF);
+	*(dst++) = ((((uint32_t)crc) >> 16) & 0xFF);
+	*(dst++) = (((uint32_t)crc) >> 24);
 
 	if (fwrite(snbuf, 1, dst-snbuf, ff) != (unsigned)(dst-snbuf)) {
 		return 0;
