@@ -301,21 +301,6 @@ void StrToLower(char *str)
 #define MAX_FILES 4096
 #define MAX_FNAME 256
 
-bool IsArchive(char *fname)
-{
-	char plgName[MAX_PATH];
-	char ext[MAX_FNAME];
-
-	if (!(*params.arcPluginsDir)) return false;
-	strcpy(ext, C_DirWork::ExtractExt(fname));
-	StrToLower(ext);
-
-	strcpy(plgName, params.arcPluginsDir);
-	strcat(plgName, ext);
-
-	return C_File::FileExists(plgName);
-}
-
 void LoadNormalFile(char *fname, int drive)
 {
 	if (C_Tape::IsTapeFormat(fname)) {
@@ -329,25 +314,27 @@ void LoadNormalFile(char *fname, int drive)
 	}
 }
 
-void LoadArcFile(char *arcName, int drive)
+bool TryLoadArcFile(char *arcName, int drive)
 {
 	C_File fl;
-	char plgName[MAX_PATH], res[MAX_PATH];
+	char res[MAX_PATH];
 	char tmp[MAX_PATH], str[MAX_FNAME];
 	char files[MAX_FILES][MAX_FNAME];
 	int filesCount;
+	string plugin_fn;
 
 	strcpy(tmp, C_DirWork::ExtractExt(arcName));
 	StrToLower(tmp);
 
-	strcpy(plgName, params.arcPluginsDir);
-	strcat(plgName, tmp);
+	plugin_fn = config.FindDataFile("arc", tmp);
+	if (plugin_fn.empty())
+		return false;
 
-	sprintf(tmp, "%s list %s %s/files.txt", plgName, arcName, tempFolderName);
+	sprintf(tmp, "%s list %s %s/files.txt", plugin_fn.c_str(), arcName, tempFolderName);
 	if (system(tmp) == -1) _DEBUG("system failed");
 
 	sprintf(tmp, "%s/files.txt", tempFolderName);
-	if (!C_File::FileExists(tmp)) return;
+	if (!C_File::FileExists(tmp)) return true; // "true" here means ONLY that the file is an archive
 
 	fl.Read(tmp);
 	for (filesCount = 0; !fl.Eof(); )
@@ -357,10 +344,10 @@ void LoadArcFile(char *arcName, int drive)
 	}
 
 	unlink(tmp);
-	if (!filesCount) return;
+	if (!filesCount) return true; // "true" here means ONLY that the file is an archive
 
 	// currently load only first file
-	sprintf(tmp, "%s extract %s %s %s", plgName, arcName, files[0], tempFolderName);
+	sprintf(tmp, "%s extract %s %s %s", plugin_fn.c_str(), arcName, files[0], tempFolderName);
 	if (system(tmp) == -1) _DEBUG("system failed");
 	strcpy(tmp, C_DirWork::ExtractFileName(files[0]));
 
@@ -369,6 +356,7 @@ void LoadArcFile(char *arcName, int drive)
 
 	LoadNormalFile(res, drive);
 	unlink(res);
+	return true; // "true" here means ONLY that the file is an archive
 }
 
 void TryNLoadFile(char *fname, int drive)
@@ -387,8 +375,8 @@ void TryNLoadFile(char *fname, int drive)
 		char *tname = fname;
 	#endif
 
-	if (IsArchive(tname)) LoadArcFile(tname, drive);
-	else LoadNormalFile(tname, drive);
+	if (!TryLoadArcFile(tname, drive))
+		LoadNormalFile(tname, drive);
 }
 
 void TryNLoadFile(char *fname)
@@ -1483,8 +1471,6 @@ int main(int argc, char *argv[])
 
 	try
 	{
-		strcpy(params.arcPluginsDir, "arc"); // FIXME
-
 		string str;
 		// core
 		str = config.GetString("core", "snapformat", "sna");

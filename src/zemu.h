@@ -43,7 +43,6 @@ struct s_Params
 	int sdlBufferSize;
 	int mouseDiv;
 	bool showInactiveIcons;
-	char arcPluginsDir[MAX_PATH];
 	int soundParam;
 	bool cpuTraceEnabled;
 	char cpuTraceFormat[MAX_TRACE_FORMAT];
