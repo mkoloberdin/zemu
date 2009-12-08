@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include <z80ex.h>
 #include "sound/snd_renderer.h"
+#include "sound/snd_backend.h"
 #include "config.h"
 
 #define WIDTH 320
@@ -39,7 +40,7 @@ struct s_Params
 	bool sound;
 	bool maxSpeed;
 	bool antiFlicker;
-	bool sdlSound;
+	eSndBackend sndBackend;
 	int sdlBufferSize;
 	int mouseDiv;
 	bool showInactiveIcons;

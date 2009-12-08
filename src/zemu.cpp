@@ -8,7 +8,10 @@
 #include "font.h"
 #include "dialog.h"
 #include "graphics.h"
-#include "sound/sdlwaveplayer.h"
+#include "sound/snd_backend.h"
+#include "sound/snd_backend_sdl.h"
+#include "sound/snd_backend_oss.h"
+#include "sound/snd_backend_win32.h"
 #include "cpu_trace.h"
 #include "tape/tape.h"
 #include "labels.h"
@@ -22,12 +25,14 @@
 
 #include "snap_z80.h"
 #include "snap_sna.h"
-#include "sound/native.h"
 
 #include "ftbos_font.h"
 #include "font_64.h"
 
 #include "file.h"
+
+#include <cctype>
+#include <algorithm>
 
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
@@ -60,7 +65,7 @@ int videoSpec;
 int actualWidth;
 int actualHeight;
 
-SDLWavePlayer *sdlWp;
+CSndBackend *sndBackend;
 
 char tempFolderName[MAX_PATH];
 
@@ -1273,8 +1278,7 @@ void Process(void)
 						}
 					}
 
-					if (params.sdlSound) sdlWp->Write((uint8_t*)audioBuffer, minSamples*sizeof(uint16_t)*2);
-					else wav_play((uint8_t*)audioBuffer, minSamples*sizeof(uint16_t)*2);
+					sndBackend->Write((uint8_t*)audioBuffer, minSamples*sizeof(uint16_t)*2);
 				}
 
 				if (maxSamples > minSamples) {
@@ -1346,28 +1350,26 @@ void Process(void)
 
 void InitAudio(void)
 {
-	if (params.sdlSound)
-	{
-		sdlWp = new SDLWavePlayer(SDLWAVE_CALLBACK_BUFFER_SIZE * params.sdlBufferSize);
-		sdlWp->Init();
+	if (params.sndBackend == SND_BACKEND_SDL) {
+		sndBackend = new CSndBackendSDL(SDLWAVE_CALLBACK_BUFFER_SIZE * params.sdlBufferSize);
+		sndBackend->Init();
 	}
-	else
-	{
-		wav_start(params.soundParam, AUDIO_HW_BUFFER);
+#ifndef _WIN32
+	else if (params.sndBackend == SND_BACKEND_OSS) {
+		sndBackend = new CSndBackendOSS(params.soundParam, AUDIO_HW_BUFFER);
+		sndBackend->Init();
 	}
+#else
+	else if (params.sndBackend == SND_BACKEND_WIN32) {
+		sndBackend = new CSndBackendWIN32(params.soundParam, AUDIO_HW_BUFFER);
+		sndBackend->Init();
+	}
+#endif // !_WIN32
 }
 
 void FreeAudio(void)
 {
-	if (params.sdlSound)
-	{
-		SDL_CloseAudio();
-		delete sdlWp;
-	}
-	else
-	{
-		wav_stop();
-	}
+	delete sndBackend;
 }
 
 void UpdateScreen(void)
@@ -1474,6 +1476,7 @@ int main(int argc, char *argv[])
 		string str;
 		// core
 		str = config.GetString("core", "snapformat", "sna");
+		transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
 		if (str == "sna") params.snapFormat = SNAP_FORMAT_SNA;
 		else params.snapFormat = SNAP_FORMAT_Z80;
 
@@ -1510,11 +1513,19 @@ int main(int argc, char *argv[])
 		params.sound = config.GetBool("sound", "enable", true);
 		params.mixerMode = config.GetInt("sound", "mixermode", 1);
 #ifdef _WIN32
-		bool sdlsound_default = false;
+		eSndBackend default_snd_backend = SND_BACKEND_WIN32;
 #else
-		bool sdlsound_default = true;
+		eSndBackend default_snd_backend = SND_BACKEND_SDL;
 #endif
-		params.sdlSound = config.GetBool("sound", "usesdl", sdlsound_default);
+		str = config.GetString("sound", "sound_backend", "auto");
+		transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
+		if (str == "sdl") params.sndBackend = SND_BACKEND_SDL;
+#ifndef _WIN32
+		else if (str == "oss") params.sndBackend = SND_BACKEND_OSS;
+#else
+		else if (str == "win32") params.sndBackend = SND_BACKEND_WIN32;
+#endif
+		else params.sndBackend = default_snd_backend;
 		params.sdlBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
 #ifdef __linux__
 	params.soundParam = config.GetInt("sound", "ossfragnum", 8);
@@ -1533,7 +1544,7 @@ int main(int argc, char *argv[])
 
 
 		spec = SDL_INIT_VIDEO;
-		if (params.sound && params.sdlSound) spec |= SDL_INIT_AUDIO;
+		if (params.sound && params.sndBackend == SND_BACKEND_SDL) spec |= SDL_INIT_AUDIO;
 		if (SDL_Init(spec) < 0) StrikeError("Unable to init SDL: %s\n", SDL_GetError());
 
 		atexit(SDL_Quit);

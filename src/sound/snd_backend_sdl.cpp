@@ -1,25 +1,26 @@
 #include "../defines.h"
 #include <SDL.h>
-#include "sdlwaveplayer.h"
+#include "snd_backend_sdl.h"
 
-SDLWavePlayer::SDLWavePlayer(unsigned int bufferSize)
+CSndBackendSDL::CSndBackendSDL(unsigned int bufferSize)
 {
 	Initialize(bufferSize, bufferSize - bufferSize / 3, 8);
 }
 
-SDLWavePlayer::SDLWavePlayer(unsigned int bufferSize, unsigned int preBufferSize)
+CSndBackendSDL::CSndBackendSDL(unsigned int bufferSize, unsigned int preBufferSize)
 {
 	Initialize(bufferSize, preBufferSize, 8);
 }
 
-SDLWavePlayer::~SDLWavePlayer()
+CSndBackendSDL::~CSndBackendSDL()
 {
+	SDL_CloseAudio();
 	delete[] ringBuffer;
 }
 
-void SDLWavePlayer::Init(void)
+void CSndBackendSDL::Init(void)
 {
-	if (alreadyInited) StrikeError("[SDLWavePlayer::Init] Init called twice");
+	if (alreadyInited) StrikeError("[CSndBackendSDL::Init] Init called twice");
 
 	SDL_AudioSpec desired, obtained;
 
@@ -30,15 +31,15 @@ void SDLWavePlayer::Init(void)
 	desired.callback = AudioCallback;
 	desired.userdata = this;
 
-	if (SDL_OpenAudio(&desired, &obtained) < 0) StrikeError("[SDLWavePlayer::Init] Couldn't open audio: %s\n", SDL_GetError());
+	if (SDL_OpenAudio(&desired, &obtained) < 0) StrikeError("[CSndBackendSDL::Init] Couldn't open audio: %s\n", SDL_GetError());
 	SDL_PauseAudio(0);
 
 	alreadyInited = true;
 }
 
-void SDLWavePlayer::Write(uint8_t* data, unsigned len)
+void CSndBackendSDL::Write(uint8_t* data, unsigned len)
 {
-	if (!alreadyInited) StrikeError("[SDLWavePlayer::Write] Call Init first");
+	if (!alreadyInited) StrikeError("[CSndBackendSDL::Write] Call Init first");
 	if (len <= 0) return;
 
 	unsigned waitCnt = 0;
@@ -86,11 +87,11 @@ void SDLWavePlayer::Write(uint8_t* data, unsigned len)
 	}
 }
 
-void SDLWavePlayer::Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt)
+void CSndBackendSDL::Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt)
 {
-	if (bufferSize < SDLWAVE_CALLBACK_BUFFER_SIZE*4) StrikeError("[SDLWavePlayer::Initialize] Buffer size must be >= SDLWAVE_CALLBACK_BUFFER_SIZE*4");
-	if (preBufferSize < (bufferSize / 4)) StrikeError("[SDLWavePlayer::Initialize] PreBuffer size must be >= BufferSize/4");
-	if (preBufferSize > (bufferSize - bufferSize/4)) StrikeError("[SDLWavePlayer::Initialize] PreBuffer size must be < BufferSize-BufferSize/4");
+	if (bufferSize < SDLWAVE_CALLBACK_BUFFER_SIZE*4) StrikeError("[CSndBackendSDL::Initialize] Buffer size must be >= SDLWAVE_CALLBACK_BUFFER_SIZE*4");
+	if (preBufferSize < (bufferSize / 4)) StrikeError("[CSndBackendSDL::Initialize] PreBuffer size must be >= BufferSize/4");
+	if (preBufferSize > (bufferSize - bufferSize/4)) StrikeError("[CSndBackendSDL::Initialize] PreBuffer size must be < BufferSize-BufferSize/4");
 
 	unsigned int tmp = bufferSize;
 	unsigned int cnt = 0;
@@ -101,7 +102,7 @@ void SDLWavePlayer::Initialize(unsigned int bufferSize, unsigned int preBufferSi
 		tmp >>= 1;
 	}
 
-	if (cnt != 1) StrikeError("[SDLWavePlayer::Initialize] Buffer size must be power of two");
+	if (cnt != 1) StrikeError("[CSndBackendSDL::Initialize] Buffer size must be power of two");
 
 	this->size = bufferSize;
 	this->mask = bufferSize - 1;
@@ -117,7 +118,7 @@ void SDLWavePlayer::Initialize(unsigned int bufferSize, unsigned int preBufferSi
 	currentPreAgainCnt = 0;
 }
 
-unsigned int SDLWavePlayer::CalcDist(void)
+unsigned int CSndBackendSDL::CalcDist(void)
 {
 	if (dataPtr < audioPtr) {
 		return (audioPtr - dataPtr);
@@ -126,11 +127,11 @@ unsigned int SDLWavePlayer::CalcDist(void)
 	}
 }
 
-void SDLWavePlayer::AudioCallback(void *userData, Uint8 *stream, int len)
+void CSndBackendSDL::AudioCallback(void *userData, Uint8 *stream, int len)
 {
 	if (len <= 0) return;
 
-	SDLWavePlayer* self = (SDLWavePlayer*)userData;
+	CSndBackendSDL* self = (CSndBackendSDL*)userData;
 
 	if (self->firstRun)
 	{

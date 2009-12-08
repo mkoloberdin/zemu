@@ -1,15 +1,16 @@
-#ifndef __SDLWAVEPLAYER_H__
-#define __SDLWAVEPLAYER_H__
+#ifndef ZEMU_SND_BACKEND_SDL_H
+#define ZEMU_SND_BACKEND_SDL_H
+
+#include "snd_backend.h"
 
 #define SDLWAVE_CALLBACK_BUFFER_SIZE 4096
 
-class SDLWavePlayer
-{
+class CSndBackendSDL : public CSndBackend {
 	public:
 
-	SDLWavePlayer(unsigned int bufferSize);
-	SDLWavePlayer(unsigned int bufferSize, unsigned int preBufferSize);
-	virtual ~SDLWavePlayer();
+	CSndBackendSDL(unsigned int bufferSize);
+	CSndBackendSDL(unsigned int bufferSize, unsigned int preBufferSize);
+	~CSndBackendSDL();
 
 	void Init(void);
 	void Write(uint8_t* data, unsigned len);
@@ -32,8 +33,8 @@ class SDLWavePlayer
 
 	private:
 
-	SDLWavePlayer(const SDLWavePlayer& f);
-	SDLWavePlayer& operator=(const SDLWavePlayer& f);
+	CSndBackendSDL(const CSndBackendSDL& f);
+	CSndBackendSDL& operator=(const CSndBackendSDL& f);
 };
 
-#endif /* __SDLWAVEPLAYER_H__ */
+#endif // ZEMU_SND_BACKEND_SDL_H
