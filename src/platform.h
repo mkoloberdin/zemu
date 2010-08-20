@@ -12,13 +12,20 @@
 	#define WORD_SWAP_BYTES(a) ((((a)&0xFF)<<8)|((a)>>8))
 #endif
 
-#ifdef PLATFORM_WIN
-	//---------------
-	// WIN32-specific
-	//---------------
+#ifdef _WIN32
+//---------------
+// WIN32-specific
+//---------------
+#include <windows.h>
 
-	#include <windows.h>
-#endif
+#ifdef _MSC_VER
+#define strcasecmp _stricmp
+#define stricmp _stricmp
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+#endif // _MSC_VER
+
+#endif // _WIN32
 
 //------
 // Other

@@ -28,7 +28,7 @@ bool C_VocFormat::Load(const char *fname)
 	if (strcmp(buf, "Creative Voice File\032"))
 	{
 		fl.Close();
-		_DEBUG("\"Creative Voice File\" string not found");
+		DEBUG_MESSAGE("\"Creative Voice File\" string not found");
 		return false;
 	}
 
@@ -39,7 +39,7 @@ bool C_VocFormat::Load(const char *fname)
 	if ((uint16_t)((0xFFFF - verNum) + 0x1234) != verChk)
 	{
 		fl.Close();
-		_DEBUG("Invalid voc file");
+		DEBUG_MESSAGE("Invalid voc file");
 		return false;
 	}
 

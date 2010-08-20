@@ -27,7 +27,7 @@ bool C_WavFormat::Load(const char *fname)
 	if (strcmp(chunkName, "RIFF"))
 	{
 		fl.Close();
-		_DEBUG("RIFF chunk not found");
+		DEBUG_MESSAGE("RIFF chunk not found");
 		return false;
 	}
 
@@ -38,7 +38,7 @@ bool C_WavFormat::Load(const char *fname)
 	if (strcmp(chunkName, "WAVE"))
 	{
 		fl.Close();
-		_DEBUG("Invalid RIFF type (must be WAVE)");
+		DEBUG_MESSAGE("Invalid RIFF type (must be WAVE)");
 		return false;
 	}
 
@@ -63,7 +63,7 @@ bool C_WavFormat::Load(const char *fname)
 		if (compression != 1)
 		{
 			fl.Close();
-			_DEBUG("Only uncompressed PCM supported");
+			DEBUG_MESSAGE("Only uncompressed PCM supported");
 			return false;
 		}
 
@@ -78,7 +78,7 @@ bool C_WavFormat::Load(const char *fname)
 		if (bits!=8 && bits!=16 && bits!=32)
 		{
 			fl.Close();
-			_DEBUG("Unsupported bits per sample. 8, 16 or 32 supported");
+			DEBUG_MESSAGE("Unsupported bits per sample. 8, 16 or 32 supported");
 			return false;
 		}
 
@@ -88,7 +88,7 @@ bool C_WavFormat::Load(const char *fname)
 	if (!fmtFound)
 	{
 		fl.Close();
-		_DEBUG("fmt subchunk not found");
+		DEBUG_MESSAGE("fmt subchunk not found");
 		return false;
 	}
 
@@ -116,7 +116,7 @@ bool C_WavFormat::Load(const char *fname)
 	if (!dataFound)
 	{
 		fl.Close();
-		_DEBUG("data chunk not found");
+		DEBUG_MESSAGE("data chunk not found");
 		return false;
 	}
 

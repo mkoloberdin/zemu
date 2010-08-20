@@ -57,7 +57,7 @@ int PITCH, REAL_PITCH;
 bool drawFrame;
 int frames;
 CConfig config("zemu");
-C_Font font, fixed;
+C_Font font, fixed_font;
 bool disableSound = false;
 bool doCopyAfSurfaces = false;
 
@@ -336,7 +336,7 @@ bool TryLoadArcFile(char *arcName, int drive)
 		return false;
 
 	sprintf(tmp, "%s list %s %s/files.txt", plugin_fn.c_str(), arcName, tempFolderName);
-	if (system(tmp) == -1) _DEBUG("system failed");
+	if (system(tmp) == -1) DEBUG_MESSAGE("system failed");
 
 	sprintf(tmp, "%s/files.txt", tempFolderName);
 	if (!C_File::FileExists(tmp)) return true; // "true" here means ONLY that the file is an archive
@@ -353,7 +353,7 @@ bool TryLoadArcFile(char *arcName, int drive)
 
 	// currently load only first file
 	sprintf(tmp, "%s extract %s %s %s", plugin_fn.c_str(), arcName, files[0], tempFolderName);
-	if (system(tmp) == -1) _DEBUG("system failed");
+	if (system(tmp) == -1) DEBUG_MESSAGE("system failed");
 	strcpy(tmp, C_DirWork::ExtractFileName(files[0]));
 
 	// TODO: check if lresult strlen > sizeof(res)
@@ -715,7 +715,7 @@ void InitFont(void)
 	font.SetSymOff('_', 0, 4);
 	font.SetSymOff('-', 0, 1);
 
-	fixed.Init(font_64_data);
+	fixed_font.Init(font_64_data);
 }
 
 void InitAll(void)
@@ -1030,8 +1030,8 @@ void DrawIndicators(void)
 		Z80EX_BYTE val = ReadByteDasm(watches[i], NULL);
 		sprintf(buf, "%04X:%02X", watches[i], val);
 
-		int wdt = fixed.StrLenPx(buf);
-		fixed.PrintString(WIDTH - 4 - wdt, 4 + fixed.Height() * (i+1), buf);
+		int wdt = fixed_font.StrLenPx(buf);
+		fixed_font.PrintString(WIDTH - 4 - wdt, 4 + fixed_font.Height() * (i+1), buf);
 	}
 }
 
@@ -1166,7 +1166,7 @@ void Process(void)
 
 				/*//
 				char bbb[0x100]; sprintf(bbb, "%ld", lastDivider); font.PrintString(0, 0, bbb);
-				for (i = 0; i < cnt_sndRenderers; i++) fixed.PrintString(16+i*4, 0, sndRenderers[i]->activeCnt ? "#" : "-");
+				for (i = 0; i < cnt_sndRenderers; i++) fixed_font.PrintString(16+i*4, 0, sndRenderers[i]->activeCnt ? "#" : "-");
 				//*/
 
 				ScaleImage();
@@ -1390,7 +1390,7 @@ void FreeAll(void)
 		char cmd[MAX_PATH];
 		strcpy(cmd, "rm -rf ");
 		strcat(cmd, tempFolderName);
-		if (system(cmd) == -1) _DEBUG("system failed");
+		if (system(cmd) == -1) DEBUG_MESSAGE("system() failed");
 	#endif
 
 	if (videoSpec & SDL_FULLSCREEN)
@@ -1589,7 +1589,7 @@ int main(int argc, char *argv[])
 			strcpy(tempFolderName, "./_temp");
 		#else
 			strcpy(tempFolderName, "/tmp/zemu-XXXXXX");
-			if (!mkdtemp(tempFolderName)) _DEBUG("mkdtemp failed");
+			if (!mkdtemp(tempFolderName)) DEBUG_MESSAGE("mkdtemp failed");
 		#endif
 
 		atexit(FreeAll);

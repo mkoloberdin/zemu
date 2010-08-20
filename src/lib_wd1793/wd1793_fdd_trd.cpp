@@ -114,7 +114,7 @@ void C_Fdd::addboot()
 	FILE *f = fopen(get_appendboot(), "rb");
 	if (!f) return;
 
-	if (fread(snbuf, 1, sizeof(snbuf), f) < 0x10) _DEBUG("fread failed");
+	if (fread(snbuf, 1, sizeof(snbuf), f) < 0x10) DEBUG_MESSAGE("fread failed");
 	fclose(f);
 
 	snbuf[13] = snbuf[14]; // copy length

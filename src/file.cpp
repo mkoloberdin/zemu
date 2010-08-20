@@ -148,7 +148,7 @@ void C_File::Read(const char *filename)
 	if (!eof)
 	{
 		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != min((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
-			_DEBUG("_read failed");
+			DEBUG_MESSAGE("_read failed");
 		}
 
 #ifdef AUTO_DEHRUST
@@ -196,7 +196,7 @@ void C_File::Close(void)
 		if (accMode!=ACC_READ && len!=0)
 		{
 			if (_write(handle, buffer, len) != len) {
-				_DEBUG("_write failed");
+				DEBUG_MESSAGE("_write failed");
 			}
 		}
 
@@ -228,7 +228,7 @@ uint8_t C_File::GetBYTE(void)
 	if (len >= FILECACHE_SIZE)
 	{
 		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != min((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
-			_DEBUG("_read failed");
+			DEBUG_MESSAGE("_read failed");
 		}
 
 		len = 0;
@@ -248,7 +248,7 @@ void C_File::PutBYTE(uint8_t b)
 	if (len >= FILECACHE_SIZE)
 	{
 		if (_write(handle, buffer, FILECACHE_SIZE) != FILECACHE_SIZE) {
-			_DEBUG("_write failed");
+			DEBUG_MESSAGE("_write failed");
 		}
 
 		len = 0;

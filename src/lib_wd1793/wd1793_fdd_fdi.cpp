@@ -94,7 +94,7 @@ int C_Fdd::write_fdi(FILE *ff)
 	snbuf[0x0C] = 0;
 	snbuf[0x0D] = 0;
 
-	if (fwrite(snbuf, 1, 14, ff) != 14) _DEBUG("fwrite failed");
+	if (fwrite(snbuf, 1, 14, ff) != 14) DEBUG_MESSAGE("fwrite failed");
 	unsigned trkoffs = 0;
 
 	for (c = 0; c < cyls; c++)
@@ -112,7 +112,7 @@ int C_Fdd::write_fdi(FILE *ff)
 			*((unsigned *)(snbuf + 4)) = 0;
 
 			snbuf[6] = t.s;
-			if (fwrite(snbuf, 1, 7, ff) != 7) _DEBUG("fwrite failed");
+			if (fwrite(snbuf, 1, 7, ff) != 7) DEBUG_MESSAGE("fwrite failed");
 
 			for (unsigned se = 0; se < t.s; se++)
 			{
@@ -130,7 +130,7 @@ int C_Fdd::write_fdi(FILE *ff)
 				snbuf[7] = ((secoffs >> 16) & 0xFF);
 				snbuf[8] = (secoffs >> 24);
 
-				if (fwrite(snbuf, 1, 7, ff) != 7) _DEBUG("fwrite failed");
+				if (fwrite(snbuf, 1, 7, ff) != 7) DEBUG_MESSAGE("fwrite failed");
 				secoffs += t.hdr[se].datlen;
 			}
 
@@ -139,7 +139,7 @@ int C_Fdd::write_fdi(FILE *ff)
 	}
 
 	fseek(ff, hsize, SEEK_SET);
-	if (fwrite(dsc, 1, tlen, ff) != tlen) _DEBUG("fwrite failed");
+	if (fwrite(dsc, 1, tlen, ff) != tlen) DEBUG_MESSAGE("fwrite failed");
 
 	for (c = 0; c < cyls; c++)
 	{

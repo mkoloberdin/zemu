@@ -1,10 +1,16 @@
+#include "platform.h"
 #include "config.h"
 #include "path.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <io.h> // for _access()
+#else
 #include <unistd.h> // for access()
+#endif // _WIN32
 
 #ifdef FOR_INSTALL
 #ifdef _WIN32
@@ -162,11 +168,19 @@ bool CConfig::SaveDataFile(const char *prefix, const char *filename,
 
 string CConfig::FindDataFile(const char *prefix, const char *filename) {
 	string fn = path_append(user_path, path_append(prefix, filename));
+#ifdef _WIN32
+	if (_access(fn.c_str(), 04) != -1) {
+#else
 	if (access(fn.c_str(), F_OK | R_OK) == 0) {
+#endif // _WIN32
 		return fn;
 	} else {
 		fn = path_append(share_path, path_append(prefix, filename));
+#ifdef _WIN32
+		if (_access(fn.c_str(), 04) != -1) {
+#else
 		if (access(fn.c_str(), F_OK | R_OK) == 0) {
+#endif // _WIN32
 			return fn;
 		} else {
 			return string("");

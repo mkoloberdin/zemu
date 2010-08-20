@@ -12,7 +12,7 @@
 	#include <limits.h>
 #endif
 
-#define _DEBUG(msg) printf("%s\n",(msg))
+#define DEBUG_MESSAGE(msg) printf("%s\n",(msg))
 
 #ifndef MAX_PATH
 	#ifdef PATH_MAX

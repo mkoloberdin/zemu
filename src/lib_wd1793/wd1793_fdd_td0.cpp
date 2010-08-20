@@ -22,7 +22,7 @@ int C_Fdd::write_td0(FILE *ff)
 	td0hdr[10] = (crc16 & 0xFF);
 	td0hdr[11] = (crc16 >> 8);
 
-	if (fwrite(td0hdr, 1, 12, ff) != 12) _DEBUG("fwrite failed");
+	if (fwrite(td0hdr, 1, 12, ff) != 12) DEBUG_MESSAGE("fwrite failed");
 
 	if (*dsc)
 	{
@@ -39,7 +39,7 @@ int C_Fdd::write_td0(FILE *ff)
 		inf[0] = (crc16 & 0xFF);
 		inf[1] = (crc16 >> 8);
 
-		if (fwrite(inf, 1, len+10, ff) != (len+10)) _DEBUG("fwrite failed");
+		if (fwrite(inf, 1, len+10, ff) != (len+10)) DEBUG_MESSAGE("fwrite failed");
 	}
 
 	for (cc = 0; cc < cyls; cc++)
@@ -53,7 +53,7 @@ int C_Fdd::write_td0(FILE *ff)
 			bf[1] = cc;
 			bf[2] = s;
 			bf[3] = (uint8_t)wd1793_crc16(bf, 3);
-			if (fwrite(bf, 1, 4, ff) != 4) _DEBUG("fwrite failed");
+			if (fwrite(bf, 1, 4, ff) != 4) DEBUG_MESSAGE("fwrite failed");
 
 			for (unsigned sec = 0; sec < t.s; sec++)
 			{
@@ -73,7 +73,7 @@ int C_Fdd::write_td0(FILE *ff)
 				bf[6] = ((t.hdr[sec].datlen + 1) & 0xFF);
 				bf[7] = ((t.hdr[sec].datlen + 1) >> 8);
 				bf[8] = 0; // compression type = none
-				if (fwrite(bf, 1, 9, ff) != 9) _DEBUG("fwrite failed");
+				if (fwrite(bf, 1, 9, ff) != 9) DEBUG_MESSAGE("fwrite failed");
 
 				if (fwrite(t.hdr[sec].data, 1, t.hdr[sec].datlen, ff) != t.hdr[sec].datlen) return 0;
 			}

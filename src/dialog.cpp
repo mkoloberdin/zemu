@@ -16,7 +16,7 @@
 #define MAX_FNAME 256
 
 extern C_Font font;
-extern C_Font fixed;
+extern C_Font fixed_font;
 
 char oldFileName[4][MAX_PATH] = {"", "", "" ,""};
 int currentDrive = 0;
@@ -511,14 +511,14 @@ int DbgAskHexNum(const char *message)
 	int key;
 	SDL_Event event;
 
-	int scrEnd = HEIGHT - fixed.Height() - 8;
+	int scrEnd = HEIGHT - fixed_font.Height() - 8;
 
 	for (;;)
 	{
 		sprintf(buf, "%s: %s", message, buffer);
 
 		Bar(0, scrEnd, WIDTH-1, HEIGHT-1, DRGB(0x80, 0x20, 0x20));
-		fixed.PrintString(4, scrEnd+4, buf);
+		fixed_font.PrintString(4, scrEnd+4, buf);
 		ScaleImage();
 		UpdateScreen();
 
@@ -648,8 +648,8 @@ void DebugIt(void)
 	int key, keyx;
 	SDL_Event event;
 
-	int scrEnd = HEIGHT - fixed.Height() - 8;
-	int h = fixed.Height();
+	int scrEnd = HEIGHT - fixed_font.Height() - 8;
+	int h = fixed_font.Height();
 	int mx = scrEnd / h;
 
 	int t, t2;
@@ -781,12 +781,12 @@ void DebugIt(void)
 
 				if (lbl)
 				{
-					fixed.PrintString(4, i*h, lbl);
+					fixed_font.PrintString(4, i*h, lbl);
 				}
 				else
 				{
 					sprintf(buf, "%04X", dispBuf[i].addr);
-					fixed.PrintString(4, i*h, buf);
+					fixed_font.PrintString(4, i*h, buf);
 				}
 
 				int xpos = 64;
@@ -796,16 +796,16 @@ void DebugIt(void)
 					for (int j = 0; j < dispBuf[i].size; j++)
 					{
 						sprintf(buf, "%02X", ReadByteDasm(dispBuf[i].addr + j, NULL));
-						fixed.PrintString(xpos, i*h, buf);
+						fixed_font.PrintString(xpos, i*h, buf);
 						xpos += 4*3;
 					}
 				}
 				else
 				{
 					if (showLabels) {
-						fixed.PrintString(xpos, i*h, ReplaceLabels(dispBuf[i].cmd));
+						fixed_font.PrintString(xpos, i*h, ReplaceLabels(dispBuf[i].cmd));
 					} else {
-						fixed.PrintString(xpos, i*h, dispBuf[i].cmd);
+						fixed_font.PrintString(xpos, i*h, dispBuf[i].cmd);
 					}
 				}
 			}
@@ -813,32 +813,32 @@ void DebugIt(void)
 			int x = lx + 8;
 			int y = 8;
 
-			sprintf(buf, "AF   %04X", z80ex_get_reg(cpu, regAF));         fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "BC   %04X", z80ex_get_reg(cpu, regBC));         fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "DE   %04X", z80ex_get_reg(cpu, regDE));         fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "HL   %04X", z80ex_get_reg(cpu, regHL));         fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "IX   %04X", z80ex_get_reg(cpu, regIX));         fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "IY   %04X", z80ex_get_reg(cpu, regIY));         fixed.PrintString(x, y, buf); y += h;
+			sprintf(buf, "AF   %04X", z80ex_get_reg(cpu, regAF));         fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "BC   %04X", z80ex_get_reg(cpu, regBC));         fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "DE   %04X", z80ex_get_reg(cpu, regDE));         fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "HL   %04X", z80ex_get_reg(cpu, regHL));         fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "IX   %04X", z80ex_get_reg(cpu, regIX));         fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "IY   %04X", z80ex_get_reg(cpu, regIY));         fixed_font.PrintString(x, y, buf); y += h;
 			y += h;
-			sprintf(buf, "AF'  %04X", z80ex_get_reg(cpu, regAF_));        fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "BC'  %04X", z80ex_get_reg(cpu, regBC_));        fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "DE'  %04X", z80ex_get_reg(cpu, regDE_));        fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "HL'  %04X", z80ex_get_reg(cpu, regHL_));        fixed.PrintString(x, y, buf); y += h;
+			sprintf(buf, "AF'  %04X", z80ex_get_reg(cpu, regAF_));        fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "BC'  %04X", z80ex_get_reg(cpu, regBC_));        fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "DE'  %04X", z80ex_get_reg(cpu, regDE_));        fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "HL'  %04X", z80ex_get_reg(cpu, regHL_));        fixed_font.PrintString(x, y, buf); y += h;
 			y += h;
-			sprintf(buf, "SP   %04X", z80ex_get_reg(cpu, regSP));         fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "PC   %04X", z80ex_get_reg(cpu, regPC));         fixed.PrintString(x, y, buf); y += h;
+			sprintf(buf, "SP   %04X", z80ex_get_reg(cpu, regSP));         fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "PC   %04X", z80ex_get_reg(cpu, regPC));         fixed_font.PrintString(x, y, buf); y += h;
 			y += h;
-			sprintf(buf, "I    %02X", z80ex_get_reg(cpu, regI));          fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "R    %02X", z80ex_get_reg(cpu, regR));          fixed.PrintString(x, y, buf); y += h;
+			sprintf(buf, "I    %02X", z80ex_get_reg(cpu, regI));          fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "R    %02X", z80ex_get_reg(cpu, regR));          fixed_font.PrintString(x, y, buf); y += h;
 			y += h;
-			sprintf(buf, "IFF1 %02X", z80ex_get_reg(cpu, regIFF1));       fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "IFF2 %02X", z80ex_get_reg(cpu, regIFF2));       fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "IM   %02X", z80ex_get_reg(cpu, regIM));         fixed.PrintString(x, y, buf); y += h;
+			sprintf(buf, "IFF1 %02X", z80ex_get_reg(cpu, regIFF1));       fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "IFF2 %02X", z80ex_get_reg(cpu, regIFF2));       fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "IM   %02X", z80ex_get_reg(cpu, regIM));         fixed_font.PrintString(x, y, buf); y += h;
 			y += h;
-			sprintf(buf, "7FFD %02X", C_MemoryManager::port7FFD);         fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "EFF7 %02X", C_ExtPort::portEFF7);               fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "DOS  %s", C_TrDos::trdos ? "ON" : "OFF");       fixed.PrintString(x, y, buf); y += h;
-			sprintf(buf, "INT? %s", z80ex_int_possible(cpu) ? "Y" : "N"); fixed.PrintString(x, y, buf); y += h;
+			sprintf(buf, "7FFD %02X", C_MemoryManager::port7FFD);         fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "EFF7 %02X", C_ExtPort::portEFF7);               fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "DOS  %s", C_TrDos::trdos ? "ON" : "OFF");       fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "INT? %s", z80ex_int_possible(cpu) ? "Y" : "N"); fixed_font.PrintString(x, y, buf); y += h;
 
 			OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);
 			ScaleImage();
