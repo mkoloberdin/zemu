@@ -1,27 +1,5 @@
-/*
-    Tanks - Tank arcade game
-    Copyright (c) 2005 ProZroks
-
-    <<< LICENSE >>>
-
-    ProZroks
-    support@prozroks.com
-
-    Last modifed: Restorer (2 Jun, 2005)
-*/
-
-/*
-    Whatsnew.
-
-    Restorer (24 May, 2005)
-        Только начало. Общий интерфейс.
-
-    Restorer (2 Jun, 2005)
-        Enum нафих, заменил define-ами
-*/
-
-#ifndef _EXCEPTION_H_
-#define _EXCEPTION_H_ 1
+#ifndef ZEMU_EXCEPTION_H
+#define ZEMU_EXCEPTION_H 1
 
 #include <string>
 using namespace std;
@@ -61,4 +39,4 @@ class C_E
 	string param;
 };
 
-#endif
+#endif // ZEMU_EXCEPTION_H

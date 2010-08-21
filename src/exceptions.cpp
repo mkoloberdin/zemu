@@ -1,25 +1,3 @@
-/*
-    Tanks - Tank arcade game
-    Copyright (c) 2005 ProZroks
-
-    <<< LICENSE >>>
-
-    ProZroks
-    support@prozroks.com
-
-    Last modifed: Restorer (2 Jun, 2005)
-*/
-
-/*
-    Whatsnew.
-
-    Restorer (24 May, 2005)
-        ������ ������. ����� ���������.
-
-    Restorer (2 Jun, 2005)
-        Enum �����, ������� define-���
-*/
-
 #include "exceptions.h"
 
 C_E::C_E()
