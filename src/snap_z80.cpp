@@ -151,7 +151,7 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 		if (fl.Eof()) {fl.Close(); return false;}
 		tmp = fl.GetWORD();  // additional block length
 
-		switch (tmp && 0xFF)  // [rst] or I can put simple "tmp" ?
+		switch (tmp & 0xFF)  // [rst] or I can put simple "tmp" ?
 		{
 			case 23: ver=2; break;
 			case 54:
