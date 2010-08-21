@@ -41,6 +41,7 @@ endif (SDL_FOUND)
 
 file (GLOB_RECURSE SOURCES
     src/*.cpp
+    src/*.h
 )
 add_executable (zemu WIN32 ${SOURCES})
 
