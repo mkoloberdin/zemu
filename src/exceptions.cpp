@@ -20,33 +20,30 @@
         Enum �����, ������� define-���
 */
 
-#include <string.h>
 #include "exceptions.h"
 
 C_E::C_E()
 {
 	exc = E_None;
-	strcpy(param, "");
+	param = "";
 }
 
 C_E::C_E(int exc)
 {
 	this->exc = exc;
-	strcpy(param, "");
+	param = "";
 }
 
 C_E::C_E(int exc, const char *param)
 {
 	this->exc = exc;
-	if (strlen(param) < sizeof(this->param)) strcpy(this->param, param);
-	else strcpy(this->param, "[DoubleException] Param too long");
+	this->param = string(param);
 }
 
 C_E::C_E(int exc, string param)
 {
 	this->exc = exc;
-	if (param.size() < sizeof(this->param)) strcpy(this->param, param.c_str());
-	else strcpy(this->param, "[DoubleException] Param too long");
+	this->param = param;
 }
 
 const char * C_E::Descr(void) const

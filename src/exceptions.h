@@ -58,7 +58,7 @@ class C_E
 	const char* Descr(void) const;
 
 	int exc;
-	char param[0x100];
+	string param;
 };
 
 #endif
