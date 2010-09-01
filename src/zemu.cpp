@@ -1652,7 +1652,7 @@ int main(int argc, char *argv[])
 	}
 	catch (C_E &e)
 	{
-		StrikeError("Error %d: %s (%s)", e.exc, e.Descr(), e.param);
+		StrikeError("Error %d: %s (%s)", e.exc, e.Descr(), e.param.c_str());
 	}
 
 	return 0;
