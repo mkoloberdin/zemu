@@ -3,6 +3,18 @@
 
 // Platform-specific includes and defines
 
+// + Fix for FreeBSD (by breeze)
+
+#ifdef __FreeBSD__
+	#define __linux__
+#endif
+
+#ifndef log2
+	#define log2(x) (log(x) / M_LN2)
+#endif
+
+// - Fix for FreeBSD (by breeze)
+
 //---------------
 // SDL Predefined
 //---------------
