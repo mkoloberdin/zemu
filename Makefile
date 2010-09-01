@@ -10,7 +10,9 @@ ifndef Z80EX_PATH
 	Z80EX_PATH = `pwd`/../z80ex
 endif
 
-ifeq ($(uname -s | grep FreeBSD),)
+OS = ${shell uname -s}
+
+ifeq (${OS},FreeBSD)
 	CALLMAKE = gmake
 else
 	CALLMAKE = make
