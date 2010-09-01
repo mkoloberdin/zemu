@@ -9,10 +9,6 @@
 	#define __linux__
 #endif
 
-#ifndef log2
-	#define log2(x) (log(x) / M_LN2)
-#endif
-
 // - Fix for FreeBSD (by breeze)
 
 //---------------
