@@ -36,6 +36,7 @@ class C_SndRenderer
 
 	unsigned int samples;
 	unsigned int activeCnt;
+	s_Sample *mixBuffer;
 
 	C_SndRenderer();
 

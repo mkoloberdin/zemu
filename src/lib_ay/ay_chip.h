@@ -2,7 +2,7 @@
 #define __AY_CHIP__
 
 #include "../zemu.h"
-#include "../sound/snd_renderer.h"
+#include "sound/mixer.h"
 
 /*
  * (c) zame software development

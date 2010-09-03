@@ -1,4 +1,4 @@
-#include "../sound/snd_renderer.h"
+#include "sound/snd_renderer.h"
 
 void * YM2203Init(int baseclock, int rate);
 void YM2203Shutdown(void *chip);

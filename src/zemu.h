@@ -4,9 +4,8 @@
 #include "defines.h"
 #include <SDL.h>
 #include <z80ex.h>
-#include "sound/snd_renderer.h"
-#include "sound/snd_backend.h"
 #include "config.h"
+#include "sound/mixer.h"
 
 #define WIDTH 320
 #define HEIGHT 240
@@ -14,16 +13,11 @@
 #define FRAME_WAIT_MS 20
 #define MAX_SPEED_FRAME_SKIP 256
 
-#define AUDIO_HW_BUFFER 1024
-#define MIX_BUFFER_SIZE 1024
 #define MAX_DEV_CLK 72000
 
 #define MAX_TRACE_FORMAT 0x100
 
 #define SOUND_ENABLED (!params.maxSpeed && params.sound)
-
-#define MIXER_HALF_VOL_MASK 1
-#define MIXER_SMART_MASK 2
 
 struct s_Action
 {
@@ -57,7 +51,6 @@ struct s_Params
 	int kempstonAxisTreshold;
 };
 
-extern s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
 extern CConfig config;
 extern Z80EX_CONTEXT *cpu;
 extern uint64_t clk, devClk, lastDevClk, devClkCounter;
@@ -85,7 +78,6 @@ void AttachFrameStartHandler(void (* func)(void));
 void AttachAfterFrameRenderHandler(void (* func)(void));
 void AttachSDLHandler(int eventType, bool (* func)(SDL_Event&));
 void AttachResetHandler(void (* func)(void));
-void RegisterSndRenderer(C_SndRenderer *sndr);
 
 extern ptrOnReadByteFunc * devMapRead;
 extern bool (** devMapWrite)(Z80EX_WORD, Z80EX_BYTE);

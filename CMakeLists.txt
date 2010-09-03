@@ -39,6 +39,8 @@ else ()
     message (FATAL_ERROR "SDL not found")
 endif (SDL_FOUND)
 
+include_directories("${PROJECT_SOURCE_DIR}/src")
+
 file (GLOB_RECURSE SOURCES
     src/*.cpp
     src/*.h

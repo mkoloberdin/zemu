@@ -2,7 +2,7 @@
 #define _TAPE_H_INCLUDED_
 
 #include "../zemu.h"
-#include "../sound/snd_renderer.h"
+#include "sound/mixer.h"
 #include "tape_format.h"
 
 #define MAX_TAPE_VOL 0x03FF

@@ -34,17 +34,17 @@ void C_TsFm::Init(void)
 	if (!strcasecmp(str, "ts")) mode = TSFM_MODE_TS;
 
 	ayChip[0].Init();
-	RegisterSndRenderer(&ayChip[0].sndRenderer);
+	SoundMixer.AddSource(&ayChip[0].sndRenderer);
 
 	if (mode != TSFM_MODE_AY)
 	{
 		ayChip[1].Init();
-		RegisterSndRenderer(&ayChip[1].sndRenderer);
+		SoundMixer.AddSource(&ayChip[1].sndRenderer);
 
 		if (mode == TSFM_MODE_TSFM)
 		{
-			RegisterSndRenderer(&ym2203Chip[0].sndRenderer);
-			RegisterSndRenderer(&ym2203Chip[1].sndRenderer);
+			SoundMixer.AddSource(&ym2203Chip[0].sndRenderer);
+			SoundMixer.AddSource(&ym2203Chip[1].sndRenderer);
 		}
 	}
 }

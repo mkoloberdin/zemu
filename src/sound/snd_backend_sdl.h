@@ -1,6 +1,7 @@
 #ifndef ZEMU_SND_BACKEND_SDL_H
 #define ZEMU_SND_BACKEND_SDL_H
 
+#include <SDL.h>
 #include "snd_backend.h"
 
 #define SDLWAVE_CALLBACK_BUFFER_SIZE 4096

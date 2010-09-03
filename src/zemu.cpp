@@ -8,10 +8,6 @@
 #include "font.h"
 #include "dialog.h"
 #include "graphics.h"
-#include "sound/snd_backend.h"
-#include "sound/snd_backend_sdl.h"
-#include "sound/snd_backend_oss.h"
-#include "sound/snd_backend_win32.h"
 #include "cpu_trace.h"
 #include "tape/tape.h"
 #include "labels.h"
@@ -37,10 +33,6 @@
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
 
-s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
-uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
-volatile int audioCnt;
-
 unsigned turboMultiplier = 1;
 unsigned turboMultiplierNx = 1;
 
@@ -65,12 +57,10 @@ int videoSpec;
 int actualWidth;
 int actualHeight;
 
-CSndBackend *sndBackend;
-
 char tempFolderName[MAX_PATH];
 
 bool recordWav = false;
-C_File wavFl;
+const char *wavFileName = "output.wav"; // TODO: make configurable + full filepath
 
 //--------------------------------------------------------------------------------------------------------------
 
@@ -126,7 +116,6 @@ void (* hnd_frameStart[MAX_HANDLERS])(void);
 void (* hnd_afterFrameRender[MAX_HANDLERS])(void);
 s_SdlItem hnd_sdl[MAX_HANDLERS];
 void (* hnd_reset[MAX_HANDLERS])(void);
-C_SndRenderer* sndRenderers[MAX_HANDLERS];
 
 int cnt_z80read = 0;
 int cnt_z80write = 0;
@@ -136,7 +125,6 @@ int cnt_frameStart = 0;
 int cnt_afterFrameRender = 0;
 int cnt_sdl = 0;
 int cnt_reset = 0;
-int cnt_sndRenderers = 0;
 
 void AttachZ80ReadHandler(ptrOnReadByteFunc (* check)(Z80EX_WORD, bool))
 {
@@ -208,12 +196,6 @@ void AttachResetHandler(void (* func)(void))
 {
 	if (cnt_reset >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 	hnd_reset[cnt_reset++] = func;
-}
-
-void RegisterSndRenderer(C_SndRenderer *sndr)
-{
-	if (cnt_sndRenderers >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
-	sndRenderers[cnt_sndRenderers++] = sndr;
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -1192,111 +1174,7 @@ void Process(void)
 				i--;
 			}
 
-			if (params.sound && !params.maxSpeed && cnt_sndRenderers)
-			{
-				unsigned minSamples = sndRenderers[0]->samples;
-				unsigned maxSamples = sndRenderers[0]->samples;
-
-				for (i = 1; i < cnt_sndRenderers; i++)
-				{
-					unsigned samples = sndRenderers[i]->samples;
-
-					if (samples < minSamples) minSamples = samples;
-					if (samples > maxSamples) maxSamples = samples;
-				}
-
-				if (minSamples)
-				{
-					s_Sample *p = mixBuffer;
-
-					if (params.mixerMode & MIXER_SMART_MASK)
-					{
-						if (cnt_sndRenderers > 1)
-						{
-							for (i = minSamples; i--; p++)
-							{
-								p->left /= cnt_sndRenderers;
-								p->right /= cnt_sndRenderers;
-							}
-						}
-					}
-					else
-					{
-						unsigned long divider = 0L;
-
-						for (i = 0; i < cnt_sndRenderers; i++)
-						{
-							if (sndRenderers[i]->activeCnt)
-							{
-								divider++;
-								sndRenderers[i]->activeCnt--;
-							}
-						}
-
-						//*/ lastDivider = divider;
-
-						if (divider)
-						{
-							p = mixBuffer;
-
-							for (i = minSamples; i--; p++)
-							{
-								p->left /= divider;
-								p->right /= divider;
-							}
-						}
-					}
-
-					p = mixBuffer;
-					uint16_t *o = audioBuffer;
-
-					if (params.mixerMode & MIXER_HALF_VOL_MASK)
-					{
-						for (i = minSamples; i--; p++)
-						{
-							*(o++) = (uint16_t)(p->left >> 1);
-							*(o++) = (uint16_t)(p->right >> 1);
-						}
-					}
-					else
-					{
-						for (i = minSamples; i--; p++)
-						{
-							*(o++) = (uint16_t)((long)p->left - 0x8000L);
-							*(o++) = (uint16_t)((long)p->right - 0x8000L);
-						}
-					}
-
-					if (recordWav)
-					{
-						o = audioBuffer;
-
-						for (i = minSamples; i--;)
-						{
-							wavFl.PutWORD(*(o++));
-							wavFl.PutWORD(*(o++));
-						}
-					}
-
-					sndBackend->Write((uint8_t*)audioBuffer, minSamples*sizeof(uint16_t)*2);
-				}
-
-				if (maxSamples > minSamples) {
-					memmove(mixBuffer, &mixBuffer[minSamples], (maxSamples-minSamples) * sizeof(s_Sample));
-				}
-
-				memset(&mixBuffer[maxSamples-minSamples], 0, (MIX_BUFFER_SIZE) * sizeof(s_Sample));
-
-				for (i = 0; i < cnt_sndRenderers; i++) {
-					sndRenderers[i]->samples -= minSamples;
-				}
-			}
-			else
-			{
-				for (i = 0; i < cnt_sndRenderers; i++) {
-					sndRenderers[i]->samples = 0;
-				}
-			}
+			SoundMixer.FlushFrame(SOUND_ENABLED);
 		}
 
 		isPaused = isPausedNx;
@@ -1351,25 +1229,18 @@ void Process(void)
 void InitAudio(void)
 {
 	if (params.sndBackend == SND_BACKEND_SDL) {
-		sndBackend = new CSndBackendSDL(SDLWAVE_CALLBACK_BUFFER_SIZE * params.sdlBufferSize);
-		sndBackend->Init();
+		SoundMixer.InitBackendSDL(params.sdlBufferSize);
 	}
 #ifndef _WIN32
 	else if (params.sndBackend == SND_BACKEND_OSS) {
-		sndBackend = new CSndBackendOSS(params.soundParam, AUDIO_HW_BUFFER);
-		sndBackend->Init();
+		SoundMixer.InitBackendOSS(params.soundParam);
 	}
 #else
 	else if (params.sndBackend == SND_BACKEND_WIN32) {
-		sndBackend = new CSndBackendWIN32(params.soundParam, AUDIO_HW_BUFFER);
-		sndBackend->Init();
+		SoundMixer.InitBackendWin32(params.soundParam);
 	}
 #endif // !_WIN32
-}
-
-void FreeAudio(void)
-{
-	delete sndBackend;
+	SoundMixer.Init(&params.mixerMode, recordWav, wavFileName);
 }
 
 void UpdateScreen(void)
@@ -1407,7 +1278,6 @@ void FreeAll(void)
 	if (params.scale2x) SDL_FreeSurface(screen);
 
 	z80ex_destroy(cpu);
-	if (params.sound) FreeAudio();
 }
 
 void ParseCmdLine(int argc, char *argv[])
@@ -1610,43 +1480,7 @@ int main(int argc, char *argv[])
 		C_JoystickManager::Instance()->Init();
 		// [/boo_boo]
 
-		if (recordWav) {
-			wavFl.Write("output.wav.tmp");
-		}
-
 		Process();
-
-		if (recordWav)
-		{
-			wavFl.Close();
-
-			long wavSz = C_File::FileSize("output.wav.tmp");
-
-			wavFl.Write("output.wav");
-			wavFl.PutDWORD(0x46464952);
-			wavFl.PutDWORD(wavSz + 0x40 - 8);
-			wavFl.PutDWORD(0x45564157);
-			wavFl.PutDWORD(0x20746D66);
-			wavFl.PutDWORD(0x10);
-			wavFl.PutWORD(1);
-			wavFl.PutWORD(2);
-			wavFl.PutDWORD(44100);
-			wavFl.PutDWORD(44100 * 4);
-			wavFl.PutWORD(4);
-			wavFl.PutWORD(16);
-			wavFl.PutDWORD(0x61746164);
-			wavFl.PutDWORD(wavSz);
-
-			C_File wavTmp;
-
-			wavTmp.Read("output.wav.tmp");
-			while (!wavTmp.Eof()) wavFl.PutBYTE(wavTmp.GetBYTE());
-
-			wavTmp.Close();
-			wavFl.Close();
-
-			unlink("output.wav.tmp");
-		}
 
 		if (params.cpuTraceEnabled) CpuTrace_Close();
 	}

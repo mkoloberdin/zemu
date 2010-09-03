@@ -1,11 +1,11 @@
 #ifndef _TSFM_H_INCLUDED_
 #define _TSFM_H_INCLUDED_
 
-#include "../../zemu.h"
+#include "zemu.h"
 #include "../device.h"
-#include "../../sound/snd_renderer.h"
-#include "../../lib_ay/ay_chip.h"
-#include "../../lib_ym2203/ym2203_chip.h"
+#include "sound/mixer.h"
+#include "lib_ay/ay_chip.h"
+#include "lib_ym2203/ym2203_chip.h"
 
 #define TSFM_CHIPS_COUNT 2
 #define TSFM_MODE_AY 1

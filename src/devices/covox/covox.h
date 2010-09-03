@@ -3,7 +3,7 @@
 
 #include "../../zemu.h"
 #include "../device.h"
-#include "../../sound/snd_renderer.h"
+#include "sound/mixer.h"
 
 class C_Covox : public C_Device
 {

@@ -10,7 +10,7 @@ void C_Border::Init(void)
 	AttachFrameStartHandler(OnFrameStart);				// [boo]
 	AttachAfterFrameRenderHandler(OnAfterFrameRender);	// [boo]
 
-	RegisterSndRenderer(&sndRenderer);
+	SoundMixer.AddSource(&sndRenderer);
 	portFB = 0;
 }
 
