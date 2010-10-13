@@ -20,18 +20,15 @@ C_AyChipConfig::C_AyChipConfig()
 void C_AyChipConfig::ReadConfig(void)
 {
 	const char *str;
-	string s;
 
-	s = config.GetString("sound", "aychiptype", "ym");
-	str = s.c_str();
+	str = config.GetString("sound", "aychiptype", "ym").c_str();
 	chipType = (!strcasecmp(str, "ay") ? TypeAy : TypeYm);
 
-	s = config.GetString("sound", "aychipvol", "ym");
-	str = s.c_str();
+	str = config.GetString("sound", "aychipvol", "ym").c_str();
 	volType = (!strcasecmp(str, "ay") ? VolAy : VolYm);
 
-	s = config.GetString("sound", "aychippan", "acb");
-	str = s.c_str();
+	str = config.GetString("sound", "aychippan", "acb").c_str();
+
 	if (!strcasecmp(str, "mono")) panType = PanMono;
 	else
 	if (!strcasecmp(str, "abc")) panType = PanABC;

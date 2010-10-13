@@ -36,7 +36,7 @@ unsigned long Render16c(SDL_Surface *surf, int ptch, unsigned long lastClk, unsi
 					zxLine = line - 64;
 					scr = (int *)surf->pixels + ptch*scrLine + 32 + pos*8;
 
-					if (dev_mman.port7FFD & 8)
+					if ((dev_mman.port7FFD & 8) ^ screensHack)
 					{
 						scrA = RAM_BANK7;
 						scrB = RAM_BANK6;

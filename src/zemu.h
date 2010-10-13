@@ -11,7 +11,7 @@
 #define HEIGHT 240
 
 #define FRAME_WAIT_MS 20
-#define MAX_SPEED_FRAME_SKIP 256
+#define MAX_SPEED_FRAME_SKIP 64
 
 #define MAX_DEV_CLK 72000
 
@@ -97,9 +97,12 @@ extern bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
 extern bool joyOnKeyb;
 extern bool attributesHack;
+extern int screensHack;		// 0 = no hack, 8 = swap screens
+extern bool flashColor;
 extern int colors_base[0x10];
 extern int colors[0x10];
 extern unsigned turboMultiplierNx;
+extern bool unturboNx;
 
 //--------------------------------------------------------------------------------------------------------------
 
@@ -118,10 +121,8 @@ void DebugStep(void);
 void TryNLoadFile(char *fname);
 void TryNLoadFile(char *fname, int drive);
 void ScaleImage(void);
-
-//--------------------------------------------------------------------------------------------------------------
-
 void UpdateScreen(void);
+void DisplayTurboMessage(void);
 
 //--------------------------------------------------------------------------------------------------------------
 

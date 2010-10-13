@@ -32,11 +32,16 @@ void C_Keyboard::ReadKbdConfig(void)
 	}
 
 	string value = config.GetString("input", "keymap", "keys.config");
-	value = config.FindDataFile("", value.c_str());
-	fname = value.c_str();
+	string keysConfigPath = config.FindDataFile("", value.c_str());
+
+	if (keysConfigPath.empty()) {
+		throw C_E(E_FileNotFound, value.c_str());
+	}
 
 	ln = 0;
+	fname = keysConfigPath.c_str();
 	fl.Read(fname);
+
 	while (!fl.Eof())
 	{
 		fl.GetS(buf, sizeof(buf));

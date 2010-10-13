@@ -14,6 +14,7 @@ void C_TrDos::ReadFile(void)
 
 	filename = config.GetString("beta128", "rom", "trdos.rom");
 	filename = split_romname(filename, &offset);
+
 	if (config.LoadDataFile("roms", filename.c_str(), rom, 0x4000, offset) != 0x4000) {
 		throw C_E(E_General, "Error loading " + filename);
 	}
@@ -41,7 +42,7 @@ ptrOnReadByteFunc C_TrDos::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
 	{
 		if (trdos && addr > 0x3FFF)
 		{
-            return OnReadByte_RAM_M1;
+			return OnReadByte_RAM_M1;
 		}
 
 		if (!trdos && (addr & 0xFF00)==0x3D00) {
@@ -50,25 +51,26 @@ ptrOnReadByteFunc C_TrDos::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
 	}
 
 	if (trdos && addr<0x4000) {
-        return OnReadByte_ROM;
+		return OnReadByte_ROM;
 	}
-    return NULL;
+
+	return NULL;
 }
 
 Z80EX_BYTE C_TrDos::OnReadByte_3Dxx_M1(Z80EX_WORD addr, bool m1)
 {
-    if (dev_mman.port7FFD & 0x10) { // TRDOS should not be activated if 128 Basic ROM is on
-        Enable();
+	if (dev_mman.port7FFD & 0x10) { // TRDOS should not be activated if 128 Basic ROM is on
+		Enable();
 		return rom[addr];
-    }
-    else {
-        return C_MemoryManager::OnReadByte_ROM(addr, m1);
-    }
+	} else {
+		return C_MemoryManager::OnReadByte_ROM(addr, m1);
+	}
 }
 
 Z80EX_BYTE C_TrDos::OnReadByte_RAM_M1(Z80EX_WORD addr, bool m1)
 {
-    Disable();
+	Disable();
+
 	if (addr < 0x8000) return C_MemoryManager::OnReadByte_Bank5(addr, m1);
 	else
 	if (addr < 0xC000) return C_MemoryManager::OnReadByte_Bank2(addr, m1);
@@ -77,7 +79,7 @@ Z80EX_BYTE C_TrDos::OnReadByte_RAM_M1(Z80EX_WORD addr, bool m1)
 
 Z80EX_BYTE C_TrDos::OnReadByte_ROM(Z80EX_WORD addr, bool m1)
 {
-    return rom[addr];
+	return rom[addr];
 }
 
 bool C_TrDos::InputOutputByteCheckPort(Z80EX_WORD port)

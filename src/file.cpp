@@ -136,6 +136,8 @@ void C_File::Read(const char *filename)
 	uint8_t *tmp;
 #endif
 
+	if (!strlen(filename)) throw C_E(E_EmptyFileName);
+
 	handle = _open(filename, _O_BINARY | _O_RDONLY);
 	if (handle == -1) throw C_E(E_ReadError, filename);
 
@@ -177,6 +179,8 @@ void C_File::Read(const char *filename)
 
 void C_File::Write(const char *filename)
 {
+	if (!strlen(filename)) throw C_E(E_EmptyFileName);
+
 	handle = _open(filename, _O_CREAT | _O_BINARY | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 	if (handle == -1) throw C_E(E_WriteError, filename);
 	len = 0;

@@ -744,7 +744,7 @@ void DebugIt(void)
 				if (event.type == SDL_KEYDOWN) key = event.key.keysym.sym;
 			}
 
-	 		DlgClearScreen();
+			DlgClearScreen();
 			Bar(0, scrEnd, WIDTH-1, HEIGHT-1, DRGB(0x80, 0x20, 0x20));
 
 			int lx = WIDTH/2;
@@ -839,12 +839,13 @@ void DebugIt(void)
 			sprintf(buf, "EFF7 %02X", C_ExtPort::portEFF7);               fixed_font.PrintString(x, y, buf); y += h;
 			sprintf(buf, "DOS  %s", C_TrDos::trdos ? "ON" : "OFF");       fixed_font.PrintString(x, y, buf); y += h;
 			sprintf(buf, "INT? %s", z80ex_int_possible(cpu) ? "Y" : "N"); fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "T    %d", (int)clk);                            fixed_font.PrintString(x, y, buf); y += h;
 
 			OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);
 			ScaleImage();
 			UpdateScreen();
 			SDL_Delay(10);
-	 	} while (key == 0);
+		} while (key == 0);
 
 		if (key == SDLK_UP)
 		{

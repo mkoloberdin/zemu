@@ -31,51 +31,57 @@
 #include <shlwapi.h>
 #endif
 
+#include "file.h"
+
 CConfig::CConfig(const char *app_name) {
 	changed = false;
 	this->app_name = app_name;
 
-#ifdef _WIN32
-	TCHAR buffer[MAX_PATH];
-	GetModuleFileName(0, buffer, MAX_PATH);
-	PathRemoveFileSpec(buffer);
-	share_path = string(buffer);
-#else
+	#ifdef _WIN32
+		TCHAR buffer[MAX_PATH];
+		GetModuleFileName(0, buffer, MAX_PATH);
+		PathRemoveFileSpec(buffer);
+		share_path = string(buffer);
+	#else
+		#ifdef SHARE_PATH
+			share_path = SHARE_PATH; // e.g. /usr/share/app_name or /opt/app_name/share
+		#else
+			share_path = '.'; // used only for debugging, FIXME: perhaps use argv[0] ?
+		#endif // SHARE_PATH
+	#endif // _WIN32
 
-#ifdef SHARE_PATH
-	share_path = SHARE_PATH; // e.g. /usr/share/app_name or /opt/app_name/share
-#else
-	share_path = '.'; // used only for debugging, FIXME: perhaps use argv[0] ?
-#endif // SHARE_PATH
-#endif // _WIN32
+	#ifdef FOR_INSTALL
+		#ifdef _WIN32
+			if (SHGetSpecialFolderPath(0, buffer, CSIDL_APPDATA, true)) {
+				user_path = path_append(string(buffer), app_name);
+			}
+		#else
+			if (getenv("XDG_CONFIG_HOME")) {
+				user_path = path_append(getenv("XDG_CONFIG_HOME"), this->app_name);
+			} else if (C_File::FileExists(path_append(getenv("HOME"), ".config").c_str())) {
+				user_path = path_append(getenv("HOME"), ".config/zemu");
+			} else {
+				user_path = path_append(getenv("HOME"), string(".") + this->app_name);
+			}
+		#endif // _WIN32
 
-#ifdef FOR_INSTALL
-#ifdef _WIN32
-	if (SHGetSpecialFolderPath(0, buffer, CSIDL_APPDATA, true)) {
-		user_path = path_append(string(buffer), app_name);
-	}
-#else
-	user_path = path_append(getenv("HOME"), string(".") + this->app_name);
-#endif // _WIN32
-
-	if(!user_path.empty()) {
-#ifdef _WIN32
-		mkdir(user_path.c_str());
-#else
-		mkdir(user_path.c_str(), 0755);
-#endif
-	}
-
-#else
-	user_path = share_path;
-#endif // FOR_INSTALL
+		if(!user_path.empty()) {
+			#ifdef _WIN32
+				mkdir(user_path.c_str());
+			#else
+				mkdir(user_path.c_str(), 0755);
+			#endif
+		}
+	#else
+		user_path = share_path;
+	#endif // FOR_INSTALL
 
 	string ini_user = path_append(user_path, this->app_name + ".ini");
+
 	if(ini.LoadFile(ini_user.c_str())) {
 		string ini_global = path_append(share_path, this->app_name + ".ini");
 		ini.LoadFile(ini_global.c_str());
 	}
-
 }
 
 CConfig::~CConfig() {

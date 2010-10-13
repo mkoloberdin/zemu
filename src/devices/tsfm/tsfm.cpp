@@ -29,6 +29,7 @@ void C_TsFm::Init(void)
 
 	string s = config.GetString("sound", "tsfmmode", "tsfm");
 	str = s.c_str();
+
 	if (!strcasecmp(str, "ay")) mode = TSFM_MODE_AY;
 	else
 	if (!strcasecmp(str, "ts")) mode = TSFM_MODE_TS;

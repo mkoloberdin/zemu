@@ -37,7 +37,7 @@ unsigned long RenderMulticolor(SDL_Surface *surf, int ptch, unsigned long lastCl
 					zxLine = line - 64;
 					scr = (int *)surf->pixels + ptch*scrLine + 32 + pos*8;
 
-					zxScreen = (dev_mman.port7FFD & 8) ? RAM_BANK7 : RAM_BANK5;
+					zxScreen = ((dev_mman.port7FFD & 8) ^ screensHack) ? RAM_BANK7 : RAM_BANK5;
 					bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 					cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 

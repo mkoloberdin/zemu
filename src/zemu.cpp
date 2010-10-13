@@ -35,6 +35,8 @@
 
 unsigned turboMultiplier = 1;
 unsigned turboMultiplierNx = 1;
+bool unturbo = false;
+bool unturboNx = false;
 
 bool isPaused = false;
 bool isPausedNx = false;
@@ -243,6 +245,30 @@ int colors_base[0x10] = {
 	DRGB(255, 255, 255)
 };
 
+/*
+ * Work in progress
+ *
+int c64_colors_base[0x10] = {
+	DRGB(0x00, 0x00, 0x00),
+	DRGB(0x35, 0x28, 0x79),
+	DRGB(0x9A, 0x67, 0x59),
+	DRGB(0x6F, 0x3D, 0x86),
+	DRGB(0x58, 0x8D, 0x43),
+	DRGB(0x70, 0xA4, 0xB2),
+	DRGB(0xB8, 0xC7, 0x6F),
+	DRGB(0x95, 0x95, 0x95),
+
+	DRGB(0x00, 0x00, 0x00),
+	DRGB(0x35, 0x28, 0x79),
+	DRGB(0x9A, 0x67, 0x59),
+	DRGB(0x6F, 0x3D, 0x86),
+	DRGB(0x58, 0x8D, 0x43),
+	DRGB(0x70, 0xA4, 0xB2),
+	DRGB(0xB8, 0xC7, 0x6F),
+	DRGB(0xFF, 0xFF, 0xFF)
+};
+*/
+
 int colors[0x10];
 
 //--------------------------------------------------------------------------------------------------------------
@@ -314,8 +340,10 @@ bool TryLoadArcFile(char *arcName, int drive)
 	StrToLower(tmp);
 
 	plugin_fn = config.FindDataFile("arc", tmp);
-	if (plugin_fn.empty())
+
+	if (plugin_fn.empty()) {
 		return false;
+	}
 
 	sprintf(tmp, "%s list %s %s/files.txt", plugin_fn.c_str(), arcName, tempFolderName);
 	if (system(tmp) == -1) DEBUG_MESSAGE("system failed");
@@ -324,6 +352,7 @@ bool TryLoadArcFile(char *arcName, int drive)
 	if (!C_File::FileExists(tmp)) return true; // "true" here means ONLY that the file is an archive
 
 	fl.Read(tmp);
+
 	for (filesCount = 0; !fl.Eof(); )
 	{
 		fl.GetS(str, sizeof(str));
@@ -343,6 +372,7 @@ bool TryLoadArcFile(char *arcName, int drive)
 
 	LoadNormalFile(res, drive);
 	unlink(res);
+
 	return true; // "true" here means ONLY that the file is an archive
 }
 
@@ -362,8 +392,9 @@ void TryNLoadFile(char *fname, int drive)
 		char *tname = fname;
 	#endif
 
-	if (!TryLoadArcFile(tname, drive))
+	if (!TryLoadArcFile(tname, drive)) {
 		LoadNormalFile(tname, drive);
+	}
 }
 
 void TryNLoadFile(char *fname)
@@ -435,8 +466,9 @@ void Action_LoadFile(void)
 
 void Action_Fullscreen(void)
 {
-	/* SDL_WM_ToggleFullscreen works only on X11 */
-
+#ifdef __linux__
+	SDL_WM_ToggleFullScreen(realScreen);
+#else
 	videoSpec ^= SDL_FULLSCREEN;
 	SDL_FreeSurface(realScreen);
 	realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
@@ -447,6 +479,7 @@ void Action_Fullscreen(void)
 		screen = realScreen;
 		PITCH = REAL_PITCH;
 	}
+#endif
 }
 
 void Action_Debugger(void)
@@ -458,15 +491,48 @@ void Action_Debugger(void)
 void Action_Turbo(void)
 {
 	isPaused = false;
-	turboMultiplierNx *= 2;
 
-	if (turboMultiplierNx > 4) turboMultiplierNx = 1;
+	if (unturboNx && turboMultiplierNx > 1)
+	{
+		turboMultiplierNx /= 2;
+		unturboNx = (turboMultiplierNx > 1);
+	}
+	else
+	{
+		unturboNx = false;
+		turboMultiplierNx = (turboMultiplierNx == 8 ? 1 : (turboMultiplierNx * 2));
+	}
 
-	if (turboMultiplierNx < 2) {
+	DisplayTurboMessage();
+}
+
+void Action_UnTurbo(void)
+{
+	isPaused = false;
+
+	if (!unturboNx && turboMultiplierNx > 1)
+	{
+		turboMultiplierNx /= 2;
+	}
+	else
+	{
+		turboMultiplierNx = (turboMultiplierNx == 256 ? 1 : (turboMultiplierNx * 2));
+		unturboNx = (turboMultiplierNx > 1);
+	}
+
+	DisplayTurboMessage();
+}
+
+void DisplayTurboMessage(void)
+{
+	if (turboMultiplierNx < 2)
+	{
 		SetMessage("Turbo OFF");
-	} else {
+	}
+	else
+	{
 		char buf[0x10];
-		sprintf(buf, "Turbo %dx", turboMultiplierNx);
+		sprintf(buf, (unturboNx ? "Slowness %dx" : "Turbo %dx"), turboMultiplierNx);
 		SetMessage(buf);
 	}
 }
@@ -476,6 +542,20 @@ void Action_AttributesHack(void)
 	isPaused = false;
 	attributesHack = !attributesHack;
 	SetMessage(attributesHack ? "AttributesHack ON" : "AttributesHack OFF");
+}
+
+void Action_ScreensHack(void)
+{
+	isPaused = false;
+	screensHack = screensHack ^ 8;
+	SetMessage(screensHack ? "ScreensHack ON" : "ScreensHack OFF");
+}
+
+void Action_FlashColor(void)
+{
+	isPaused = false;
+	flashColor = !flashColor;
+	SetMessage(flashColor ? "FlashColor ON" : "FlashColor OFF");
 }
 
 void Action_Pause(void)
@@ -504,7 +584,10 @@ s_Action cfgActions[] =
 	{"fullscreen",		Action_Fullscreen},
 	{"debugger",		Action_Debugger},
 	{"turbo",			Action_Turbo},
+	{"unturbo",			Action_UnTurbo},
 	{"attrib_hack",		Action_AttributesHack},
+	{"screens_hack",	Action_ScreensHack},
+	{"flash_color",		Action_FlashColor},
 	{"pause",			Action_Pause},
 	{"joy_on_keyb",		Action_JoyOnKeyb},
 	{"",				NULL}
@@ -587,6 +670,7 @@ Z80EX_BYTE ReadIntVec(Z80EX_CONTEXT *cpu, void *userData)
 void InitDevMapRead(ptrOnReadByteFunc * map)
 {
 	ptrOnReadByteFunc func;
+
 	for (unsigned m1_state = 0; m1_state < 2; m1_state++)
 	{
 		for (unsigned addr = 0; addr < 0x10000; addr++)
@@ -730,6 +814,8 @@ void InitAll(void)
 #define INT_BEGIN 68069
 
 bool attributesHack = false;
+bool flashColor = false;
+int screensHack = 0;
 
 // left_border        = 36
 // horizontal_screen  = 128
@@ -815,20 +901,36 @@ void InitActClk(void)
 	actClk = clk * (uint64_t)turboMultiplier;
 }
 
+// TODO:
+// CpuCalcTacts - pointer to function
+// CpuCalcTacts_Normal
+// CpuCalcTacts_Turbo
+// CpuCalcTacts_Unturbo
+// DebugCpuCalcTacts_Normal
+// ...
+// ...
+// TODO: refactor
+
 inline void CpuCalcTacts(unsigned long cmdClk)
 {
-	if (turboMultiplier > 1)
+	if (turboMultiplier < 2)
+	{
+		devClkCounter += (uint64_t)cmdClk;
+		clk += (uint64_t)cmdClk;
+	}
+	else if (unturbo)
+	{
+		cmdClk *= turboMultiplier;
+		devClkCounter += (uint64_t)cmdClk;
+		clk += (uint64_t)cmdClk;
+	}
+	else
 	{
 		actDevClkCounter += (uint64_t)cmdClk;
 		actClk += (uint64_t)cmdClk;
 
 		devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
 		clk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
-	}
-	else
-	{
-		devClkCounter += (uint64_t)cmdClk;
-		clk += (uint64_t)cmdClk;
 	}
 
 	devClk = clk;
@@ -839,8 +941,7 @@ inline void CpuCalcTacts(unsigned long cmdClk)
 		runDebuggerFlag = false;
 		RunDebugger();
 	}
-	else
-	if (breakpoints[z80ex_get_reg(cpu, regPC)])
+	else if (breakpoints[z80ex_get_reg(cpu, regPC)])
 	{
 		RunDebugger();
 	}
@@ -848,18 +949,24 @@ inline void CpuCalcTacts(unsigned long cmdClk)
 
 inline void DebugCpuCalcTacts(unsigned long cmdClk)
 {
-	if (turboMultiplier > 1)
+	if (turboMultiplier < 2)
+	{
+		devClkCounter += (uint64_t)cmdClk;
+		clk += (uint64_t)cmdClk;
+	}
+	else if (unturbo)
+	{
+		cmdClk *= turboMultiplier;
+		devClkCounter += (uint64_t)cmdClk;
+		clk += (uint64_t)cmdClk;
+	}
+	else
 	{
 		actDevClkCounter += (uint64_t)cmdClk;
 		actClk += (uint64_t)cmdClk;
 
-		devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier-1)) / (uint64_t)(turboMultiplier);
-		clk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)(turboMultiplier);
-	}
-	else
-	{
-		devClkCounter += (uint64_t)cmdClk;
-		clk += (uint64_t)cmdClk;
+		devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
+		clk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
 	}
 
 	devClk = clk;
@@ -872,6 +979,7 @@ int (* DoCpuInt)(Z80EX_CONTEXT *cpu) = z80ex_int;
 int TraceCpuStep(Z80EX_CONTEXT *cpu)
 {
 	CpuTrace_Log();
+	cpuTrace_intReq = 0;
 	cpuTrace_dT = z80ex_step(cpu);
 	return cpuTrace_dT;
 }
@@ -881,7 +989,8 @@ int TraceCpuInt(Z80EX_CONTEXT *cpu)
 	CpuTrace_Log();
 	int dt = z80ex_int(cpu);
 	cpuTrace_dT += dt;
-	return cpuTrace_dT;
+	cpuTrace_intReq++;
+	return dt;
 }
 
 inline void CpuStep(void)
@@ -1213,6 +1322,7 @@ void Process(void)
 		}
 
 		turboMultiplier = turboMultiplierNx;
+		unturbo = unturboNx;
 
 		if (!isPaused && tapePrevActive && !C_Tape::IsActive())
 		{
@@ -1328,6 +1438,7 @@ void OutputLogo(void)
 	printf("                                     \n");
 	printf(" restorer [ restorer.fct@gmail.com ] \n");
 	printf(" boo_boo  [    boo_boo@inbox.ru    ] \n");
+	printf(" mkoloberdin                         \n");
 	printf("                                     \n");
 	printf(" breeze (gfx)                        \n");
 	printf("                                     \n");
@@ -1344,25 +1455,31 @@ int main(int argc, char *argv[])
 	try
 	{
 		string str;
+
 		// core
 		str = config.GetString("core", "snapformat", "sna");
 		transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
+
 		if (str == "sna") params.snapFormat = SNAP_FORMAT_SNA;
 		else params.snapFormat = SNAP_FORMAT_Z80;
 
 		// beta128
 		str = config.GetString("beta128", "diskA", "");
 		if (!str.empty()) wd1793_load_dimage(str.c_str(), 0);
+
 		str = config.GetString("beta128", "diskB", "");
 		if (!str.empty()) wd1793_load_dimage(str.c_str(), 1);
+
 		str = config.GetString("beta128", "diskC", "");
 		if (!str.empty()) wd1793_load_dimage(str.c_str(), 2);
+
 		str = config.GetString("beta128", "diskD", "");
 		if (!str.empty()) wd1793_load_dimage(str.c_str(), 3);
 
 		wd1793_set_nodelay(config.GetBool("beta128", "nodelay", false));
 
 		str = config.GetString("beta128", "sclboot", "boot.$b");
+
 		str = config.FindDataFile("boot", str.c_str());
 		if (!str.empty()) wd1793_set_appendboot(str.c_str());
 
@@ -1382,36 +1499,39 @@ int main(int argc, char *argv[])
 		// sound
 		params.sound = config.GetBool("sound", "enable", true);
 		params.mixerMode = config.GetInt("sound", "mixermode", 1);
+
 #ifdef _WIN32
 		eSndBackend default_snd_backend = SND_BACKEND_WIN32;
 #else
 		eSndBackend default_snd_backend = SND_BACKEND_SDL;
 #endif
+
 		str = config.GetString("sound", "sound_backend", "auto");
 		transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
 		if (str == "sdl") params.sndBackend = SND_BACKEND_SDL;
+
 #ifndef _WIN32
 		else if (str == "oss") params.sndBackend = SND_BACKEND_OSS;
 #else
 		else if (str == "win32") params.sndBackend = SND_BACKEND_WIN32;
 #endif
+
 		else params.sndBackend = default_snd_backend;
 		params.sdlBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
+
 #ifdef __linux__
-	params.soundParam = config.GetInt("sound", "ossfragnum", 8);
+		params.soundParam = config.GetInt("sound", "ossfragnum", 8);
 #endif
 #ifdef _WIN32
-	params.soundParam = config.GetInt("sound", "wqsize", 4);
+		params.soundParam = config.GetInt("sound", "wqsize", 4);
 #endif
 
 		// cputrace
 		params.cpuTraceEnabled = config.GetBool("cputrace", "enable", false);
-		str = config.GetString("cputrace", "format",
-				"[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] HL=[HL] IX=[IX] IY=[IY] SP=[SP] I=[I] R=[R]");
+		str = config.GetString("cputrace", "format", "[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] HL=[HL] IX=[IX] IY=[IY] SP=[SP] I=[I] R=[R] AF'=[AF'] BC'=[BC'] DE'=[DE'] HL'=[HL'] IFF1=[IFF1] IFF2=[IFF2] IM=[IM] INTR=[INTR]");
 		strcpy(params.cpuTraceFormat, str.c_str());
 		str = config.GetString("cputrace", "filename", "cputrace.log");
 		strcpy(params.cpuTraceFileName, str.c_str());
-
 
 		spec = SDL_INIT_VIDEO;
 		if (params.sound && params.sndBackend == SND_BACKEND_SDL) spec |= SDL_INIT_AUDIO;
@@ -1473,6 +1593,7 @@ int main(int argc, char *argv[])
 
 		InitAll();
 		ResetSequence();
+
 		if (argc != 1) ParseCmdLine(argc, argv);
 		if (params.sound) InitAudio();
 
@@ -1486,7 +1607,7 @@ int main(int argc, char *argv[])
 	}
 	catch (C_E &e)
 	{
-		StrikeError("Error %d: %s (%s)", e.exc, e.Descr(), e.param.c_str());
+		StrikeError("Error %d: %s", e.exc, e.Descr());
 	}
 
 	return 0;

@@ -32,7 +32,10 @@ void C_ExtPort::Init(void)
 		oldEFF7Mode = config.GetBool("core", "oldEFF7mode", false);
 		useEFF7Turbo = config.GetBool("core", "useEFF7turbo", false);
 
-		if (useEFF7Turbo) turboMultiplierNx = 2;
+		if (useEFF7Turbo) {
+			// disable turbo by default
+			portEFF7 = EXTPORT_TURBO_MASK;
+		}
 	}
 }
 
@@ -47,8 +50,10 @@ bool C_ExtPort::OutputByteCheckPort(Z80EX_WORD port)
 
 bool C_ExtPort::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
 {
-	if (useEFF7Turbo && (value & EXTPORT_TURBO_MASK)) {
+	if (useEFF7Turbo && ((value & EXTPORT_TURBO_MASK) != (portEFF7 & EXTPORT_TURBO_MASK)))
+	{
 		turboMultiplierNx = ((value & EXTPORT_TURBO_MASK) ? 1 : 2);
+		DisplayTurboMessage();
 	}
 
 	portEFF7 = value;
@@ -57,7 +62,17 @@ bool C_ExtPort::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
 
 void C_ExtPort::OnReset(void)
 {
-	portEFF7 = 0;
+	if (useEFF7Turbo)
+	{
+		// disable turbo by default
+		portEFF7 = EXTPORT_TURBO_MASK;
+		turboMultiplierNx = 1;
+		unturboNx = false;
+	}
+	else
+	{
+		portEFF7 = 0;
+	}
 }
 
 bool C_ExtPort::Is16Colors(void)

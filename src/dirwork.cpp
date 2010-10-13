@@ -15,7 +15,7 @@ char *realpath(const char *path, char *resolved_path) {
 	return r;
 }
 
-//#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+// #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
 
 C_DirWork::C_DirWork()
 {

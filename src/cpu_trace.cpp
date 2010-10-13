@@ -4,6 +4,7 @@
 
 static C_File traceFile;
 int cpuTrace_dT = 0;
+int cpuTrace_intReq = 0;
 
 void CpuTrace_Init(void)
 {
@@ -22,9 +23,6 @@ static void CpuTrace_PutWord(Z80EX_WORD val)
 	traceFile.PrintF("%04X", val);
 }
 
-/*
- * TODO: Add AF' .. HL', IFF1, IFF2, IM
- */
 void CpuTrace_Log(void)
 {
 	if (!params.cpuTraceEnabled || !(*params.cpuTraceFormat) || !(*params.cpuTraceFileName)) return;
@@ -60,6 +58,14 @@ void CpuTrace_Log(void)
 				else
 				if (!strcmp(str, "HL")) CpuTrace_PutWord(z80ex_get_reg(cpu, regHL));
 				else
+				if (!strcmp(str, "AF'")) CpuTrace_PutWord(z80ex_get_reg(cpu, regAF_));
+				else
+				if (!strcmp(str, "BC'")) CpuTrace_PutWord(z80ex_get_reg(cpu, regBC_));
+				else
+				if (!strcmp(str, "DE'")) CpuTrace_PutWord(z80ex_get_reg(cpu, regDE_));
+				else
+				if (!strcmp(str, "HL'")) CpuTrace_PutWord(z80ex_get_reg(cpu, regHL_));
+				else
 				if (!strcmp(str, "IX")) CpuTrace_PutWord(z80ex_get_reg(cpu, regIX));
 				else
 				if (!strcmp(str, "IY")) CpuTrace_PutWord(z80ex_get_reg(cpu, regIY));
@@ -67,6 +73,14 @@ void CpuTrace_Log(void)
 				if (!strcmp(str, "SP")) CpuTrace_PutWord(z80ex_get_reg(cpu, regSP));
 				else
 				if (!strcmp(str, "DT")) CpuTrace_PutByte(cpuTrace_dT);
+				else
+				if (!strcmp(str, "INTR")) CpuTrace_PutByte(cpuTrace_intReq);
+				else
+				if (!strcmp(str, "IFF1")) CpuTrace_PutByte(z80ex_get_reg(cpu, regIFF1));
+				else
+				if (!strcmp(str, "IFF2")) CpuTrace_PutByte(z80ex_get_reg(cpu, regIFF2));
+				else
+				if (!strcmp(str, "IM")) CpuTrace_PutByte(z80ex_get_reg(cpu, regIM));
 				else
 				if (!strcmp(str, "M1")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC), NULL));
 				else
