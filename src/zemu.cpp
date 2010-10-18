@@ -50,7 +50,7 @@ SDL_Surface *screen, *realScreen, *scrSurf[2];
 int PITCH, REAL_PITCH;
 bool drawFrame;
 int frames;
-CConfig config("zemu");
+CConfig config;
 C_Font font, fixed_font;
 bool disableSound = false;
 bool doCopyAfSurfaces = false;
@@ -319,9 +319,17 @@ void LoadNormalFile(char *fname, int drive)
 	if (C_Tape::IsTapeFormat(fname)) {
 		C_Tape::Insert(fname);
 	} else if (!stricmp(C_DirWork::ExtractExt(fname), "z80")) {
-		if (!load_z80_snap(fname, cpu, dev_mman, dev_border)) StrikeMessage("Error loading snapshot");
+		if (load_z80_snap(fname, cpu, dev_mman, dev_border)) {
+			dev_tsfm.OnReset();
+		} else {
+			StrikeMessage("Error loading snapshot");
+		}
 	} else if (!stricmp(C_DirWork::ExtractExt(fname), "sna")) {
-		if (!load_sna_snap(fname, cpu, dev_mman, dev_border)) StrikeMessage("Error loading snapshot");
+		if (load_sna_snap(fname, cpu, dev_mman, dev_border)) {
+			dev_tsfm.OnReset();
+		} else {
+			StrikeMessage("Error loading snapshot");
+		}
 	} else {
 		wd1793_load_dimage(fname, drive);
 	}
@@ -1388,6 +1396,10 @@ void FreeAll(void)
 	if (params.scale2x) SDL_FreeSurface(screen);
 
 	z80ex_destroy(cpu);
+
+	if (CConfig::executableDir) {
+		free(CConfig::executableDir);
+	}
 }
 
 void ParseCmdLine(int argc, char *argv[])
@@ -1448,9 +1460,15 @@ void OutputLogo(void)
 
 int main(int argc, char *argv[])
 {
-	int spec;
-
 	OutputLogo();
+
+	if (argc > 0) {		// just for case
+		CConfig::executableDir = AllocNstrcpy(C_DirWork::ExtractPath(argv[0]));
+	} else {
+		CConfig::executableDir = AllocNstrcpy(".");
+	}
+
+	config.Initialize("zemu");
 
 	try
 	{
@@ -1533,7 +1551,7 @@ int main(int argc, char *argv[])
 		str = config.GetString("cputrace", "filename", "cputrace.log");
 		strcpy(params.cpuTraceFileName, str.c_str());
 
-		spec = SDL_INIT_VIDEO;
+		int spec = SDL_INIT_VIDEO;
 		if (params.sound && params.sndBackend == SND_BACKEND_SDL) spec |= SDL_INIT_AUDIO;
 		if (SDL_Init(spec) < 0) StrikeError("Unable to init SDL: %s\n", SDL_GetError());
 

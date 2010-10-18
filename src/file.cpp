@@ -106,7 +106,7 @@ bool C_File::IsOpened(void)
 	return (accMode != ACC_NONE);
 }
 
-long C_File::FileSize(const char *filename)
+size_t C_File::FileSize(const char *filename)
 {
 	int h;
 	long l;
@@ -386,7 +386,7 @@ void C_File::GetS(char *buf, int size)
 	buf[o] = 0;
 }
 
-unsigned long C_File::GetFilePointer(void)
+size_t C_File::GetFilePointer(void)
 {
 	if (accMode != ACC_READ) throw C_E(E_IncorrectAccMode);
 	if (isCompressed) throw C_E(E_FileIsCompressed);
@@ -394,7 +394,7 @@ unsigned long C_File::GetFilePointer(void)
 	return (eof ? readFileSize : readFileSize - readSize);
 }
 
-void C_File::SetFilePointer(unsigned long fp)
+void C_File::SetFilePointer(size_t fp)
 {
 	if (accMode != ACC_READ) throw C_E(E_IncorrectAccMode);
 	if (isCompressed) throw C_E(E_FileIsCompressed);
@@ -408,16 +408,16 @@ void C_File::SetFilePointer(unsigned long fp)
 	accMode = ACC_READ;
 }
 
-int C_File::ReadBlock(void *buf, int size)
+size_t C_File::ReadBlock(void *buf, size_t size)
 {
 	uint8_t *bf = (uint8_t *)buf;
-	int act = 0;
+	size_t act = 0;
 
 	for (; size && !Eof(); size--, act++) *(bf++) = GetBYTE();
 	return act;
 }
 
-void C_File::WriteBlock(void *buf, int size)
+void C_File::WriteBlock(void *buf, size_t size)
 {
 	uint8_t *bf = (uint8_t *)buf;
 	if (!size) return;

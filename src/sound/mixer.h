@@ -25,6 +25,7 @@ public:
 	void AddSource(C_SndRenderer *Source);
 	void FlushFrame(bool SoundEnabled);
 	s_Sample MixBuffer[MIX_BUFFER_SIZE * 2];
+
 private:
 	bool Initialized;
 	CSndBackend *sndBackend;

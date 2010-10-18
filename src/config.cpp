@@ -1,93 +1,107 @@
-#include "platform.h"
-#include "config.h"
-#include "path.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <io.h> // for _access()
-#else
-#include <unistd.h> // for access()
-#endif // _WIN32
-
-#ifdef FOR_INSTALL
-#ifdef _WIN32
-#ifndef _WIN32_IE
-#define _WIN32_IE 0x400
-#endif
-#include <shlobj.h>
-#include <io.h>
-
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#endif // _WIN32
-#endif // FOR_INSTALL
-
-#ifdef _WIN32
-#include <shlwapi.h>
-#endif
-
+#include "platform.h"
+#include "dirwork.h"
 #include "file.h"
+#include "config.h"
 
-CConfig::CConfig(const char *app_name) {
+#ifdef _WIN32
+	#include <io.h> // for _access()
+#else
+	#include <unistd.h> // for access()
+#endif // _WIN32
+
+// [rst] what that FOR_INSTALL mean at all?
+
+#ifdef _WIN32
+	#ifndef _WIN32_IE
+		#define _WIN32_IE 0x400
+	#endif
+
+	#include <shlobj.h>
+	#include <io.h>
+#else
+	#include <sys/stat.h>
+	#include <sys/types.h>
+#endif // _WIN32
+
+#ifdef _WIN32
+	#include <shlwapi.h>
+#endif
+
+char *CConfig::executableDir = NULL;
+
+CConfig::CConfig() {
 	changed = false;
-	this->app_name = app_name;
-
-	#ifdef _WIN32
-		TCHAR buffer[MAX_PATH];
-		GetModuleFileName(0, buffer, MAX_PATH);
-		PathRemoveFileSpec(buffer);
-		share_path = string(buffer);
-	#else
-		#ifdef SHARE_PATH
-			share_path = SHARE_PATH; // e.g. /usr/share/app_name or /opt/app_name/share
-		#else
-			share_path = '.'; // used only for debugging, FIXME: perhaps use argv[0] ?
-		#endif // SHARE_PATH
-	#endif // _WIN32
-
-	#ifdef FOR_INSTALL
-		#ifdef _WIN32
-			if (SHGetSpecialFolderPath(0, buffer, CSIDL_APPDATA, true)) {
-				user_path = path_append(string(buffer), app_name);
-			}
-		#else
-			if (getenv("XDG_CONFIG_HOME")) {
-				user_path = path_append(getenv("XDG_CONFIG_HOME"), this->app_name);
-			} else if (C_File::FileExists(path_append(getenv("HOME"), ".config").c_str())) {
-				user_path = path_append(getenv("HOME"), ".config/zemu");
-			} else {
-				user_path = path_append(getenv("HOME"), string(".") + this->app_name);
-			}
-		#endif // _WIN32
-
-		if(!user_path.empty()) {
-			#ifdef _WIN32
-				mkdir(user_path.c_str());
-			#else
-				mkdir(user_path.c_str(), 0755);
-			#endif
-		}
-	#else
-		user_path = share_path;
-	#endif // FOR_INSTALL
-
-	string ini_user = path_append(user_path, this->app_name + ".ini");
-
-	if(ini.LoadFile(ini_user.c_str())) {
-		string ini_global = path_append(share_path, this->app_name + ".ini");
-		ini.LoadFile(ini_global.c_str());
-	}
 }
 
 CConfig::~CConfig() {
-	if (changed) {
-		string ini_user = path_append(user_path, app_name + ".ini");
-		ini.SaveFile(ini_user.c_str());
+	if (changed && !user_path.empty() && !ini_name.empty()) {
+		ini.SaveFile(C_DirWork::Append(user_path, ini_name).c_str());
+	}
+}
+
+void CConfig::Initialize(const char *app_name) {
+	changed = false;
+	ini_name = string(app_name) + ".ini";
+
+	EnsurePaths(app_name);
+
+	// 1. try in current folder (allow use custom-configs for folder)
+	user_path = ".";
+	if (!ini.LoadFile(C_DirWork::Append(user_path, ini_name).c_str())) return;
+
+	if (executableDir) {
+		// 2. try in executable dir (useful for debug version && file associations)
+		user_path = executableDir;
+		if (!ini.LoadFile(C_DirWork::Append(user_path, ini_name).c_str())) return;
+	}
+
+	// 3. try in home folder
+	user_path = home_path;
+	if (!ini.LoadFile(C_DirWork::Append(user_path, ini_name).c_str())) return;
+
+	#ifdef SHARE_PATH
+		// 4. try in shared folder
+		if (!ini.LoadFile(C_DirWork::Append(SHARE_PATH, ini_name))) return;
+	#endif
+}
+
+void CConfig::EnsurePaths(const char *app_name) {
+	if (!home_path.empty()) {
+		return;
+	}
+
+	#ifdef _WIN32
+		TCHAR buffer[MAX_PATH];
+
+		if (SHGetSpecialFolderPath(0, buffer, CSIDL_APPDATA, true)) {
+			home_path = string(buffer);
+		}
+	#else
+		if (getenv("XDG_CONFIG_HOME")) {
+			home_path = getenv("XDG_CONFIG_HOME");
+		} else if (getenv("HOME")) {
+			if (C_File::FileExists(C_DirWork::Append(getenv("HOME"), ".config").c_str())) {
+				home_path = C_DirWork::Append(getenv("HOME"), ".config");
+			} else {
+				home_path = string(getenv("HOME"));
+			}
+		}
+	#endif
+
+	if (home_path.empty()) {
+		home_path = ".";
+	} else {
+		home_path = C_DirWork::Append(home_path, app_name);
+
+		#ifdef _WIN32
+			mkdir(home_path.c_str());
+		#else
+			mkdir(home_path.c_str(), 0755);
+		#endif
 	}
 }
 
@@ -142,54 +156,69 @@ void CConfig::SetBool(const char *section, const char *key, bool value) {
 	changed = true;
 }
 
-// try user's home directory first, fall back to shared location
-size_t CConfig::LoadDataFile(const char *prefix, const char *filename,
-		uint8_t *buffer, size_t size, size_t offset) {
-	string fn = path_append(user_path, path_append(prefix, filename));
-	FILE *f = fopen(fn.c_str(), "rb");
-	if (f == NULL) {
-		fn = path_append(share_path, path_append(prefix, filename));
-		f = fopen(fn.c_str(), "rb");
-		if (f == NULL) return 0;
+size_t CConfig::LoadDataFile(const char *prefix, const char *filename, uint8_t *buffer, size_t size, size_t offset) {
+	string path = CConfig::FindDataFile(prefix, filename);
+
+	if (path.empty()) {
+		return 0;
 	}
+
+	C_File fl;
+	fl.Read(path.c_str());
+
 	if (offset) {
-		fseek(f, offset, SEEK_SET);
+		fl.SetFilePointer(offset);
 	}
-	size_t r = fread(buffer, 1, size, f);
-	fclose(f);
-	return r;
+
+	size_t readed = fl.ReadBlock(buffer, size);
+	fl.Close();
+
+	return readed;
 }
 
-// save to user's home directory only
-bool CConfig::SaveDataFile(const char *prefix, const char *filename,
-		const uint8_t *buffer, size_t size) {
-	string fn = path_append(user_path, path_append(prefix, filename));
-	FILE *f = fopen(fn.c_str(), "wb");
-	if (f == NULL) return false;
-	size_t r = fwrite(buffer, 1, size, f);
-	fclose(f);
-	if (r == size) return true;
-	else return false;
+/*
+ * Not used
+ *
+bool CConfig::SaveDataFile(const char *prefix, const char *filename, const uint8_t *buffer, size_t size) {
+	string folder = C_DirWork::Append(user_path, prefix);
+
+	#ifdef _WIN32
+		mkdir(folder.c_str());
+	#else
+		mkdir(folder.c_str(), 0755);
+	#endif
+
+	C_File fl;
+	fl.Write(C_DirWork::Append(folder, filename).c_str());
+	fl.WriteBlock(buffer, size);
+	fl.Close();
+
+	return true;
 }
+*/
 
 string CConfig::FindDataFile(const char *prefix, const char *filename) {
-	string fn = path_append(user_path, path_append(prefix, filename));
-#ifdef _WIN32
-	if (_access(fn.c_str(), 04) != -1) {
-#else
-	if (access(fn.c_str(), F_OK | R_OK) == 0) {
-#endif // _WIN32
-		return fn;
-	} else {
-		fn = path_append(share_path, path_append(prefix, filename));
-#ifdef _WIN32
-		if (_access(fn.c_str(), 04) != -1) {
-#else
-		if (access(fn.c_str(), F_OK | R_OK) == 0) {
-#endif // _WIN32
-			return fn;
-		} else {
-			return string("");
-		}
+	string path;
+	string append_path = C_DirWork::Append(prefix, filename);
+
+	// 1. try in current folder (allow use custom-configs for folder)
+	if (C_File::FileExists(append_path.c_str())) return append_path;
+
+	if (executableDir) {
+		// 2. try in executable dir (useful for debug version && file associations)
+		path = C_DirWork::Append(executableDir, append_path);
+		if (C_File::FileExists(path.c_str())) return path;
 	}
+
+	// 3. try in home folder
+	path = C_DirWork::Append(home_path, append_path);
+	if (C_File::FileExists(path.c_str())) return path;
+
+	#ifdef SHARE_PATH
+		// 4. try in shared folder
+		path = C_DirWork::Append(SHARE_PATH, append_path);
+		if (C_File::FileExists(path.c_str())) return path;
+	#endif
+
+	return string("");
 }

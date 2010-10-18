@@ -16,7 +16,7 @@ void C_TrDos::ReadFile(void)
 	filename = split_romname(filename, &offset);
 
 	if (config.LoadDataFile("roms", filename.c_str(), rom, 0x4000, offset) != 0x4000) {
-		throw C_E(E_General, "Error loading " + filename);
+		throw C_E(E_General, string("Can't find \"") + filename + "\"");
 	}
 }
 

@@ -170,4 +170,3 @@ char* AllocNstrcpy(const char *str)
 
 	return s;
 }
-

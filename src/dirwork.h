@@ -2,6 +2,7 @@
 #define _DIRWORK_H_ 1
 
 #include "defines.h"
+#include <string>
 
 #ifdef _WIN32
 	#include <io.h>
@@ -36,6 +37,7 @@ class C_DirWork
 	static char* ExtractExt(const char *path);
 	static char* ExtractFileName(const char *path);
 	static char* LastDirName(const char *path);
+	static std::string Append(const std::string &p1, const std::string &p2);
 
 	char name[MAX_PATH];
 	int attr;
@@ -57,6 +59,9 @@ class C_DirWork
 	DIR *hDir;
 	char bpath[MAX_PATH];
 #endif
+
+	C_DirWork& operator=(const C_DirWork &dummy) {}
+	C_DirWork(const C_DirWork &dummy) {}
 };
 
 #endif

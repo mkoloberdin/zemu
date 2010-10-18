@@ -75,19 +75,19 @@ class C_File
 	uint32_t GetDWORD(void);
 	int GetC(void);
 
-	int ReadBlock(void *buf, int size);
-	void WriteBlock(void *buf, int size);
+	size_t ReadBlock(void *buf, size_t size);
+	void WriteBlock(void *buf, size_t size);
 
 	bool IsOpened(void);
 	bool Eof(void);
 	void UnGetBYTE(uint8_t b);
 	void UnGetC(int c);
 
-	static long FileSize(const char *filename);
+	static size_t FileSize(const char *filename);
 	static bool FileExists(const char *filename);
 
-	unsigned long GetFilePointer(void);
-	void SetFilePointer(unsigned long fp);
+	size_t GetFilePointer(void);
+	void SetFilePointer(size_t fp);
 
 	private:
 
@@ -97,6 +97,9 @@ class C_File
 	int handle, len, accMode, un_ch;
 	unsigned long readSize, readFileSize;
 	bool eof, un_eof, isCompressed;
+
+	C_File& operator=(const C_File &dummy) {}
+	C_File(const C_File &dummy) {}
 };
 
 #endif

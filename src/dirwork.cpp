@@ -1,21 +1,27 @@
 #include <string.h>
-#include "dirwork.h"
 #include "exceptions.h"
+#include "dirwork.h"
+
+using namespace std;
 
 #ifdef _WIN32
 
-char *realpath(const char *path, char *resolved_path) {
+#include <shlwapi.h>
+
+char *realpath(const char *path, char *resolved_path)
+{
 	char *c;
 	char *r = _fullpath(resolved_path, path, _MAX_PATH);
+
 	if (!r) return NULL;
 	if (_access(r, 0) != 0) return NULL; // path does not exist
+
 	while ((c = strchr(r, '\\')) != NULL) {
 		*c = '/';
 	}
+
 	return r;
 }
-
-// #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
 
 C_DirWork::C_DirWork()
 {
@@ -344,9 +350,16 @@ char* C_DirWork::ExtractPath(const char *path)
 	static char result[MAX_PATH];
 
 	l = strlen(path)-1;
+
 	while (l >= 0)
 	{
-		if (path[l] == '/') break;
+		#ifdef _WIN32
+			// TODO: PathRemoveFileSpec from shlwapi.h
+			if (path[l] == '\\' || path[l] == '/') break;
+		#else
+			if (path[l] == '/') break;
+		#endif
+
 		l--;
 	}
 
@@ -398,7 +411,12 @@ char* C_DirWork::ExtractFileName(const char *path)
 
 	while (l >= 0)
 	{
-		if (path[l] == '/') break;
+		#ifdef _WIN32
+			if (path[l] == '\\' || path[l] == '/') break;
+		#else
+			if (path[l] == '/') break;
+		#endif
+
 		l--;
 	}
 
@@ -426,6 +444,7 @@ char* C_DirWork::LastDirName(const char *path)
 		return result;
 	}
 #else
+	// TODO: use realpath for win32 version
 	strcpy(result, path);
 
 	unsigned sz = strlen(result);
@@ -433,4 +452,31 @@ char* C_DirWork::LastDirName(const char *path)
 #endif
 
 	return C_DirWork::ExtractFileName(result);
+}
+
+string C_DirWork::Append(const string &p1, const string &p2) {
+	if (p1.empty()) {
+		return p2;
+	} else if (p2.empty()) {
+		return p1;
+	}
+
+#ifdef _WIN32
+	TCHAR buffer[MAX_PATH];
+	strcpy(buffer, p1.c_str());
+	PathAppend(buffer, p2.c_str());
+	return string(buffer);
+#else
+	size_t offset = 0;
+
+	while (!p2.empty() > 0 && offset < p2.size() && p2[offset] == '/') {
+		offset++;
+	}
+
+	if (p1[p1.size() - 1] == '/') {
+		return p1 + p2.substr(offset);
+	} else {
+		return p1 + '/' + p2.substr(offset);
+	}
+#endif
 }

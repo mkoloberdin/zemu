@@ -38,13 +38,13 @@ void C_MemoryManager::ReadFile(void)
 	filename = config.GetString("core", "rom_48", "pentagon.rom:1");
 	filename = split_romname(filename, &offset);
 	if (config.LoadDataFile("roms", filename.c_str(), &rom[0x4000], 0x4000, offset) != 0x4000) {
-		throw C_E(E_General, "Error loading " + filename);
+		throw C_E(E_General, string("Can't find \"") + filename + "\"");
 	}
 
 	filename = config.GetString("core", "rom_128", "pentagon.rom:0");
 	filename = split_romname(filename, &offset);
 	if (config.LoadDataFile("roms", filename.c_str(), rom, 0x4000, offset) != 0x4000) {
-		throw C_E(E_General, "Error loading " + filename);
+		throw C_E(E_General, string("Can't find \"") + filename + "\"");
 	}
 
 	enable512 = config.GetBool("core", "enable512", false);
