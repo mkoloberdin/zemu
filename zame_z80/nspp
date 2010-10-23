@@ -1,0 +1,69 @@
+#!/usr/bin/ruby
+
+require 'fileutils'
+
+def replace_ns(line, namespaces)
+	ns = (namespaces.size==0 ? nil : ('__ns_' + namespaces.join('_') + '__'))
+
+	res = line.gsub(/(^|[^A-Za-z0-9_])((?:[A-Za-z0-9_]+::)+)/) do |str|
+		$1 + '__ns_' + $2.gsub(/::/, '_') + '_'
+	end
+
+	res.gsub(/(^|[^A-Za-z0-9_])(:{2,3})/) do |str|
+		if $2.size==3 || ns.nil?
+			$1 + '::'
+		else
+			$1 + ns
+		end
+	end
+end
+
+def process_file(filename, base, builddir)
+	resdir = builddir + File.dirname(filename)[base.size, filename.size]
+	FileUtils.mkdir_p(resdir)
+
+	resname = resdir + '/' + File.basename(filename).gsub(/(.+)\.ns(\.(?:h|c))$/, '\1\2')
+
+	ifdef_name = nil
+	res = ''
+
+	if resname.match(/\.h$/)
+		ifdef_name = '__' + resname[builddir.size + 1, resname.size].upcase.gsub(/\//, '__').gsub(/[^A-Z0-9]/, '_') + '__'
+
+		res += "\#ifndef #{ifdef_name}\n"
+		res += "\#define #{ifdef_name}\n"
+		res += "\n"
+	end
+
+	namespaces = []
+
+	File.open(filename, 'rb').each_line do |line|
+		line.rstrip!
+
+		str = line.lstrip()
+		mt = str.match(/#namespace\s+([A-Za-z0-9_:]+)/)
+
+		if mt
+			namespaces += mt[1].split('::')
+			next
+		end
+
+		if str == '#end'
+			namespaces = namespaces[0, namespaces.size - 1] if namespaces.size > 0
+			next
+		end
+
+		res += replace_ns(line, namespaces) + "\n"
+	end
+
+	if ifdef_name
+		res += "\n"
+		res += "\#endif\n"
+	end
+
+	File.open(resname, 'wb') do |fo|
+		fo << res
+	end
+end
+
+process_file(ARGV[0], ARGV[1], ARGV[2])

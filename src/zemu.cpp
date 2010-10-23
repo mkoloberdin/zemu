@@ -819,7 +819,7 @@ void InitAll(void)
 
 #define MAX_FRAME_TACTS 71680
 #define INT_LENGTH 32
-#define INT_BEGIN 68069
+#define INT_BEGIN (68068+1)
 
 bool attributesHack = false;
 bool flashColor = false;
@@ -1611,6 +1611,12 @@ int main(int argc, char *argv[])
 
 		InitAll();
 		ResetSequence();
+
+		if (config.GetBool("core", "trdos_at_start", false))
+		{
+			dev_mman.OnOutputByte(0x7FFD, 0x10);
+			dev_trdos.Enable();
+		}
 
 		if (argc != 1) ParseCmdLine(argc, argv);
 		if (params.sound) InitAudio();

@@ -3,7 +3,7 @@
 
 #include "defines.h"
 #include <SDL.h>
-#include <z80ex.h>
+#include <z80ex_wrapper.h>
 #include "config.h"
 #include "sound/mixer.h"
 
