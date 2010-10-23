@@ -22,6 +22,7 @@
 
 	#include <shlobj.h>
 	#include <io.h>
+	#include <direct.h> // for _mkdir()
 #else
 	#include <sys/stat.h>
 	#include <sys/types.h>
@@ -98,7 +99,7 @@ void CConfig::EnsurePaths(const char *app_name) {
 		home_path = C_DirWork::Append(home_path, app_name);
 
 		#ifdef _WIN32
-			mkdir(home_path.c_str());
+			_mkdir(home_path.c_str());
 		#else
 			mkdir(home_path.c_str(), 0755);
 		#endif

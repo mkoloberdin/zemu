@@ -44,9 +44,10 @@ void error(const char *fmt, ...)
 
 void * safe_alloc(size_t size)
 {
+	void *ptr;
 	if (!size) return NULL;
 
-	void *ptr = malloc(size);
+	ptr = malloc(size);
 
 	if (!ptr) {
 		error("Can't allocate %d bytes", (int)size);
@@ -77,12 +78,13 @@ char * alloc_n_sprintf(const char *fmt, ...)
 {
 	va_list arg_ptr;
 	char buf[0x1000];
+	char * res;
 
 	va_start(arg_ptr, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, arg_ptr);
 	va_end(arg_ptr);
 
-	char * res = safe_alloc(strlen(buf) + 1);
+	res = safe_alloc(strlen(buf) + 1);
 	strcpy(res, buf);
 	return res;
 }

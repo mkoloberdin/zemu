@@ -44,9 +44,10 @@
 		::t_out ptr_out, void *data_out,
 		::t_read_int ptr_read_int, void *data_read_int)
 	{
+		s_Cpu *cpu;
 		::init_tables();
 
-		s_Cpu *cpu = ALLOC_MEM(s_Cpu);
+		cpu = ALLOC_MEM(s_Cpu);
 
 		cpu->ptr_read = ptr_read;
 		cpu->ptr_write = ptr_write;
@@ -66,11 +67,13 @@
 
 	void ::init_tables(void)
 	{
+		int i;
 		if (::is_tbl_initialized) return;
 
-		for (int i = 0; i < 0x100; i++)
+		for (i = 0; i < 0x100; i++)
 		{
-			int p = ((i & 0x80) >> 7) ^ ((i & 0x40) >> 6) ^ ((i & 0x20) >> 5) ^ ((i & 0x10) >> 4) ^ ((i & 0x08) >> 3) ^ ((i & 0x04) >> 2) ^ ((i & 0x02) >> 1) ^ (i & 0x01);
+			int p;
+			p = ((i & 0x80) >> 7) ^ ((i & 0x40) >> 6) ^ ((i & 0x20) >> 5) ^ ((i & 0x10) >> 4) ^ ((i & 0x08) >> 3) ^ ((i & 0x04) >> 2) ^ ((i & 0x02) >> 1) ^ (i & 0x01);
 			::tbl_parity[i] = (p ? 0 : FLAG_PV);
 		}
 
@@ -123,12 +126,13 @@
 
 	unsigned ::tick_def(s_Cpu *self)
 	{
+		byte op;
 		self->is_opcode = true;
 		self->is_noint = false;
 		self->is_reset_pv = false;
 		self->tstate = 4;
 
-		byte op = self->ptr_read(REG_PC(self)++, true, self->data_read);
+		op = self->ptr_read(REG_PC(self)++, true, self->data_read);
 		CPU_INC_R(self);
 
 		self->optable[op](self);
@@ -139,12 +143,13 @@
 
 	unsigned ::tick_int(s_Cpu *self)
 	{
+		byte op;
 		self->is_opcode = true;
 		self->is_noint = false;
 		self->is_reset_pv = false;
 		self->tstate = (4 + 2);
 
-		byte op = self->ptr_read_int(self->data_read_int);
+		op = self->ptr_read_int(self->data_read_int);
 		CPU_INC_R(self);
 
 		self->optable[op](self);
@@ -205,9 +210,11 @@
 
 			case 2:
 			{
+				byte vec;
+				word addr;
 				CPU_INC_R(self);
-				byte vec = self->ptr_read_int(self->data_read_int);
-				word addr = ((word)REG_I(self) << 8) | vec;
+				vec = self->ptr_read_int(self->data_read_int);
+				addr = ((word)REG_I(self) << 8) | vec;
 
 				self->ptr_write(--(REG_SP(self)), REG_PCH(self), self->data_write);
 				self->ptr_write(--(REG_SP(self)), REG_PCL(self), self->data_write);

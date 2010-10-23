@@ -23,7 +23,17 @@
  */
 
 #include <stdlib.h>
-#include <stdbool.h>
+
+#ifdef _MSC_VER
+	typedef int bool;
+	#ifndef __cplusplus
+		#define true 1
+		#define false 0
+	#endif
+#else
+	#include <stdbool.h>
+#endif
+
 #include <stdint.h>
 
 #ifndef __LITTLE_ENDIAN

@@ -70,6 +70,8 @@ typedef void (*z80ex_pwrite_cb)(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE 
 typedef Z80EX_BYTE (*z80ex_intread_cb)(Z80EX_CONTEXT *cpu, void *user_data);
 typedef Z80EX_BYTE (*z80ex_dasm_readbyte_cb)(Z80EX_WORD addr, void *user_data);
 
+#ifndef Z80EX_WRAPPER_SELF_INCLUDE
+
 extern Z80EX_CONTEXT *z80ex_create(
 	z80ex_mread_cb mrcb_fn, void *mrcb_data,
 	z80ex_mwrite_cb mwcb_fn, void *mwcb_data,
@@ -97,6 +99,8 @@ extern int z80ex_dasm(
 	Z80EX_WORD addr,
 	void *user_data
 );
+
+#endif /* #ifndef Z80EX_WRAPPER_SELF_INCLUDE */
 
 #ifdef __cplusplus
 }
