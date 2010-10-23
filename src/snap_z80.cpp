@@ -110,18 +110,22 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 		return false;
 	}
 
-	if (fl.ReadBlock(&hdr, sizeof(hdr)) != sizeof(hdr)) {fl.Close(); return false;}
+	if (fl.ReadBlock(&hdr, sizeof(hdr)) != sizeof(hdr)) {
+		fl.Close();
+		return false;
+	}
 
 	z80ex_set_reg(cpu, regAF, MAKEWORD(hdr.A,hdr.F));
 	z80ex_set_reg(cpu, regBC, MAKEWORD(hdr.B,hdr.C));
 	z80ex_set_reg(cpu, regHL, MAKEWORD(hdr.H,hdr.L));
 	z80ex_set_reg(cpu, regSP, MAKEWORD(hdr.SPh,hdr.SPl));
 	z80ex_set_reg(cpu, regI, hdr.I);
-	z80ex_set_reg(cpu, regR, hdr.R);
 
-	if (hdr.R7_n_misc == 255) hdr.R7_n_misc=1; // compatibility issue
+	if (hdr.R7_n_misc == 255) {
+		hdr.R7_n_misc = 1; // compatibility issue
+	}
 
-	z80ex_set_reg(cpu, regR7, hdr.R7_n_misc & 0x01);
+	z80ex_set_reg(cpu, regR, ((hdr.R7_n_misc & 0x01) << 7) | (hdr.R & 0x7F));
 	border_color = (hdr.R7_n_misc >> 1) & 0x07;
 	is_compressed = hdr.R7_n_misc & 0x20;
 
@@ -137,18 +141,21 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 	z80ex_set_reg(cpu, regIM, hdr.IM_n_misc & 0x03);
 
 	mmgr.OnReset();
-	
+
 	if (hdr.PCh | hdr.PCl) // PC <> 0: Z80 v1
 	{
 		// read 48k block
-		if (!block_read(fl, mmgr, 0x4000, 0xC000, is_compressed)) {fl.Close(); return false;}
+		if (!block_read(fl, mmgr, 0x4000, 0xC000, is_compressed)) {
+			fl.Close();
+			return false;
+		}
 
 		mmgr.OnOutputByte(0x7ffd,0x30);  // set 48k mode
 		z80ex_set_reg(cpu, regPC, MAKEWORD(hdr.PCh,hdr.PCl));
 	}
 	else // Z80 v2 or v3
 	{
-		if (fl.Eof()) {fl.Close(); return false;}
+		if (fl.Eof()) { fl.Close(); return false; }
 		tmp = fl.GetWORD();  // additional block length
 
 		switch (tmp & 0xFF)  // [rst] or I can put simple "tmp" ?
@@ -269,8 +276,8 @@ void save_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 	hdr.SPh = z80ex_get_reg(cpu, regSP) >> 8;
 	hdr.SPl = z80ex_get_reg(cpu, regSP) & 0xFF;
 	hdr.I = z80ex_get_reg(cpu, regI);
-	hdr.R = z80ex_get_reg(cpu, regR);
-	hdr.R7_n_misc = z80ex_get_reg(cpu, regR7) | ((border.portFB & 7) << 1);
+	hdr.R = z80ex_get_reg(cpu, regR) & 0x7F;
+	hdr.R7_n_misc = ((z80ex_get_reg(cpu, regR) & 0x80) >> 7) | ((border.portFB & 7) << 1);
 	hdr.D = z80ex_get_reg(cpu, regDE) >> 8;
 	hdr.E = z80ex_get_reg(cpu, regDE) & 0xFF;
 	hdr.B_ = z80ex_get_reg(cpu, regBC_) >> 8;

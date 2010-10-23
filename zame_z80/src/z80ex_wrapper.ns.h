@@ -5,11 +5,7 @@
 extern "C" {
 #endif
 
-#ifdef _MSC_VER
-	#define LIB_EXPORT __declspec(dllexport)
-#else
-	#define LIB_EXPORT
-#endif
+#include <stdbool.h>
 
 #if defined(__SYMBIAN32__)
 	typedef unsigned char Z80EX_BYTE;
@@ -35,24 +31,24 @@ extern "C" {
 #endif
 
 typedef enum {
-	regAF,
-	regBC,
-	regDE,
-	regHL,
-	regAF_,
-	regBC_,
-	regDE_,
-	regHL_,
-	regIX,
-	regIY,
-	regPC,
-	regSP,
-	regI,
-	regR,
-	regR7,
-	regIM /* 0,1 or 2 */,
-	regIFF1,
-	regIFF2
+	regBC = 0,
+	regDE = 1,
+	regHL = 2,
+	regAF = 3,
+	regIX = 4,
+	regIY = 5,
+	regSP = 6,
+	regPC = 7,
+	regMP = 8,
+	regBC_ = 9,
+	regDE_ = 10,
+	regHL_ = 11,
+	regAF_ = 12,
+	regI = 13,
+	regR = 14,
+	regIFF1 = 15,
+	regIFF2 = 16,
+	regIM = 17
 } Z80_REG_T;
 
 enum Z80EX_DASM_FLAGS {
@@ -60,17 +56,55 @@ enum Z80EX_DASM_FLAGS {
 	BYTES_DEC = 2
 };
 
-struct s_ContextWrapper;
-typedef struct s_ContextWrapper Z80EX_CONTEXT;
-
-typedef Z80EX_BYTE (*z80ex_mread_cb)(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data);
-typedef void (*z80ex_mwrite_cb)(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *user_data);
-typedef Z80EX_BYTE (*z80ex_pread_cb)(Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data);
-typedef void (*z80ex_pwrite_cb)(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data);
-typedef Z80EX_BYTE (*z80ex_intread_cb)(Z80EX_CONTEXT *cpu, void *user_data);
+typedef Z80EX_BYTE (*z80ex_mread_cb)(Z80EX_WORD addr, bool m1_state, void *user_data);
+typedef void (*z80ex_mwrite_cb)(Z80EX_WORD addr, Z80EX_BYTE value, void *user_data);
+typedef Z80EX_BYTE (*z80ex_pread_cb)(Z80EX_WORD port, void *user_data);
+typedef void (*z80ex_pwrite_cb)(Z80EX_WORD port, Z80EX_BYTE value, void *user_data);
+typedef Z80EX_BYTE (*z80ex_intread_cb)(void *user_data);
 typedef Z80EX_BYTE (*z80ex_dasm_readbyte_cb)(Z80EX_WORD addr, void *user_data);
 
-extern Z80EX_CONTEXT *z80ex_create(
+#ifndef CPU_ALREADY_DEFINED
+	struct s_Cpu
+	{
+		Z80EX_WORD regs[18];
+
+		bool is_halted;
+		bool is_opcode;
+		bool is_noint;
+		bool is_reset_pv;
+		bool is_read_int;
+
+		z80ex_mread_cb ptr_read;
+		z80ex_mwrite_cb ptr_write;
+		z80ex_pread_cb ptr_in;
+		z80ex_pwrite_cb ptr_out;
+		z80ex_intread_cb ptr_read_int;
+
+		void *data_read;
+		void *data_write;
+		void *data_in;
+		void *data_out;
+		void *data_read_int;
+
+		unsigned (* tick)(struct s_Cpu *self);
+		void * (* optable)(struct s_Cpu *self);
+		Z80EX_BYTE prefix;
+		unsigned long tstate;
+
+		int8_t tmp_int8;
+		int16_t tmp_int16;
+		int32_t tmp_int32;
+		Z80EX_BYTE tmp_byte;
+		Z80EX_BYTE tmp_byte_b;
+		Z80EX_WORD tmp_word;
+		Z80EX_WORD tmp_word_b;
+		Z80EX_DWORD tmp_dword;
+	};
+#endif
+
+typedef struct s_Cpu Z80EX_CONTEXT;
+
+extern s_Cpu * Cpu::new(
 	z80ex_mread_cb mrcb_fn, void *mrcb_data,
 	z80ex_mwrite_cb mwcb_fn, void *mwcb_data,
 	z80ex_pread_cb prcb_fn, void *prcb_data,
@@ -78,14 +112,20 @@ extern Z80EX_CONTEXT *z80ex_create(
 	z80ex_intread_cb ircb_fn, void *ircb_data
 );
 
-extern void z80ex_destroy(Z80EX_CONTEXT *cpu);
-extern int z80ex_step(Z80EX_CONTEXT *cpu);
-extern Z80EX_BYTE z80ex_last_op_type(Z80EX_CONTEXT *cpu);
-extern int z80ex_int(Z80EX_CONTEXT *cpu);
-extern void z80ex_reset(Z80EX_CONTEXT *cpu);
-extern Z80EX_WORD z80ex_get_reg(Z80EX_CONTEXT *cpu, Z80_REG_T reg);
-extern void z80ex_set_reg(Z80EX_CONTEXT *cpu, Z80_REG_T reg, Z80EX_WORD value);
-extern int z80ex_int_possible(Z80EX_CONTEXT *cpu);
+extern void Cpu::free(s_Cpu *self);
+extern unsigned Cpu::do_int(s_Cpu *self);
+extern void Cpu::reset(s_Cpu *self);
+extern Z80EX_WORD Cpu::get_reg(s_Cpu *self, int reg);
+extern void Cpu::set_reg(s_Cpu *self, int reg, Z80EX_WORD value);
+
+#define z80ex_create Cpu::new
+#define z80ex_destroy Cpu::free
+#define z80ex_int Cpu::do_int
+#define z80ex_reset Cpu::reset
+#define z80ex_get_reg Cpu::get_reg
+#define z80ex_set_reg Cpu::set_reg
+
+extern unsigned z80ex_step(Z80EX_CONTEXT *cpu);
 
 extern int z80ex_dasm(
 	char *output,
