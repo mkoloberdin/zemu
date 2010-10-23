@@ -29,7 +29,6 @@
 
 #include <cctype>
 #include <algorithm>
-#include <stdbool.h>
 
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
