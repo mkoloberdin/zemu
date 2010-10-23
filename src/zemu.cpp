@@ -29,6 +29,7 @@
 
 #include <cctype>
 #include <algorithm>
+#include <stdbool.h>
 
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
@@ -626,14 +627,14 @@ void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value)
 	}
 }
 
-Z80EX_BYTE ReadByte(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *userData)
+Z80EX_BYTE ReadByte(Z80EX_WORD addr, bool m1_state, void *userData)
 {
 	unsigned raddr = addr + (m1_state ? 0x10000 : 0);
-    ptrOnReadByteFunc func = devMapRead[raddr];
-    return func(addr, m1_state);
+	ptrOnReadByteFunc func = devMapRead[raddr];
+	return func(addr, m1_state);
 }
 
-void WriteByte(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *userData)
+void WriteByte(Z80EX_WORD addr, Z80EX_BYTE value, void *userData)
 {
 	for (;;)
 	{
@@ -644,7 +645,7 @@ void WriteByte(Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *user
 	}
 }
 
-Z80EX_BYTE InputByte(Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *userData)
+Z80EX_BYTE InputByte(Z80EX_WORD port, void *userData)
 {
 	Z80EX_BYTE retval;
 
@@ -657,7 +658,7 @@ Z80EX_BYTE InputByte(Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *userData)
 	}
 }
 
-void OutputByte(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *userData)
+void OutputByte(Z80EX_WORD port, Z80EX_BYTE value, void *userData)
 {
 	for (;;)
 	{
@@ -668,7 +669,7 @@ void OutputByte(Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *use
 	}
 }
 
-Z80EX_BYTE ReadIntVec(Z80EX_CONTEXT *cpu, void *userData)
+Z80EX_BYTE ReadIntVec(void *userData)
 {
 	return 0xFF;
 }
@@ -981,10 +982,10 @@ inline void DebugCpuCalcTacts(unsigned long cmdClk)
 	C_Tape::Process();
 }
 
-int (* DoCpuStep)(Z80EX_CONTEXT *cpu) = z80ex_step;
-int (* DoCpuInt)(Z80EX_CONTEXT *cpu) = z80ex_int;
+unsigned (* DoCpuStep)(Z80EX_CONTEXT *cpu) = z80ex_step;
+unsigned (* DoCpuInt)(Z80EX_CONTEXT *cpu) = z80ex_int;
 
-int TraceCpuStep(Z80EX_CONTEXT *cpu)
+unsigned TraceCpuStep(Z80EX_CONTEXT *cpu)
 {
 	CpuTrace_Log();
 	cpuTrace_intReq = 0;
@@ -992,7 +993,7 @@ int TraceCpuStep(Z80EX_CONTEXT *cpu)
 	return cpuTrace_dT;
 }
 
-int TraceCpuInt(Z80EX_CONTEXT *cpu)
+unsigned TraceCpuInt(Z80EX_CONTEXT *cpu)
 {
 	CpuTrace_Log();
 	int dt = z80ex_int(cpu);
@@ -1042,7 +1043,7 @@ void DebugStep(void)
 		}
 
 		cnt--;
-	} while (z80ex_last_op_type(cpu) && cnt>0);
+	} while (cpu->prefix && cnt>0);
 }
 
 void Render(void)
