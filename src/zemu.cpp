@@ -1437,25 +1437,25 @@ void ParseCmdLine(int argc, char *argv[])
 
 void OutputLogo(void)
 {
-	printf("                                     \n");
-	printf("   $ww,.                             \n");
-	printf("    `^$$$ww,.                        \n");
-	printf("       `^$$$$$$                      \n");
-	printf("         ,$$7'                       \n");
-	printf("       _j$$'   __    __  _ _         \n");
-	printf("     ,j$$7      /__ (-_ | ) ) (_|    \n");
-	printf("    $$$$$$w.                         \n");
-	printf("     `^^T$$$w,             rst'o6    \n");
-	printf("           `^T$$                     \n");
-	printf("                                     \n");
-	printf(" restorer [ restorer.fct@gmail.com ] \n");
-	printf(" boo_boo  [    boo_boo@inbox.ru    ] \n");
-	printf(" mkoloberdin                         \n");
-	printf("                                     \n");
-	printf(" breeze (gfx)                        \n");
-	printf("                                     \n");
-	printf(" with help of SMT                    \n");
-	printf("                                     \n");
+	printf("                                      \n");
+	printf("   $ww,.                              \n");
+	printf("    `^$$$ww,.                         \n");
+	printf("       `^$$$$$$                       \n");
+	printf("         ,$$7'                        \n");
+	printf("       _j$$'   __    __  _ _          \n");
+	printf("     ,j$$7      /__ (-_ | ) ) (_|     \n");
+	printf("    $$$$$$w.                          \n");
+	printf("     `^^T$$$w,             rst'o6     \n");
+	printf("           `^T$$                      \n");
+	printf("                                      \n");
+	printf(" restorer   [ restorer.fct@gmail.com ]\n");
+	printf(" boo_boo    [    boo_boo@inbox.ru    ]\n");
+	printf(" mastermind [   zxmmind@gmail.com    ]\n");
+	printf("                                      \n");
+	printf(" breeze (gfx)                         \n");
+	printf("                                      \n");
+	printf(" with help of SMT                     \n");
+	printf("                                      \n");
 }
 
 int main(int argc, char *argv[])

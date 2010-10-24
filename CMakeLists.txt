@@ -19,7 +19,7 @@ include_directories("${ZAME_Z80_PATH}/processed")
 add_subdirectory (${ZAME_Z80_PATH} ${Z80EX_BINARY_DIR})
 link_directories (${ZAME_Z80_BINARY_DIR})
 
-if (WIN32)
+if (WIN32 AND NOT CMAKE_COMPILER_IS_GNUCC)
 	if (NOT ENV{SDLDIR})
 		set (ENV{SDLDIR} "${PROJECT_BINARY_DIR}/SDL")
 		message ("ENV{SDLDIR}=$ENV{SDLDIR}")
