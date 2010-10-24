@@ -5,7 +5,7 @@
 #include "dirwork.h"
 #include "graphics.h"
 #include "lib_wd1793/wd1793_chip.h"
-#include <z80ex_wrapper.h>
+#include <z80ex_dasm.h>
 #include "devs.h"
 #include "tape/tape.h"
 #include "labels.h"
@@ -838,7 +838,7 @@ void DebugIt(void)
 			sprintf(buf, "7FFD %02X", C_MemoryManager::port7FFD);         fixed_font.PrintString(x, y, buf); y += h;
 			sprintf(buf, "EFF7 %02X", C_ExtPort::portEFF7);               fixed_font.PrintString(x, y, buf); y += h;
 			sprintf(buf, "DOS  %s", C_TrDos::trdos ? "ON" : "OFF");       fixed_font.PrintString(x, y, buf); y += h;
-			sprintf(buf, "INT? %s", cpu->is_noint ? "N" : "Y");           fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "INT? %s", z80ex_int_possible(cpu) ? "N" : "Y"); fixed_font.PrintString(x, y, buf); y += h;
 			sprintf(buf, "T    %d", (int)clk);                            fixed_font.PrintString(x, y, buf); y += h;
 
 			OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);

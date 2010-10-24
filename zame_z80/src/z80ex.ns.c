@@ -2,16 +2,22 @@
 #include "lib/defs.h"
 #include "lib_z80/cpu.h"
 
-#define CPU_ALREADY_DEFINED
-#include "z80ex_wrapper.h"
+#define Z80EX_SELF_INCLUDE
+#include "z80ex.h"
+#include "z80ex_dasm.h"
 
 #ifdef _MSC_VER
 	#define snprintf _snprintf
 #endif
 
-unsigned z80ex_step(Z80EX_CONTEXT *cpu)
+int z80ex_step(Z80EX_CONTEXT *cpu)
 {
 	return (int)Cpu::tick(cpu);
+}
+
+extern int z80ex_int(Z80EX_CONTEXT *cpu)
+{
+	return (int)Cpu::do_int(cpu);
 }
 
 int z80ex_dasm(

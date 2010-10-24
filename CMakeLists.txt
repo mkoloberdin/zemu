@@ -12,12 +12,24 @@ configure_file (
 	"${PROJECT_BINARY_DIR}/ZEmuConfig.h"
 )
 
+option (USE_Z80EX "Use external Z80EX library for z80 emulation" Off)
 set (ZAME_Z80_PATH "${PROJECT_SOURCE_DIR}/zame_z80"
 	CACHE PATH "Path to zame z80 library")
+set (Z80EX_PATH "${PROJECT_SOURCE_DIR}/../z80ex"
+	CACHE PATH "Path to Z80Ex library")
 
-include_directories("${ZAME_Z80_PATH}/processed")
-add_subdirectory (${ZAME_Z80_PATH} ${Z80EX_BINARY_DIR})
-link_directories (${ZAME_Z80_BINARY_DIR})
+if (USE_Z80EX)
+	include_directories("${Z80EX_PATH}/include")
+	set (Z80EX_BINARY_DIR "${PROJECT_BINARY_DIR}/lib_z80ex")
+	make_directory (${Z80EX_BINARY_DIR})
+	set (Z80EX_STATIC_ONLY true)
+	add_subdirectory (${Z80EX_PATH} ${Z80EX_BINARY_DIR})
+	link_directories (${Z80EX_BINARY_DIR})
+else ()
+	include_directories("${ZAME_Z80_PATH}/processed")
+	add_subdirectory (${ZAME_Z80_PATH} ${Z80EX_BINARY_DIR})
+	link_directories (${ZAME_Z80_BINARY_DIR})
+endif ()
 
 if (WIN32 AND NOT CMAKE_COMPILER_IS_GNUCC)
 	if (NOT ENV{SDLDIR})
@@ -44,7 +56,14 @@ file (GLOB_RECURSE SOURCES
 )
 add_executable (zemu WIN32 ${SOURCES})
 
-target_link_libraries (zemu z80ex_wrapper ${SDL_LIBRARY})
+if (USE_Z80EX)
+	target_link_libraries (zemu z80ex-static z80ex_dasm-static)
+else ()
+	target_link_libraries (zemu z80ex_wrapper)
+endif ()
+
+target_link_libraries (zemu ${SDL_LIBRARY})
+
 if (WIN32)
 	target_link_libraries (zemu winmm shlwapi)
 endif ()
