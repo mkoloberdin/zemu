@@ -1458,7 +1458,7 @@ void OutputLogo(void)
 	printf(" boo_boo    [    boo_boo@inbox.ru    ]\n");
 	printf(" mastermind [   zxmmind@gmail.com    ]\n");
 	printf("                                      \n");
-	printf(" breeze (gfx)                         \n");
+	printf(" breeze (gfx) [ breeze.fbn@gmail.com ]\n");
 	printf("                                      \n");
 	printf(" with help of SMT                     \n");
 	printf("                                      \n");
