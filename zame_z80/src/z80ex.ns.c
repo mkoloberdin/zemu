@@ -20,7 +20,7 @@ int z80ex_int(Z80EX_CONTEXT *cpu)
 	return (int)Cpu::do_int(cpu);
 }
 
-bool z80ex_int_possible(cpu)
+bool z80ex_int_possible(Z80EX_CONTEXT *cpu)
 {
 	return !(cpu->is_noint);
 }
