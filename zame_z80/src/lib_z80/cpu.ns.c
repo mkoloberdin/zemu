@@ -68,11 +68,13 @@
 	void ::init_tables(void)
 	{
 		int i;
+
 		if (::is_tbl_initialized) return;
 
 		for (i = 0; i < 0x100; i++)
 		{
 			int p;
+
 			p = ((i & 0x80) >> 7) ^ ((i & 0x40) >> 6) ^ ((i & 0x20) >> 5) ^ ((i & 0x10) >> 4) ^ ((i & 0x08) >> 3) ^ ((i & 0x04) >> 2) ^ ((i & 0x02) >> 1) ^ (i & 0x01);
 			::tbl_parity[i] = (p ? 0 : FLAG_PV);
 		}
@@ -127,6 +129,7 @@
 	unsigned ::tick_def(s_Cpu *self)
 	{
 		byte op;
+
 		self->is_opcode = true;
 		self->is_noint = false;
 		self->is_reset_pv = false;
@@ -144,6 +147,7 @@
 	unsigned ::tick_int(s_Cpu *self)
 	{
 		byte op;
+
 		self->is_opcode = true;
 		self->is_noint = false;
 		self->is_reset_pv = false;
@@ -212,6 +216,7 @@
 			{
 				byte vec;
 				word addr;
+
 				CPU_INC_R(self);
 				vec = self->ptr_read_int(self->data_read_int);
 				addr = ((word)REG_I(self) << 8) | vec;

@@ -59,7 +59,7 @@ int frames;
 CConfig config;
 C_Font font, fixed_font;
 bool disableSound = false;
-bool doCopyAfSurfaces = false;
+bool doCopyOfSurfaces = false;
 
 int videoSpec;
 int actualWidth;
@@ -469,7 +469,7 @@ void Action_AntiFlicker(void)
 {
 	isPaused = false;
 	params.antiFlicker = !params.antiFlicker;
-	if (params.antiFlicker) doCopyAfSurfaces = true;
+	if (params.antiFlicker) doCopyOfSurfaces = true;
 	SetMessage(params.antiFlicker ? "AntiFlicker ON" : "AntiFlicker OFF");
 }
 
@@ -853,7 +853,7 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 	if (SDL_MUSTLOCK(scrSurf[0])) {if (SDL_LockSurface(scrSurf[0]) < 0) return;}
 	if (SDL_MUSTLOCK(scrSurf[1])) {if (SDL_LockSurface(scrSurf[1]) < 0) return;}
 
-	if (doCopyAfSurfaces)
+	if (doCopyOfSurfaces)
 	{
 		s1 = (uint8_t *)copyFrom->pixels;
 		s2 = (uint8_t *)copyTo->pixels;
@@ -869,7 +869,7 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 			s2 += copyTo->pitch;
 		}
 
-		doCopyAfSurfaces = false;
+		doCopyOfSurfaces = false;
 	}
 
 	sr = (uint8_t *)screen->pixels;
@@ -884,16 +884,22 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 
 		for (j = WIDTH; j--;)
 		{
-			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
-			srw++; s1w++; s2w++;
-
-			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
-			srw++; s1w++; s2w++;
-
-			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
-			srw++; s1w++; s2w++;
-
+#ifdef ZEMU_BIG_ENDIAN
 			*(srw++) = 0; s1w++; s2w++;
+#endif
+
+			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+			srw++; s1w++; s2w++;
+
+			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+			srw++; s1w++; s2w++;
+
+			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+			srw++; s1w++; s2w++;
+
+#ifndef ZEMU_BIG_ENDIAN
+			*(srw++) = 0; s1w++; s2w++;
+#endif
 		}
 
 		sr += screen->pitch;
@@ -1443,25 +1449,25 @@ void ParseCmdLine(int argc, char *argv[])
 
 void OutputLogo(void)
 {
-	printf("                                      \n");
-	printf("   $ww,.                              \n");
-	printf("    `^$$$ww,.                         \n");
-	printf("       `^$$$$$$                       \n");
-	printf("         ,$$7'                        \n");
-	printf("       _j$$'   __    __  _ _          \n");
-	printf("     ,j$$7      /__ (-_ | ) ) (_|     \n");
-	printf("    $$$$$$w.                          \n");
-	printf("     `^^T$$$w,             rst'o6     \n");
-	printf("           `^T$$                      \n");
-	printf("                                      \n");
-	printf(" restorer   [ restorer.fct@gmail.com ]\n");
-	printf(" boo_boo    [    boo_boo@inbox.ru    ]\n");
-	printf(" mastermind [   zxmmind@gmail.com    ]\n");
-	printf("                                      \n");
-	printf(" breeze (gfx) [ breeze.fbn@gmail.com ]\n");
-	printf("                                      \n");
-	printf(" with help of SMT                     \n");
-	printf("                                      \n");
+	printf("                                        \n");
+	printf("    $ww,.                               \n");
+	printf("     `^$$$ww,.                          \n");
+	printf("        `^$$$$$$                        \n");
+	printf("          ,$$7'                         \n");
+	printf("        _j$$'   __    __  _ _           \n");
+	printf("      ,j$$7      /__ (-_ | ) ) (_|      \n");
+	printf("     $$$$$$w.                           \n");
+	printf("      `^^T$$$w,             rst'o6      \n");
+	printf("            `^T$$                       \n");
+	printf("                                        \n");
+	printf(" restorer     [ restorer.fct@gmail.com ]\n");
+	printf(" boo_boo      [    boo_boo@inbox.ru    ]\n");
+	printf(" mastermind   [   zxmmind@gmail.com    ]\n");
+	printf("                                        \n");
+	printf(" breeze (gfx) [  breeze.fbn@gmail.com  ]\n");
+	printf("                                        \n");
+	printf(" with help of SMT                       \n");
+	printf("                                        \n");
 }
 
 int main(int argc, char *argv[])

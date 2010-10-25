@@ -45,8 +45,8 @@ void error(const char *fmt, ...)
 void * safe_alloc(size_t size)
 {
 	void *ptr;
-	if (!size) return NULL;
 
+	if (!size) return NULL;
 	ptr = malloc(size);
 
 	if (!ptr) {

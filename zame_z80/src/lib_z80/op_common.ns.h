@@ -893,10 +893,9 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 
 #define OP_PREF_XX_CB(FN,OPTBL) \
 	void FN(s_Cpu *self) { \
-		byte op; \
 		self->tmp_int8 = CPU_READ_OFFSET(self); \
-		op = CPU_READ_BYTE(self); \
-		OPTBL[op](self); \
+		self->tmp_byte = CPU_READ_BYTE(self); \
+		OPTBL[self->tmp_byte](self); \
 	}
 
 #define CC_NZ	(!(REG_F(self) & FLAG_Z))

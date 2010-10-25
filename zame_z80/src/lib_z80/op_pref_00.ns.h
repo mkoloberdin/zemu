@@ -40,7 +40,7 @@
 	OP_LD_R_N		(::op_00_0E, REG_C,)				// LD C,N
 	OP_RRCA			(::op_00_0F,)						// RRCA
 
-	OP_DJNZ			(::op_00_10,)						// DJNZ
+	OP_DJNZ			(::op_00_10,)						// DJNZ O
 	OP_LD_RP_NN		(::op_00_11, REG_DE,)				// LD DE,NN
 	OP_LD_MRP_A		(::op_00_12, REG_DE,)				// LD (DE),A
 	OP_DO_RP		(::op_00_13, DO_INC_16, REG_DE,)	// INC DE
