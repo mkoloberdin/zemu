@@ -15,9 +15,14 @@ int z80ex_step(Z80EX_CONTEXT *cpu)
 	return (int)Cpu::tick(cpu);
 }
 
-extern int z80ex_int(Z80EX_CONTEXT *cpu)
+int z80ex_int(Z80EX_CONTEXT *cpu)
 {
 	return (int)Cpu::do_int(cpu);
+}
+
+bool z80ex_int_possible(cpu)
+{
+	return !(cpu->is_noint);
 }
 
 int z80ex_dasm(

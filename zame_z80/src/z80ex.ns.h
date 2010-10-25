@@ -98,11 +98,11 @@ extern void Cpu::set_reg(s_Cpu *self, int reg, Z80EX_WORD value);
 #define z80ex_reset Cpu::reset
 #define z80ex_get_reg Cpu::get_reg
 #define z80ex_set_reg Cpu::set_reg
-#define z80ex_last_op_type(x) x->prefix
-#define z80ex_int_possible(x) x->is_noint
+#define z80ex_last_op_type(cpu) (cpu->prefix)
 
 extern int z80ex_step(Z80EX_CONTEXT *cpu);
 extern int z80ex_int(Z80EX_CONTEXT *cpu);
+extern bool z80ex_int_possible(Z80EX_CONTEXT *cpu);
 
 #ifdef __cplusplus
 }
