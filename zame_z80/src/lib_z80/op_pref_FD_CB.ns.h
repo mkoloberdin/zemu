@@ -108,56 +108,56 @@
 	OP_BIT_PORP		(::op_FD_CB_4E, 1, REG_IY)					// BIT 1,(IY+N)
 	#define			 ::op_FD_CB_4F ::op_FD_CB_4E
 
-	#define			 ::op_FD_CB_50 ::op_FD_CB_46
-	#define			 ::op_FD_CB_51 ::op_FD_CB_46
-	#define			 ::op_FD_CB_52 ::op_FD_CB_46
-	#define			 ::op_FD_CB_53 ::op_FD_CB_46
-	#define			 ::op_FD_CB_54 ::op_FD_CB_46
-	#define			 ::op_FD_CB_55 ::op_FD_CB_46
+	#define			 ::op_FD_CB_50 ::op_FD_CB_56
+	#define			 ::op_FD_CB_51 ::op_FD_CB_56
+	#define			 ::op_FD_CB_52 ::op_FD_CB_56
+	#define			 ::op_FD_CB_53 ::op_FD_CB_56
+	#define			 ::op_FD_CB_54 ::op_FD_CB_56
+	#define			 ::op_FD_CB_55 ::op_FD_CB_56
 	OP_BIT_PORP		(::op_FD_CB_56, 2, REG_IY)					// BIT 2,(IY+N)
-	#define			 ::op_FD_CB_57 ::op_FD_CB_46
-	#define			 ::op_FD_CB_58 ::op_FD_CB_4E
-	#define			 ::op_FD_CB_59 ::op_FD_CB_4E
-	#define			 ::op_FD_CB_5A ::op_FD_CB_4E
-	#define			 ::op_FD_CB_5B ::op_FD_CB_4E
-	#define			 ::op_FD_CB_5C ::op_FD_CB_4E
-	#define			 ::op_FD_CB_5D ::op_FD_CB_4E
+	#define			 ::op_FD_CB_57 ::op_FD_CB_56
+	#define			 ::op_FD_CB_58 ::op_FD_CB_5E
+	#define			 ::op_FD_CB_59 ::op_FD_CB_5E
+	#define			 ::op_FD_CB_5A ::op_FD_CB_5E
+	#define			 ::op_FD_CB_5B ::op_FD_CB_5E
+	#define			 ::op_FD_CB_5C ::op_FD_CB_5E
+	#define			 ::op_FD_CB_5D ::op_FD_CB_5E
 	OP_BIT_PORP		(::op_FD_CB_5E, 3, REG_IY)					// BIT 3,(IY+N)
-	#define			 ::op_FD_CB_5F ::op_FD_CB_4E
+	#define			 ::op_FD_CB_5F ::op_FD_CB_5E
 
-	#define			 ::op_FD_CB_60 ::op_FD_CB_46
-	#define			 ::op_FD_CB_61 ::op_FD_CB_46
-	#define			 ::op_FD_CB_62 ::op_FD_CB_46
-	#define			 ::op_FD_CB_63 ::op_FD_CB_46
-	#define			 ::op_FD_CB_64 ::op_FD_CB_46
-	#define			 ::op_FD_CB_65 ::op_FD_CB_46
+	#define			 ::op_FD_CB_60 ::op_FD_CB_66
+	#define			 ::op_FD_CB_61 ::op_FD_CB_66
+	#define			 ::op_FD_CB_62 ::op_FD_CB_66
+	#define			 ::op_FD_CB_63 ::op_FD_CB_66
+	#define			 ::op_FD_CB_64 ::op_FD_CB_66
+	#define			 ::op_FD_CB_65 ::op_FD_CB_66
 	OP_BIT_PORP		(::op_FD_CB_66, 4, REG_IY)					// BIT 4,(IY+N)
-	#define			 ::op_FD_CB_67 ::op_FD_CB_46
-	#define			 ::op_FD_CB_68 ::op_FD_CB_4E
-	#define			 ::op_FD_CB_69 ::op_FD_CB_4E
-	#define			 ::op_FD_CB_6A ::op_FD_CB_4E
-	#define			 ::op_FD_CB_6B ::op_FD_CB_4E
-	#define			 ::op_FD_CB_6C ::op_FD_CB_4E
-	#define			 ::op_FD_CB_6D ::op_FD_CB_4E
+	#define			 ::op_FD_CB_67 ::op_FD_CB_66
+	#define			 ::op_FD_CB_68 ::op_FD_CB_6E
+	#define			 ::op_FD_CB_69 ::op_FD_CB_6E
+	#define			 ::op_FD_CB_6A ::op_FD_CB_6E
+	#define			 ::op_FD_CB_6B ::op_FD_CB_6E
+	#define			 ::op_FD_CB_6C ::op_FD_CB_6E
+	#define			 ::op_FD_CB_6D ::op_FD_CB_6E
 	OP_BIT_PORP		(::op_FD_CB_6E, 5, REG_IY)					// BIT 5,(IY+N)
-	#define			 ::op_FD_CB_6F ::op_FD_CB_4E
+	#define			 ::op_FD_CB_6F ::op_FD_CB_6E
 
-	#define			 ::op_FD_CB_70 ::op_FD_CB_46
-	#define			 ::op_FD_CB_71 ::op_FD_CB_46
-	#define			 ::op_FD_CB_72 ::op_FD_CB_46
-	#define			 ::op_FD_CB_73 ::op_FD_CB_46
-	#define			 ::op_FD_CB_74 ::op_FD_CB_46
-	#define			 ::op_FD_CB_75 ::op_FD_CB_46
+	#define			 ::op_FD_CB_70 ::op_FD_CB_76
+	#define			 ::op_FD_CB_71 ::op_FD_CB_76
+	#define			 ::op_FD_CB_72 ::op_FD_CB_76
+	#define			 ::op_FD_CB_73 ::op_FD_CB_76
+	#define			 ::op_FD_CB_74 ::op_FD_CB_76
+	#define			 ::op_FD_CB_75 ::op_FD_CB_76
 	OP_BIT_PORP		(::op_FD_CB_76, 6, REG_IY)					// BIT 6,(IY+N)
-	#define			 ::op_FD_CB_77 ::op_FD_CB_46
-	#define			 ::op_FD_CB_78 ::op_FD_CB_4E
-	#define			 ::op_FD_CB_79 ::op_FD_CB_4E
-	#define			 ::op_FD_CB_7A ::op_FD_CB_4E
-	#define			 ::op_FD_CB_7B ::op_FD_CB_4E
-	#define			 ::op_FD_CB_7C ::op_FD_CB_4E
-	#define			 ::op_FD_CB_7D ::op_FD_CB_4E
+	#define			 ::op_FD_CB_77 ::op_FD_CB_76
+	#define			 ::op_FD_CB_78 ::op_FD_CB_7E
+	#define			 ::op_FD_CB_79 ::op_FD_CB_7E
+	#define			 ::op_FD_CB_7A ::op_FD_CB_7E
+	#define			 ::op_FD_CB_7B ::op_FD_CB_7E
+	#define			 ::op_FD_CB_7C ::op_FD_CB_7E
+	#define			 ::op_FD_CB_7D ::op_FD_CB_7E
 	OP_BIT_PORP		(::op_FD_CB_7E, 7, REG_IY)					// BIT 7,(IY+N)
-	#define			 ::op_FD_CB_7F ::op_FD_CB_4E
+	#define			 ::op_FD_CB_7F ::op_FD_CB_7E
 
 	OP_LD_RES_PORP	(::op_FD_CB_80, 0, REG_B, REG_IY)			// LD B,RES 0,(IY+N)
 	OP_LD_RES_PORP	(::op_FD_CB_81, 0, REG_C, REG_IY)			// LD C,RES 0,(IY+N)

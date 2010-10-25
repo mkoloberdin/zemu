@@ -23,7 +23,7 @@
  */
 
 #namespace Cpu
-	OP_NOP			(::op_ED_00, DO_PREF_00)					// NOP
+	OP_NOP			(::op_ED_00, DO_PREF_00)					// *NOP
 	#define			 ::op_ED_01 ::op_ED_00
 	#define			 ::op_ED_02 ::op_ED_00
 	#define			 ::op_ED_03 ::op_ED_00

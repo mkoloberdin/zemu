@@ -85,6 +85,10 @@ void CpuTrace_Log(void)
 				if (!strcmp(str, "M1")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC), NULL));
 				else
 				if (!strcmp(str, "M2")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 1, NULL));
+				else
+				if (!strcmp(str, "M3")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 2, NULL));
+				else
+				if (!strcmp(str, "M4")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 3, NULL));
 				else traceFile.PrintF("[%s]", str);
 			}
 			else traceFile.PrintF("[%s", str);

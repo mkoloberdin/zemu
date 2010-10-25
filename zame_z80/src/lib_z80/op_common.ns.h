@@ -547,7 +547,7 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 
 #define OP_BIT_PORP(FN,BIT,RP) \
 	void FN(s_Cpu *self) { \
-		REG_MP(self) = (RP(self) + self->tmp_int8); \
+		REG_MP(self) = RP(self) + self->tmp_int8; \
 		DO_BIT_M((RP(self) + self->tmp_int8), BIT); \
 		self->tstate += (16-4); \
 		DO_PREF_00; \
