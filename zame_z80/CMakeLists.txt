@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 project(zame_z80)
 
+find_program (RUBY_EXECUTABLE "ruby")
+if (RUBY_EXECUTABLE)
+	message ("Ruby found")
+else ()
+	message (FATAL_ERROR "Ruby not found (required to build zame_z80 core)")
+endif ()
+
 if(CMAKE_COMPILER_IS_GNUCC)
 	set (CMAKE_C_FLAGS "-O2 -fomit-frame-pointer -Wall -pipe -std=gnu99 -pedantic")
 endif()
@@ -23,7 +30,7 @@ foreach(ns_file ${ns_sources})
 	string(REGEX REPLACE "^.*src/(.+)$" "${OUTPUT_DIR}/\\1" dest_file ${dest_file})
 	add_custom_command(
 		OUTPUT ${dest_file}
-		COMMAND ruby ${CMAKE_CURRENT_SOURCE_DIR}/nspp ${ns_file} ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_DIR}
+		COMMAND ${RUBY_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/nspp ${ns_file} ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_DIR}
 		DEPENDS ${ns_file}
 	)
 	list(APPEND z80ex_wrapper_sources ${dest_file})
