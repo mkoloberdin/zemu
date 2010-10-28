@@ -11,6 +11,7 @@ configure_file (
 	"${PROJECT_SOURCE_DIR}/ZEmuConfig.h.in"
 	"${PROJECT_BINARY_DIR}/ZEmuConfig.h"
 )
+include_directories(${PROJECT_BINARY_DIR})
 
 option (USE_Z80EX "Use external Z80EX library for z80 emulation" Off)
 set (ZAME_Z80_PATH "${PROJECT_SOURCE_DIR}/zame_z80"
