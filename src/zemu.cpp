@@ -1470,6 +1470,39 @@ void OutputLogo(void)
 	printf("                                        \n");
 }
 
+#ifdef _WIN32
+
+HICON windows_icon;
+HWND hwnd;
+
+#include <SDL_syswm.h>
+#include "windows/resource.h"
+
+void windows_init()
+{
+	HINSTANCE handle = ::GetModuleHandle(NULL);
+	windows_icon = ::LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
+	if (windows_icon == NULL) {
+		StrikeError("Error: %d\n", GetLastError());
+	}
+	SDL_SysWMinfo wminfo;
+	SDL_VERSION(&wminfo.version);
+	if (int sdl_error = SDL_GetWMInfo(&wminfo) != 1)
+	{
+		StrikeError("SDL_GetWMInfo() returned %d\n", sdl_error);
+	}
+	hwnd = wminfo.window;
+	::SetClassLongPtr(hwnd, GCLP_HICON, (LONG_PTR)windows_icon);
+}
+
+void windows_cleanup()
+{
+	SDL_Quit();
+	::DestroyIcon(windows_icon);
+}
+
+#endif // _WIN32
+
 int main(int argc, char *argv[])
 {
 	OutputLogo();
@@ -1566,8 +1599,12 @@ int main(int argc, char *argv[])
 		int spec = SDL_INIT_VIDEO;
 		if (params.sound && params.sndBackend == SND_BACKEND_SDL) spec |= SDL_INIT_AUDIO;
 		if (SDL_Init(spec) < 0) StrikeError("Unable to init SDL: %s\n", SDL_GetError());
-
+#ifdef _WIN32
+		windows_init();
+		atexit(windows_cleanup);
+#else
 		atexit(SDL_Quit);
+#endif
 
 		videoSpec = SDL_SWSURFACE;
 		if (params.useFlipSurface) videoSpec |= SDL_DOUBLEBUF;

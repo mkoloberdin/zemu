@@ -56,6 +56,17 @@ file (GLOB_RECURSE SOURCES
 	src/*.cpp
 	src/*.h
 )
+
+if (WIN32)
+	if (CMAKE_COMPILER_IS_GNUCC)
+		set (CMAKE_RC_COMPILER_INIT windres)
+		enable_language(RC)
+		set (CMAKE_RC_COMPILE_OBJECT
+			"<CMAKE_RC_COMPILER> -O coff <FLAGS> <DEFINES> <SOURCE> <OBJECT>")
+	endif ()
+	set (SOURCES ${SOURCES} "${PROJECT_SOURCE_DIR}/src/windows/zemu.rc")
+endif ()
+
 add_executable (zemu WIN32 ${SOURCES})
 
 if (USE_Z80EX)

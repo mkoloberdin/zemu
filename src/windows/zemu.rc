@@ -1,0 +1,5 @@
+#include <windows.h>
+#include "resource.h"
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDI_ICON1	ICON	".\\zemu_icon.ico"
