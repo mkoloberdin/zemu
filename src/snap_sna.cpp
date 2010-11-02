@@ -138,6 +138,7 @@ void save_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 	fl.PutBYTE(border.portFB & 7);
 
 	Z80EX_BYTE buffer[0xC000];
+	for (int i = 0; i < 8; i++) banks[i] = false;
 
 	for (int i = 0; i < 0x4000; i++) buffer[i] = mmgr.ram[5*0x4000 + i];
 	banks[5] = true;
