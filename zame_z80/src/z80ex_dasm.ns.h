@@ -1,7 +1,5 @@
-#ifndef WRAPPER_Z80EX_DASM_H_INCLUDED
-#define WRAPPER_Z80EX_DASM_H_INCLUDED
-
 #include "z80ex_common.h"
+#include "lib_z80_dasm/dasm.h"
 
 /* callback that returns byte for a given adress */
 typedef Z80EX_BYTE (*z80ex_dasm_readbyte_cb)(Z80EX_WORD addr, void *user_data);
@@ -34,5 +32,3 @@ extern int z80ex_dasm(
 #endif
 
 #endif /* Z80EX_SELF_INCLUDE */
-
-#endif /* WRAPPER_Z80EX_DASM_H_INCLUDED */

@@ -1,6 +1,3 @@
-#ifndef WRAPPER_Z80EX_COMMON_H_INCLUDED
-#define WRAPPER_Z80EX_COMMON_H_INCLUDED
-
 /* For detection that it is not genuine z80ex */
 #define Z80EX_ZAME_WRAPPER
 
@@ -38,5 +35,3 @@ typedef signed char Z80EX_SIGNED_BYTE;
 typedef unsigned short Z80EX_WORD;
 typedef unsigned int Z80EX_DWORD;
 #endif
-
-#endif /* WRAPPER_Z80EX_COMMON_H_INCLUDED */
