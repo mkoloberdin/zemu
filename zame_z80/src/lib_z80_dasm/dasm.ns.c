@@ -57,7 +57,7 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 		const s_DasmItem *optable = ::optable_00;
 		const char *opcode_ptr;
 		unsigned size = 0;
-		int8_t xx_cb_offset = 0;
+		int8_t offset = 0;
 
 		for (;;)
 		{
@@ -79,7 +79,7 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 
 					if (optable == ::optable_DD_CB || optable == ::optable_FD_CB)
 					{
-						xx_cb_offset = ptr_read(addr, data_read);
+						offset = ptr_read(addr, data_read);
 						addr++;
 						size++;
 					}
@@ -87,6 +87,13 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 			}
 			else
 			{
+				if (optable == ::optable_DD || optable == ::optable_FD)
+				{
+					offset = ptr_read(addr, data_read);
+					addr++;
+					size++;
+				}
+
 				opcode_ptr = item->opcode;
 				break;
 			}
@@ -127,10 +134,10 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 				}
 				else if (!strcmp(tmp, "SO"))
 				{
-					if (xx_cb_offset < 0) {
-						sprintf(tmp, "-#%02X", (unsigned)(- xx_cb_offset));
+					if (offset < 0) {
+						sprintf(tmp, "-#%02X", (unsigned)(- offset));
 					} else {
-						sprintf(tmp, "#%02X", xx_cb_offset);
+						sprintf(tmp, "#%02X", offset);
 					}
 				}
 
