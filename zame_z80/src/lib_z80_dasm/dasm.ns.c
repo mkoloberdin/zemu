@@ -87,13 +87,6 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 			}
 			else
 			{
-				if (optable == ::optable_DD || optable == ::optable_FD)
-				{
-					offset = ptr_read(addr, data_read);
-					addr++;
-					size++;
-				}
-
 				opcode_ptr = item->opcode;
 				break;
 			}
@@ -134,6 +127,13 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 				}
 				else if (!strcmp(tmp, "SO"))
 				{
+					if (optable != ::optable_DD_CB && optable == ::optable_FD_CB)
+					{
+						offset = ptr_read(addr, data_read);
+						addr++;
+						size++;
+					}
+
 					if (offset < 0) {
 						sprintf(tmp, "-#%02X", (unsigned)(- offset));
 					} else {
