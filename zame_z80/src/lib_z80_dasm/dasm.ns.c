@@ -127,7 +127,7 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 				}
 				else if (!strcmp(tmp, "SO"))
 				{
-					if (optable != ::optable_DD_CB && optable == ::optable_FD_CB)
+					if (optable != ::optable_DD_CB && optable != ::optable_FD_CB)
 					{
 						offset = ptr_read(addr, data_read);
 						addr++;
@@ -137,7 +137,7 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 					if (offset < 0) {
 						sprintf(tmp, "-#%02X", (unsigned)(- offset));
 					} else {
-						sprintf(tmp, "#%02X", offset);
+						sprintf(tmp, "+#%02X", offset);
 					}
 				}
 
