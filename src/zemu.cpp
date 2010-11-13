@@ -320,28 +320,36 @@ void StrToLower(char *str)
 #define MAX_FILES 4096
 #define MAX_FNAME 256
 
-void LoadNormalFile(char *fname, int drive)
+void LoadNormalFile(const char *fname, int drive)
 {
-	if (C_Tape::IsTapeFormat(fname)) {
+	if (C_Tape::IsTapeFormat(fname))
+	{
 		C_Tape::Insert(fname);
-	} else if (!stricmp(C_DirWork::ExtractExt(fname), "z80")) {
+	}
+	else if (!stricmp(C_DirWork::ExtractExt(fname), "z80"))
+	{
 		if (load_z80_snap(fname, cpu, dev_mman, dev_border)) {
 			dev_tsfm.OnReset();
 		} else {
 			StrikeMessage("Error loading snapshot");
 		}
-	} else if (!stricmp(C_DirWork::ExtractExt(fname), "sna")) {
+	}
+	else if (!stricmp(C_DirWork::ExtractExt(fname), "sna"))
+	{
 		if (load_sna_snap(fname, cpu, dev_mman, dev_border)) {
 			dev_tsfm.OnReset();
 		} else {
 			StrikeMessage("Error loading snapshot");
 		}
-	} else {
+	}
+	else
+	{
 		wd1793_load_dimage(fname, drive);
+		strcpy(oldFileName[drive], fname);
 	}
 }
 
-bool TryLoadArcFile(char *arcName, int drive)
+bool TryLoadArcFile(const char *arcName, int drive)
 {
 	C_File fl;
 	char res[MAX_PATH];
@@ -390,7 +398,7 @@ bool TryLoadArcFile(char *arcName, int drive)
 	return true; // "true" here means ONLY that the file is an archive
 }
 
-void TryNLoadFile(char *fname, int drive)
+void TryNLoadFile(const char *fname, int drive)
 {
 	#ifdef _WIN32
 		char tname[MAX_PATH];
@@ -403,17 +411,12 @@ void TryNLoadFile(char *fname, int drive)
 			tname[1] = ':';
 		}
 	#else
-		char *tname = fname;
+		const char *tname = fname;
 	#endif
 
 	if (!TryLoadArcFile(tname, drive)) {
 		LoadNormalFile(tname, drive);
 	}
-}
-
-void TryNLoadFile(char *fname)
-{
-	TryNLoadFile(fname, 0);
 }
 
 //--------------------------------------------------------------------------------------------------------------

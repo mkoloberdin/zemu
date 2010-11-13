@@ -291,7 +291,7 @@ char* SelectFile(char *oldFile)
 			{
 				if (DlgConfirm("Are you sure to save disk? (Y/N)"))
 				{
-					printf("Saving \"%s\" (drive %c)\n", oldFileName[currentDrive], "ABCD"[currentDrive]);
+					printf("Saving \"%s\" (drive %c) ... ", oldFileName[currentDrive], "ABCD"[currentDrive]);
 
 					#ifdef _WIN32
 						char tname[MAX_PATH];
@@ -307,8 +307,23 @@ char* SelectFile(char *oldFile)
 						char *tname = oldFileName[currentDrive];
 					#endif
 
-					if (!wd1793_save_dimage(tname, currentDrive, imgTRD)) {
+					char rname[MAX_PATH];
+
+					if (strcasecmp("trd", C_DirWork::ExtractExt(tname))) {
+						sprintf(rname, "%s.trd", tname);
+					} else {
+						strcpy(rname, tname);
+					}
+
+					if (!wd1793_save_dimage(rname, currentDrive, imgTRD))
+					{
+						printf("ERROR\n");
 						DlgConfirm("Save failed :(");
+					}
+					else
+					{
+						printf("OK\n");
+						strcpy(oldFileName[currentDrive], rname);
 					}
 				}
 			}
@@ -480,9 +495,7 @@ void FileDialog(void)
 	fname = SelectFile(oldFileName[currentDrive]);
 	SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
 
-	if (fname != NULL)
-	{
-		strcpy(oldFileName[currentDrive], fname);
+	if (fname != NULL) {
 		TryNLoadFile(oldFileName[currentDrive], currentDrive);
 	}
 
