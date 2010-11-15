@@ -359,6 +359,11 @@ bool TryLoadArcFile(const char *arcName, int drive)
 	string plugin_fn;
 
 	strcpy(tmp, C_DirWork::ExtractExt(arcName));
+
+	if (!strlen(tmp)) {
+		return false;
+	}
+
 	StrToLower(tmp);
 
 	plugin_fn = config.FindDataFile("arc", tmp);

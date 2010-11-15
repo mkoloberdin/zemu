@@ -496,7 +496,7 @@ void FileDialog(void)
 	SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
 
 	if (fname != NULL) {
-		TryNLoadFile(oldFileName[currentDrive], currentDrive);
+		TryNLoadFile(fname, currentDrive);
 	}
 
 	disableSound = false;
