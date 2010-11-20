@@ -14,11 +14,11 @@ Z80EX_BYTE C_GSound::memPage = 0;
 Z80EX_CONTEXT *C_GSound::gsCpu = NULL;
 Z80EX_BYTE C_GSound::mem[0x8000*32];
 
-uint64_t C_GSound::gsClk = 0;
+unsigned C_GSound::gsClk = 0;
 Z80EX_BYTE *C_GSound::readMap[4];
 Z80EX_BYTE *C_GSound::writeMap[4];
 
-#define GS_DEV_TO_CLK(clk) ((uint64_t)(clk) << 2)
+#define GS_DEV_TO_CLK(clk) ((clk) << 2)
 #define GS_CLK_TO_DEV(clk) ((clk) >> 2)
 #define GS_INT_PERIOD (384)
 
@@ -163,15 +163,39 @@ void C_GSound::UpdateMaps()
 
 void C_GSound::Update(unsigned clk)
 {
-	uint64_t nextGsClk = GS_DEV_TO_CLK(clk);
+	// printf("gs upd: %d\n", clk);
+	unsigned nextGsClk = GS_DEV_TO_CLK(clk);
+	unsigned nextIntClk = gsClk - (gsClk % GS_INT_PERIOD) + GS_INT_PERIOD;
+
+	if ((gsClk % GS_INT_PERIOD) < 32)
+	{
+		unsigned tmp = gsClk - (gsClk % GS_INT_PERIOD) + 32;
+
+		while (gsClk < tmp && gsClk < nextGsClk)
+		{
+			gsClk += (unsigned)z80ex_int(gsCpu);
+			gsClk += (unsigned)z80ex_step(gsCpu);
+		}
+	}
 
 	while (gsClk < nextGsClk)
 	{
-		if ((gsClk % GS_INT_PERIOD) < 32) {
-			gsClk += (uint64_t)z80ex_int(gsCpu);
+		while (gsClk < nextIntClk && gsClk < nextGsClk) {
+			gsClk += (unsigned)z80ex_step(gsCpu);
 		}
 
-		gsClk += (uint64_t)z80ex_step(gsCpu);
+		if (gsClk >= nextIntClk && gsClk < nextGsClk)
+		{
+			unsigned tmp = nextIntClk + 32;
+
+			while (gsClk < tmp && gsClk < nextGsClk)
+			{
+				gsClk += (unsigned)z80ex_int(gsCpu);
+				gsClk += (unsigned)z80ex_step(gsCpu);
+			}
+
+			nextIntClk = gsClk - (gsClk % GS_INT_PERIOD) + GS_INT_PERIOD;
+		}
 	}
 }
 
@@ -180,7 +204,7 @@ void C_GSound::UpdateSound()
 	unsigned lt = (unsigned)volume[0] * (unsigned)channel[0] + (unsigned)volume[1] * (unsigned)channel[1];
 	unsigned rt = (unsigned)volume[2] * (unsigned)channel[2] + (unsigned)volume[3] * (unsigned)channel[3];
 
-	// printf("gs upd: %d, %d, %d\n", (unsigned)GS_CLK_TO_DEV(gsClk), lt, rt);
+	// printf("gs snd: %d, %d, %d\n", (unsigned)GS_CLK_TO_DEV(gsClk), lt, rt);
 	sndRenderer.Update((unsigned)GS_CLK_TO_DEV(gsClk), (lt << 1) + (rt >> 4), (rt << 1) + (lt >> 4));
 }
 

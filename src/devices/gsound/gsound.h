@@ -46,7 +46,7 @@ class C_GSound : public C_Device
 	static Z80EX_CONTEXT *gsCpu;
 	static Z80EX_BYTE mem[0x8000*32];
 
-	static uint64_t gsClk;
+	static unsigned gsClk;
 	static Z80EX_BYTE *readMap[4];
 	static Z80EX_BYTE *writeMap[4];
 };
