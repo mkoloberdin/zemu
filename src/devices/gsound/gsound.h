@@ -5,6 +5,12 @@
 #include "../device.h"
 #include "sound/mixer.h"
 
+// 16 pages for 512mb (classic GS)
+// 64 pages for 2gb (NeoGS)
+
+#define GS_MEM_PAGES (16)		// including rom, so actual memory pages = GS_PAGES - 1
+#define GS_MEMPAGE_MASK (15)
+
 class C_GSound : public C_Device
 {
 	public:
@@ -44,7 +50,7 @@ class C_GSound : public C_Device
 	static Z80EX_BYTE memPage;
 
 	static Z80EX_CONTEXT *gsCpu;
-	static Z80EX_BYTE mem[0x8000*32];
+	static Z80EX_BYTE mem[0x8000*GS_MEM_PAGES];
 
 	static unsigned gsClk;
 	static Z80EX_BYTE *readMap[4];

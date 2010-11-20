@@ -12,7 +12,7 @@ Z80EX_BYTE C_GSound::volume[4] = { 0, 0, 0, 0 };
 Z80EX_BYTE C_GSound::channel[4] = { 0, 0, 0, 0 };
 Z80EX_BYTE C_GSound::memPage = 0;
 Z80EX_CONTEXT *C_GSound::gsCpu = NULL;
-Z80EX_BYTE C_GSound::mem[0x8000*32];
+Z80EX_BYTE C_GSound::mem[0x8000*GS_MEM_PAGES];
 
 unsigned C_GSound::gsClk = 0;
 Z80EX_BYTE *C_GSound::readMap[4];
@@ -274,7 +274,7 @@ void C_GSound::GsOutputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, Z80EX_BYTE valu
 	switch (port & 0x0F)
 	{
 		case 0x00:
-			memPage = value & 0x0F;
+			memPage = value & GS_MEMPAGE_MASK;
 			UpdateMaps();
 			return;
 
