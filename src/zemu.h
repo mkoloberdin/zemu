@@ -7,6 +7,12 @@
 #include "config.h"
 #include "sound/mixer.h"
 
+#ifndef Z80EX_ZAME_WRAPPER
+	#define Z80EX_CONTEXT_PARAM Z80EX_CONTEXT *cpu,
+#else
+	#define Z80EX_CONTEXT_PARAM
+#endif
+
 #define WIDTH 320
 #define HEIGHT 240
 

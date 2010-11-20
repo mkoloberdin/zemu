@@ -31,7 +31,7 @@ class C_DirWork
 	bool EnumNext(void);
 	void EnumClose(void);
 
-	static char* Normalize(const char *path);
+	static char* Normalize(const char *path, bool isFile=false);
 	static char* LevelUp(const char *path);
 	static char* ExtractPath(const char *path);
 	static char* ExtractExt(const char *path);

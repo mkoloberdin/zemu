@@ -19,6 +19,7 @@ class C_Covox : public C_Device
 	static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
 	static void OnFrameStart(void);
 	static void OnAfterFrameRender(void);
+	static void OnReset(void);
 };
 
 #endif

@@ -11,6 +11,7 @@
 #include "devices/mouse/mouse.h"
 #include "devices/covox/covox.h"
 #include "devices/joystick/kempston.h"		// [boo_boo]
+#include "devices/gsound/gsound.h"
 
 extern C_Border dev_border;
 extern C_ExtPort dev_extport;
@@ -21,5 +22,6 @@ extern C_TsFm dev_tsfm;
 extern C_Mouse dev_mouse;
 extern C_Covox dev_covox;
 extern C_KempstonStick dev_kempston;	// [boo_boo]
+extern C_GSound dev_gsound;
 
 #endif

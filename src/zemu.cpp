@@ -33,12 +33,6 @@
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
 
-#ifndef Z80EX_ZAME_WRAPPER
-	#define Z80EX_CONTEXT_PARAM Z80EX_CONTEXT *cpu,
-#else
-	#define Z80EX_CONTEXT_PARAM
-#endif
-
 unsigned turboMultiplier = 1;
 unsigned turboMultiplierNx = 1;
 bool unturbo = false;
@@ -217,6 +211,7 @@ C_TsFm dev_tsfm;
 C_Mouse dev_mouse;
 C_Covox dev_covox;
 C_KempstonStick dev_kempston; // [boo_boo]
+C_GSound dev_gsound;
 
 C_Device* devs[] =
 {
@@ -229,6 +224,7 @@ C_Device* devs[] =
 	&dev_mouse,
 	&dev_covox,
 	&dev_kempston, // [boo_boo]
+	&dev_gsound,
 	NULL
 };
 
@@ -320,7 +316,7 @@ void StrToLower(char *str)
 #define MAX_FILES 4096
 #define MAX_FNAME 256
 
-void LoadNormalFile(const char *fname, int drive)
+void LoadNormalFile(const char *fname, int drive, const char *arcName=NULL)
 {
 	if (C_Tape::IsTapeFormat(fname))
 	{
@@ -345,7 +341,7 @@ void LoadNormalFile(const char *fname, int drive)
 	else
 	{
 		wd1793_load_dimage(fname, drive);
-		strcpy(oldFileName[drive], fname);
+		strcpy(oldFileName[drive], C_DirWork::Normalize(arcName ? arcName : fname, true));
 	}
 }
 
@@ -397,7 +393,7 @@ bool TryLoadArcFile(const char *arcName, int drive)
 	// TODO: check if lresult strlen > sizeof(res)
 	sprintf(res, "%s/%s", tempFolderName, tmp);
 
-	LoadNormalFile(res, drive);
+	LoadNormalFile(res, drive, arcName);
 	unlink(res);
 
 	return true; // "true" here means ONLY that the file is an archive
@@ -430,6 +426,7 @@ void Action_Reset(void)
 {
 	isPaused = false;
 	ResetSequence();
+	dev_gsound.Reset();
 }
 
 void Action_ResetTrDos(void)
@@ -823,12 +820,12 @@ void InitAll(void)
 	for (i = 0; i < 0x10000; i++) breakpoints[i] = false;
 
 	cpu = z80ex_create(
-			ReadByte, NULL,
-			WriteByte, NULL,
-			InputByte, NULL,
-			OutputByte, NULL,
-			ReadIntVec, NULL
-		);
+		ReadByte, NULL,
+		WriteByte, NULL,
+		InputByte, NULL,
+		OutputByte, NULL,
+		ReadIntVec, NULL
+	);
 }
 
 #define MAX_FRAME_TACTS 71680

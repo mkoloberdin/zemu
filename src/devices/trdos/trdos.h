@@ -17,9 +17,9 @@ class C_TrDos : public C_Device
 	void Close(void);
 
 	static ptrOnReadByteFunc ReadByteCheckAddr(Z80EX_WORD addr, bool m1);
-    static Z80EX_BYTE OnReadByte_3Dxx_M1(Z80EX_WORD addr, bool m1);
-    static Z80EX_BYTE OnReadByte_RAM_M1(Z80EX_WORD addr, bool m1);
-    static Z80EX_BYTE OnReadByte_ROM(Z80EX_WORD addr, bool m1);
+	static Z80EX_BYTE OnReadByte_3Dxx_M1(Z80EX_WORD addr, bool m1);
+	static Z80EX_BYTE OnReadByte_RAM_M1(Z80EX_WORD addr, bool m1);
+	static Z80EX_BYTE OnReadByte_ROM(Z80EX_WORD addr, bool m1);
 	static bool InputOutputByteCheckPort(Z80EX_WORD port);
 	static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
 	static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);

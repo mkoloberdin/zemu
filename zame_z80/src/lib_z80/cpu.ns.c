@@ -62,6 +62,8 @@
 		cpu->data_read_int = data_read_int;
 
 		memset(cpu->regs, 0, CPU_LAST * sizeof(word));
+		::reset(cpu);
+
 		return cpu;
 	}
 

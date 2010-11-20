@@ -16,6 +16,7 @@ char *realpath(const char *path, char *resolved_path)
 	if (!r) return NULL;
 	if (_access(r, 0) != 0) return NULL; // path does not exist
 
+	// TODO: while * strchr == slow. optimize it
 	while ((c = strchr(r, '\\')) != NULL) {
 		*c = '/';
 	}
@@ -259,7 +260,7 @@ void C_DirWork::EnumClose(void)
 
 #endif	// __linux__
 
-char* C_DirWork::Normalize(const char *path)
+char* C_DirWork::Normalize(const char *path, bool isFile)
 {
 	static char result[MAX_PATH];
 
@@ -270,11 +271,16 @@ char* C_DirWork::Normalize(const char *path)
 	}
 
 	size_t rlen = strlen(result);
-	if (rlen > 0 && result[rlen-1] != '/') strcat(result, "/");
+
+	if (!isFile && rlen > 0 && result[rlen-1] != '/') {
+		strcat(result, "/");
+	}
+
 	if (rlen >= 3 && result[2] == '/' && result[1] == ':') {
 		result[1] = result[0];
 		result[0] = result[2] = '/';
 	}
+
 	return result;
 }
 
