@@ -105,7 +105,7 @@
 		// REG_R(self) = 0x00;
 		// REG_IM(self) = 0;
 
-		// really all others registers may has any value
+		// actually all others registers may has any value
 		REG_BC(self) = 0xFFFF;
 		REG_DE(self) = 0xFFFF;
 		REG_HL(self) = 0xFFFF;

@@ -47,6 +47,9 @@
 #ifdef _WIN32
 	#include <io.h>
 	#include <sys/stat.h>
+#else
+	#include <sys/types.h>
+	#include <sys/stat.h>
 #endif
 
 #include <fcntl.h>

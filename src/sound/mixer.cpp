@@ -7,32 +7,41 @@ CSoundMixer SoundMixer;
 #define MIXER_HALF_VOL_MASK 1
 #define MIXER_SMART_MASK 2
 
-void CSoundMixer::InitBackendSDL(int inSDLBufferSize) {
+void CSoundMixer::InitBackendSDL(int inSDLBufferSize)
+{
 	sndBackend = new CSndBackendSDL(SDLWAVE_CALLBACK_BUFFER_SIZE * inSDLBufferSize);
 	sndBackend->Init();
 }
 
 #ifndef _WIN32
-void CSoundMixer::InitBackendOSS(int inSoundParam) {
+
+void CSoundMixer::InitBackendOSS(int inSoundParam)
+{
 	sndBackend = new CSndBackendOSS(inSoundParam, AUDIO_HW_BUFFER);
 	sndBackend->Init();
 }
 
 #else
-void CSoundMixer::InitBackendWin32(int inSoundParam) {
+
+void CSoundMixer::InitBackendWin32(int inSoundParam)
+{
 	sndBackend = new CSndBackendWIN32(inSoundParam, AUDIO_HW_BUFFER);
 	sndBackend->Init();
 }
+
 #endif // !_WIN32
 
-void CSoundMixer::Init(int *inMixerModePtr, bool inRecordWav, const char *inWavFileName) {
+void CSoundMixer::Init(int *inMixerModePtr, bool inRecordWav, const char *inWavFileName)
+{
 	assert(sndBackend != 0);
 	MixerModePtr = inMixerModePtr;
 	RecordWav = inRecordWav;
 	WavFileName = inWavFileName;
+
 	if (RecordWav) {
 		WavFile.Write("output.wav.tmp");
 	}
+
 	Initialized = true;
 }
 
@@ -187,5 +196,4 @@ void CSoundMixer::FlushFrame(bool SoundEnabled) {
 			Sources[i]->samples = 0;
 		}
 	}
-
 }
