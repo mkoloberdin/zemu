@@ -55,6 +55,8 @@ typedef unsigned long SAACMD;
 #define SAASENDCOMMAND_INVALIDPARAMETERS				0x80000003
 
 
+#include "sound/snd_renderer.h"
+
 #ifndef BYTE
 #define BYTE unsigned char
 #endif
@@ -64,8 +66,6 @@ typedef unsigned long SAACMD;
 #else
 #define SAAAPI
 #endif
-
-#include "sound/snd_renderer.h"
 
 #ifdef __cplusplus
 

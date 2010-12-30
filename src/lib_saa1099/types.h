@@ -39,7 +39,7 @@ typedef struct
 } ENVDATA;
 
 #ifdef WIN32
-extern "C" void _stdcall OutputDebugStringA (char*);
+// extern "C" void _stdcall OutputDebugStringA (char*);
 #endif
 
 #endif
