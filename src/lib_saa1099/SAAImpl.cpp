@@ -708,11 +708,8 @@ void CSAASoundInternal::GenerateManyUsingSndRenderer(C_SndRenderer *sr, unsigned
 
 		// force output into the range 0<=x<=65535
 		// (strictly, the following gives us 0<=x<=63360)
-		// stereoval.sep.Left *= 10;
-		// stereoval.sep.Right *= 10;
-
-		stereoval.sep.Left *= 2;
-		stereoval.sep.Right *= 2;
+		stereoval.sep.Left *= 10;
+		stereoval.sep.Right *= 10;
 
 		sr->Update(SNDR_DEFAULT_SYSTICK_RATE * (unsigned long long)i / SNDR_DEFAULT_SAMPLE_RATE, stereoval.sep.Left, stereoval.sep.Right);
 	}
