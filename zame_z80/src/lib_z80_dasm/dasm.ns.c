@@ -121,7 +121,7 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 				}
 				else if (!strcmp(tmp, "O"))
 				{
-					sprintf(tmp, "#%04X", (unsigned)((addr + 1) + (int8_t)ptr_read(addr, data_read)));
+					sprintf(tmp, "#%04X", (word)((addr + 1) + (int8_t)ptr_read(addr, data_read)));
 					addr++;
 					size++;
 				}

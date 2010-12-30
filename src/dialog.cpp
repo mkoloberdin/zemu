@@ -852,7 +852,7 @@ void DebugIt(void)
 			sprintf(buf, "EFF7 %02X", C_ExtPort::portEFF7);               fixed_font.PrintString(x, y, buf); y += h;
 			sprintf(buf, "DOS  %s", C_TrDos::trdos ? "ON" : "OFF");       fixed_font.PrintString(x, y, buf); y += h;
 			sprintf(buf, "INT? %s", z80ex_int_possible(cpu) ? "Y" : "N"); fixed_font.PrintString(x, y, buf); y += h;
-			sprintf(buf, "T    %d", (int)clk);                            fixed_font.PrintString(x, y, buf); y += h;
+			sprintf(buf, "T    %d", (int)cpuClk);                         fixed_font.PrintString(x, y, buf); y += h;
 
 			OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);
 			ScaleImage();

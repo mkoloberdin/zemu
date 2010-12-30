@@ -14,11 +14,12 @@
 #endif
 
 #define WIDTH 320
-#define HEIGHT 240
+#define HEIGHT 256
 
 #define FRAME_WAIT_MS 20
 #define MAX_SPEED_FRAME_SKIP 64
 
+#define MAX_FRAME_TACTS 71680
 #define MAX_DEV_CLK 72000
 
 #define MAX_TRACE_FORMAT 0x100
@@ -59,7 +60,7 @@ struct s_Params
 
 extern CConfig config;
 extern Z80EX_CONTEXT *cpu;
-extern uint64_t clk, devClk, lastDevClk, devClkCounter;
+extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;
 extern SDL_Surface *screen;
 extern int PITCH;
@@ -102,7 +103,7 @@ extern bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 //--------------------------------------------------------------------------------------------------------------
 
 extern bool joyOnKeyb;
-extern bool attributesHack;
+extern int attributesHack;
 extern int screensHack;		// 0 = no hack, 8 = swap screens
 extern bool flashColor;
 extern int colors_base[0x10];
@@ -121,6 +122,11 @@ extern unsigned watchesCount;
 Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void *userData);
 void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value);
 void DebugStep(void);
+
+extern SDL_Surface *renderSurf;
+extern int renderPitch;
+extern unsigned long prevRenderClk;
+extern void (* renderPtr)(unsigned long);
 
 //--------------------------------------------------------------------------------------------------------------
 

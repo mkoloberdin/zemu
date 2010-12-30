@@ -1,78 +1,90 @@
 #include "render_multicolor.h"
-#include "../zemu.h"
-#include "../devs.h"
+#include "render_common.h"
 
-#define LINE_SHIFT 3
-
-unsigned long RenderMulticolor(SDL_Surface *surf, int ptch, unsigned long lastClk, unsigned long clk)
+void RenderMulticolor(unsigned long nextClk)
 {
-	unsigned long rnClk, clMod;
-	int line, scrLine, pos, cl;
-	int *scr;
-	int zxLine, zxScreen, ci, cp, bt;
+	int ci, cp, bt;
+	#include "render_common_a.h"
 
-	for (rnClk = lastClk; rnClk < clk;)
+	zxScreen = ((dev_mman.port7FFD & 8) ^ screensHack) ? RAM_BANK7 : RAM_BANK5;
+
+	if (!attributesHack)
 	{
-		line = rnClk / 224;
+		bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
+		cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 
-		if (line>=40 && line<280)	// in 320x240 screen (vertical)
+		if (flashColor)
 		{
-			scrLine = line - 40;
-			clMod = rnClk % 224;
+			ci = colors[((cl & 64) >> 3) | (cl & 7)];
+			cp = (cl >> 3) & 7;
 
-			if (clMod>=(20-LINE_SHIFT) && clMod<(180-LINE_SHIFT))	// in 320x240 screen (horizontal)
+			if (cp)
 			{
-				if (line<64 || line>=256 || clMod<(36-LINE_SHIFT) || clMod>=(164-LINE_SHIFT))	// border
-				{
-					cl = colors[dev_border.portFB & 7];
-					pos = (clMod - (20-LINE_SHIFT)) * 2;
-					scr = (int *)surf->pixels + ptch*scrLine + pos;
-					*(scr++) = cl;
-					*(scr) = cl;
-					rnClk++;
-				}
-				else
-				{
-					pos = (clMod - (36-LINE_SHIFT)) / 4;
-					zxLine = line - 64;
-					scr = (int *)surf->pixels + ptch*scrLine + 32 + pos*8;
+				cp = colors[cp];
 
-					zxScreen = ((dev_mman.port7FFD & 8) ^ screensHack) ? RAM_BANK7 : RAM_BANK5;
-					bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
-					cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
+				int r = ((unsigned int)GETR(ci) + (unsigned int)GETR(cp)) >> 1;
+				int g = ((unsigned int)GETG(ci) + (unsigned int)GETG(cp)) >> 1;
+				int b = ((unsigned int)GETB(ci) + (unsigned int)GETB(cp)) >> 1;
 
-					if ((frames&32) && (cl&128))
-					{
-						cp = colors[((cl & 64) >> 3) | (cl & 7)];
-						ci = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
-					}
-					else
-					{
-						ci = colors[((cl & 64) >> 3) | (cl & 7)];
-						cp = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
-					}
+				ci = DRGB(r, g, b);
+			}
 
-					if (attributesHack)
-					{
-						ci = DRGB(0,0,0);
-						cp = DRGB(255,255,255);
-					}
+			cp = DRGB(0, 0, 0);
+		}
+		else
+		{
+			if ((frames & 32) && (cl & 128))
+			{
+				cp = colors[((cl & 64) >> 3) | (cl & 7)];
+				ci = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
+			}
+			else
+			{
+				ci = colors[((cl & 64) >> 3) | (cl & 7)];
+				cp = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
+			}
+		}
+	}
+	else if (attributesHack == 1)
+	{
+		bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 
-					*(scr++) = (bt & 128 ? ci : cp);
-					*(scr++) = (bt &  64 ? ci : cp);
-					*(scr++) = (bt &  32 ? ci : cp);
-					*(scr++) = (bt &  16 ? ci : cp);
-					*(scr++) = (bt &   8 ? ci : cp);
-					*(scr++) = (bt &   4 ? ci : cp);
-					*(scr++) = (bt &   2 ? ci : cp);
-					*(scr)   = (bt &   1 ? ci : cp);
+		if (((zxLine >> 3) & 1) ^ (pos & 1))
+		{
+			ci = DRGB(0,0,0);
+			cp = DRGB(192,192,192);
+		}
+		else
+		{
+			ci = DRGB(64,64,64);
+			cp = DRGB(255,255,255);
+		}
+	}
+	else	// attributesHack == 2
+	{
+		bt = 0xC3;
+		cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 
-					if (clMod <= 160) rnClk += 4;
-					else rnClk++;
-				}
-			} else rnClk++;
-		} else rnClk++;
+		if ((frames & 32) && (cl & 128))
+		{
+			cp = colors[((cl & 64) >> 3) | (cl & 7)];
+			ci = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
+		}
+		else
+		{
+			ci = colors[((cl & 64) >> 3) | (cl & 7)];
+			cp = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
+		}
 	}
 
-	return rnClk;
+	*(scr++) = (bt & 128 ? ci : cp);
+	*(scr++) = (bt &  64 ? ci : cp);
+	*(scr++) = (bt &  32 ? ci : cp);
+	*(scr++) = (bt &  16 ? ci : cp);
+	*(scr++) = (bt &   8 ? ci : cp);
+	*(scr++) = (bt &   4 ? ci : cp);
+	*(scr++) = (bt &   2 ? ci : cp);
+	*(scr)   = (bt &   1 ? ci : cp);
+
+	#include "render_common_b.h"
 }

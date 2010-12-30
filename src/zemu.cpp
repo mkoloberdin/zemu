@@ -44,7 +44,7 @@ bool isPausedNx = false;
 bool joyOnKeyb = false;
 
 Z80EX_CONTEXT *cpu;
-uint64_t clk, devClk, lastDevClk, devClkCounter;
+uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 s_Params params;
 SDL_Surface *screen, *realScreen, *scrSurf[2];
 int PITCH, REAL_PITCH;
@@ -559,8 +559,11 @@ void DisplayTurboMessage(void)
 void Action_AttributesHack(void)
 {
 	isPaused = false;
-	attributesHack = !attributesHack;
-	SetMessage(attributesHack ? "AttributesHack ON" : "AttributesHack OFF");
+	attributesHack = (attributesHack + 1) % 3;
+
+	char buf[0x20];
+	sprintf(buf, (attributesHack ? "AttributesHack #%d" : "AttributesHack OFF"), attributesHack);
+	SetMessage(buf);
 }
 
 void Action_ScreensHack(void)
@@ -828,23 +831,11 @@ void InitAll(void)
 	);
 }
 
-#define MAX_FRAME_TACTS 71680
 #define INT_LENGTH 32
-#define INT_BEGIN (68068+1)
 
-bool attributesHack = false;
+int attributesHack = 0;
 bool flashColor = false;
 int screensHack = 0;
-
-// left_border        = 36
-// horizontal_screen  = 128
-// right_border       = 28
-// horizontal_retrace = 32
-
-// top_border         = 64
-// vertical_screen    = 192
-// bottom_border      = 48
-// vertical_retrace   = 16
 
 // ----------------------------------
 
@@ -923,7 +914,7 @@ uint64_t actClk = 0;
 void InitActClk(void)
 {
 	actDevClkCounter = devClkCounter * (uint64_t)turboMultiplier;
-	actClk = clk * (uint64_t)turboMultiplier;
+	actClk = cpuClk * (uint64_t)turboMultiplier;
 }
 
 // TODO:
@@ -941,13 +932,13 @@ inline void CpuCalcTacts(unsigned long cmdClk)
 	if (turboMultiplier < 2)
 	{
 		devClkCounter += (uint64_t)cmdClk;
-		clk += (uint64_t)cmdClk;
+		cpuClk += (uint64_t)cmdClk;
 	}
 	else if (unturbo)
 	{
 		cmdClk *= turboMultiplier;
 		devClkCounter += (uint64_t)cmdClk;
-		clk += (uint64_t)cmdClk;
+		cpuClk += (uint64_t)cmdClk;
 	}
 	else
 	{
@@ -955,10 +946,10 @@ inline void CpuCalcTacts(unsigned long cmdClk)
 		actClk += (uint64_t)cmdClk;
 
 		devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
-		clk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
+		cpuClk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
 	}
 
-	devClk = clk;
+	devClk = cpuClk;
 	C_Tape::Process();
 
 	if (runDebuggerFlag)
@@ -977,13 +968,13 @@ inline void DebugCpuCalcTacts(unsigned long cmdClk)
 	if (turboMultiplier < 2)
 	{
 		devClkCounter += (uint64_t)cmdClk;
-		clk += (uint64_t)cmdClk;
+		cpuClk += (uint64_t)cmdClk;
 	}
 	else if (unturbo)
 	{
 		cmdClk *= turboMultiplier;
 		devClkCounter += (uint64_t)cmdClk;
-		clk += (uint64_t)cmdClk;
+		cpuClk += (uint64_t)cmdClk;
 	}
 	else
 	{
@@ -991,10 +982,10 @@ inline void DebugCpuCalcTacts(unsigned long cmdClk)
 		actClk += (uint64_t)cmdClk;
 
 		devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
-		clk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
+		cpuClk = (actClk + (uint64_t)(turboMultiplier-1)) / (uint64_t)turboMultiplier;
 	}
 
-	devClk = clk;
+	devClk = cpuClk;
 	C_Tape::Process();
 }
 
@@ -1044,16 +1035,16 @@ void DebugStep(void)
 
 	do
 	{
-		if (clk < MAX_FRAME_TACTS)
+		if (cpuClk < MAX_FRAME_TACTS)
 		{
 			CpuStep();
-			if (clk>=INT_BEGIN && clk<(INT_BEGIN+INT_LENGTH)) CpuInt();
+			if (cpuClk < INT_LENGTH) CpuInt();
 		}
 		else
 		{
 			lastDevClk = devClk;
-			clk -= MAX_FRAME_TACTS;
-			devClk = clk;
+			cpuClk -= MAX_FRAME_TACTS;
+			devClk = cpuClk;
 
 			InitActClk();
 		}
@@ -1062,56 +1053,75 @@ void DebugStep(void)
 	} while (z80ex_last_op_type(cpu) && cnt>0);
 }
 
+SDL_Surface *renderSurf;
+int renderPitch;
+unsigned long prevRenderClk;
+void (* renderPtr)(unsigned long) = NULL;
+
 void Render(void)
 {
-	SDL_Surface *surf;
-	unsigned long lastClk;
 	static int sn = 0;
-	unsigned long (* render)(SDL_Surface*, int, unsigned long, unsigned long);
 
 	if (params.antiFlicker)
 	{
-		surf = scrSurf[sn];
+		renderSurf = scrSurf[sn];
 		sn = 1 - sn;
-	} else surf = screen;
+	} else renderSurf = screen;
 
-	if (SDL_MUSTLOCK(surf)) {if (SDL_LockSurface(surf) < 0) return;}
-	int ptch = surf->pitch / 4;
+	if (SDL_MUSTLOCK(renderSurf))
+	{
+		if (SDL_LockSurface(renderSurf) < 0)
+		{
+			printf("Can't lock surface\n");
+			return;
+		}
+	}
 
-	if (dev_extport.Is16Colors()) render = Render16c;
-	else if (dev_extport.IsMulticolor()) render = RenderMulticolor;
-//	else if (dev_extport.Is512x192()) render = Render512x192;
-//	else if (dev_extport.Is384x304()) render = Render384x304;
-	else render = RenderSpeccy;
+	renderPitch = renderSurf->pitch / 4;
+
+	if (dev_extport.Is16Colors()) renderPtr = Render16c;
+	else if (dev_extport.IsMulticolor()) renderPtr = RenderMulticolor;
+//	else if (dev_extport.Is512x192()) renderPtr = Render512x192;
+//	else if (dev_extport.Is384x304()) renderPtr = Render384x304;
+	else renderPtr = RenderSpeccy;
 
 	InitActClk();
-	lastClk = 0;
+	prevRenderClk = 0;
 
 	if (drawFrame)
 	{
-		while (clk < MAX_FRAME_TACTS)
+		while (cpuClk < INT_LENGTH)
 		{
 			CpuStep();
-			lastClk = render(surf, ptch, lastClk, clk);
+			CpuInt();
+		}
 
-			if (clk>=INT_BEGIN && clk<(INT_BEGIN+INT_LENGTH)) CpuInt();
+		while (cpuClk < MAX_FRAME_TACTS)
+		{
+			CpuStep();
+			renderPtr(cpuClk);
 		}
 	}
 	else
 	{
-		while (clk < MAX_FRAME_TACTS)
+		while (cpuClk < INT_LENGTH)
 		{
 			CpuStep();
-			if (clk>=INT_BEGIN && clk<(INT_BEGIN+INT_LENGTH)) CpuInt();
+			CpuInt();
+		}
+
+		while (cpuClk < MAX_FRAME_TACTS) {
+			CpuStep();
 		}
 	}
 
+	renderPtr = NULL;
 	lastDevClk = devClk;
-	clk -= MAX_FRAME_TACTS;
-	devClk = clk;
+	cpuClk -= MAX_FRAME_TACTS;
+	devClk = cpuClk;
 
-	if (SDL_MUSTLOCK(surf)) SDL_UnlockSurface(surf);
-	if (params.antiFlicker && drawFrame) AntiFlicker(surf, scrSurf[sn]);
+	if (SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
+	if (params.antiFlicker && drawFrame) AntiFlicker(renderSurf, scrSurf[sn]);
 }
 
 #include "images/floppy.h"
@@ -1234,7 +1244,7 @@ void Process(void)
 	bool tapePrevActive = false;
 
 	devClkCounter = 0;
-	clk = 0;
+	cpuClk = 0;
 	devClk = 0;
 	lastDevClk = 0;
 	frames = 0;
@@ -1340,7 +1350,10 @@ void Process(void)
 			}
 		}
 
-		if (quitMode) {
+		if (quitMode)
+		{
+			isPaused = false;
+
 			if (DlgConfirm("Do you really want to quit?")) {
 				return;
 			}

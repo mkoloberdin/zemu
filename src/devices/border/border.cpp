@@ -35,6 +35,10 @@ bool C_Border::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
 		sndRenderer.Update(devClk, vol, vol);
 	}
 
+	if (renderPtr && ((portFB & 7) != (value & 7))) {
+		renderPtr(cpuClk + z80ex_op_tstate(cpu));
+	}
+
 	portFB = value;
 	return true;
 }

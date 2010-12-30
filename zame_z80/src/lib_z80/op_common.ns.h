@@ -460,8 +460,9 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 #define OP_OUT_N_A(FN,...) \
 	void FN(s_Cpu *self) { \
 		self->tmp_word = (REG_A(self) << 8) | CPU_READ_BYTE(self); \
+		self->tstate += (8-4); \
 		DO_OUT(self->tmp_word, REG_A(self)); \
-		self->tstate += (11-4); \
+		self->tstate += (11-8); \
 		__VA_ARGS__ \
 	}
 
@@ -636,9 +637,10 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 
 #define OP_OUT_BC_R_P00(FN,R) \
 	void FN(s_Cpu *self) { \
+		self->tstate += (5-4); \
 		self->ptr_out(REG_BC(self), R(self), self->data_out); \
 		REG_MP(self) = (word)(REG_BC(self) + 1); \
-		self->tstate += (8-4); \
+		self->tstate += (8-5); \
 		DO_PREF_00; \
 	}
 
@@ -653,9 +655,10 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 
 #define OP_OUT_BC_0_P00(FN) \
 	void FN(s_Cpu *self) { \
+		self->tstate += (5-4); \
 		self->ptr_out(REG_BC(self), 0, self->data_out); \
 		REG_MP(self) = (word)(REG_BC(self) + 1); \
-		self->tstate += (8-4); \
+		self->tstate += (8-5); \
 		DO_PREF_00; \
 	}
 
@@ -810,14 +813,14 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 #define OP_INI_P00(FN) \
 	void FN(s_Cpu *self) { \
 		DO_REP_INI; \
-		self->tstate += (12-4); \
+		self->tstate += (12-9); \
 		DO_PREF_00; \
 	}
 
 #define OP_IND_P00(FN) \
 	void FN(s_Cpu *self) { \
 		DO_REP_IND; \
-		self->tstate += (12-4); \
+		self->tstate += (12-9); \
 		DO_PREF_00; \
 	}
 
@@ -838,14 +841,14 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 #define OP_OUTI_P00(FN) \
 	void FN(s_Cpu *self) { \
 		DO_REP_OUTI; \
-		self->tstate += (12-4); \
+		self->tstate += (12-9); \
 		DO_PREF_00; \
 	}
 
 #define OP_OUTD_P00(FN) \
 	void FN(s_Cpu *self) { \
 		DO_REP_OUTD; \
-		self->tstate += (12-4); \
+		self->tstate += (12-9); \
 		DO_PREF_00; \
 	}
 
@@ -1180,7 +1183,9 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 	}
 
 #define DO_REP_INI \
+	self->tstate += (6-4); \
 	self->tmp_byte = self->ptr_in(REG_BC(self), self->data_in); \
+	self->tstate += (9-6); \
 	self->ptr_write(REG_HL(self), self->tmp_byte, self->data_write); \
 	REG_MP(self) = (word)(REG_BC(self) + 1); \
 	REG_B(self)--; \
@@ -1193,7 +1198,9 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 					| ((self->tmp_word > 255) ? (FLAG_C | FLAG_H) : 0);
 
 #define DO_REP_IND \
+	self->tstate += (6-4); \
 	self->tmp_byte = self->ptr_in(REG_BC(self), self->data_in); \
+	self->tstate += (9-6); \
 	self->ptr_write(REG_HL(self), self->tmp_byte, self->data_write); \
 	REG_MP(self) = (word)(REG_BC(self) - 1); \
 	REG_B(self)--; \
@@ -1208,15 +1215,16 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 #define DO_REP_IN_OUT_REP \
 	if (REG_B(self)) { \
 		REG_PC(self) -= 2; \
-		self->tstate += (17-4); \
+		self->tstate += (17-9); \
 	} else { \
-		self->tstate += (12-4); \
+		self->tstate += (12-9); \
 	}
 
 #define DO_REP_OUTI \
 	self->tmp_byte = self->ptr_read(REG_HL(self), false, self->data_read); \
 	REG_B(self)--; \
 	REG_MP(self) = (word)(REG_BC(self) + 1); \
+	self->tstate += (9-4); \
 	self->ptr_out(REG_BC(self), self->tmp_byte, self->data_out); \
 	REG_HL(self)++; \
 	self->tmp_word = (word)self->tmp_byte + (word)REG_L(self); \
@@ -1230,6 +1238,7 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 	self->tmp_byte = self->ptr_read(REG_HL(self), false, self->data_read); \
 	REG_B(self)--; \
 	REG_MP(self) = (word)(REG_BC(self) - 1); \
+	self->tstate += (9-4); \
 	self->ptr_out(REG_BC(self), self->tmp_byte, self->data_out); \
 	REG_HL(self)--; \
 	self->tmp_word = (word)self->tmp_byte + (word)REG_L(self); \
