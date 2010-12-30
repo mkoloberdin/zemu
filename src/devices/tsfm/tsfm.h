@@ -6,16 +6,20 @@
 #include "sound/mixer.h"
 #include "lib_ay/ay_chip.h"
 #include "lib_ym2203/ym2203_chip.h"
+#include "lib_saa1099/saa1099_chip.h"
 
 #define TSFM_CHIPS_COUNT 2
+
 #define TSFM_MODE_AY 1
 #define TSFM_MODE_TS 2
 #define TSFM_MODE_TSFM 3
+#define TSFM_MODE_ZXM 4
 
 class C_TsFm : public C_Device
 {
 	public:
 
+	static C_Saa1099Chip saa1099Chip;
 	static C_Ym2203Chip ym2203Chip[TSFM_CHIPS_COUNT];
 	static C_AyChip ayChip[TSFM_CHIPS_COUNT];
 
