@@ -24,7 +24,7 @@ void CSndBackendSDL::Init(void)
 
 	SDL_AudioSpec desired, obtained;
 
-	desired.freq = 44100;
+	desired.freq = SOUND_FREQ;
 	desired.format = AUDIO_S16SYS;
 	desired.channels = 2;
 	desired.samples = SDLWAVE_CALLBACK_BUFFER_SIZE / desired.channels / 2 /* 16 bit */;

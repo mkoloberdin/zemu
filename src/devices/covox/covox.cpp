@@ -15,7 +15,7 @@ void C_Covox::Init(void)
 		AttachAfterFrameRenderHandler(OnAfterFrameRender);
 		AttachResetHandler(OnReset);
 
-		SoundMixer.AddSource(&sndRenderer);
+		soundMixer.AddSource(&sndRenderer);
 	}
 }
 

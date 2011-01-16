@@ -34,7 +34,7 @@ void C_GSound::Init(void)
 		AttachFrameStartHandler(OnFrameStart);
 		AttachAfterFrameRenderHandler(OnAfterFrameRender);
 
-		SoundMixer.AddSource(&sndRenderer);
+		soundMixer.AddSource(&sndRenderer);
 
 		string filename;
 		size_t offset;

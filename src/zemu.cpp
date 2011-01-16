@@ -1318,7 +1318,7 @@ void Process(void)
 				i--;
 			}
 
-			SoundMixer.FlushFrame(SOUND_ENABLED);
+			soundMixer.FlushFrame(SOUND_ENABLED);
 		}
 
 		isPaused = isPausedNx;
@@ -1377,18 +1377,19 @@ void Process(void)
 void InitAudio(void)
 {
 	if (params.sndBackend == SND_BACKEND_SDL) {
-		SoundMixer.InitBackendSDL(params.sdlBufferSize);
+		soundMixer.InitBackendSDL(params.sdlBufferSize);
 	}
 #ifndef _WIN32
 	else if (params.sndBackend == SND_BACKEND_OSS) {
-		SoundMixer.InitBackendOSS(params.soundParam);
+		soundMixer.InitBackendOSS(params.soundParam);
 	}
 #else
 	else if (params.sndBackend == SND_BACKEND_WIN32) {
-		SoundMixer.InitBackendWin32(params.soundParam);
+		soundMixer.InitBackendWin32(params.soundParam);
 	}
 #endif // !_WIN32
-	SoundMixer.Init(&params.mixerMode, recordWav, wavFileName);
+
+	soundMixer.Init(params.mixerMode, recordWav, wavFileName);
 }
 
 void UpdateScreen(void)
@@ -1500,15 +1501,18 @@ void windows_init()
 {
 	HINSTANCE handle = ::GetModuleHandle(NULL);
 	windows_icon = ::LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
+
 	if (windows_icon == NULL) {
 		StrikeError("Error: %d\n", GetLastError());
 	}
+
 	SDL_SysWMinfo wminfo;
 	SDL_VERSION(&wminfo.version);
-	if (int sdl_error = SDL_GetWMInfo(&wminfo) != 1)
-	{
+
+	if (int sdl_error = SDL_GetWMInfo(&wminfo) != 1) {
 		StrikeError("SDL_GetWMInfo() returned %d\n", sdl_error);
 	}
+
 	hwnd = wminfo.window;
 	::SetClassLongPtr(hwnd, GCLP_HICON, (LONG_PTR)windows_icon);
 }
@@ -1589,20 +1593,21 @@ int main(int argc, char *argv[])
 
 		str = config.GetString("sound", "sound_backend", "auto");
 		transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
+
 		if (str == "sdl") params.sndBackend = SND_BACKEND_SDL;
-
-#ifndef _WIN32
-		else if (str == "oss") params.sndBackend = SND_BACKEND_OSS;
-#else
-		else if (str == "win32") params.sndBackend = SND_BACKEND_WIN32;
-#endif
-
+		#ifndef _WIN32
+			else if (str == "oss") params.sndBackend = SND_BACKEND_OSS;
+		#else
+			else if (str == "win32") params.sndBackend = SND_BACKEND_WIN32;
+		#endif
 		else params.sndBackend = default_snd_backend;
+
 		params.sdlBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
 
 #ifdef __linux__
 		params.soundParam = config.GetInt("sound", "ossfragnum", 8);
 #endif
+
 #ifdef _WIN32
 		params.soundParam = config.GetInt("sound", "wqsize", 4);
 #endif
@@ -1617,6 +1622,7 @@ int main(int argc, char *argv[])
 		int spec = SDL_INIT_VIDEO;
 		if (params.sound && params.sndBackend == SND_BACKEND_SDL) spec |= SDL_INIT_AUDIO;
 		if (SDL_Init(spec) < 0) StrikeError("Unable to init SDL: %s\n", SDL_GetError());
+
 #ifdef _WIN32
 		windows_init();
 		atexit(windows_cleanup);

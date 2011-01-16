@@ -12,7 +12,7 @@ void C_Tape::Init(void)
 {
 	AttachFrameStartHandler(OnFrameStart);
 	AttachAfterFrameRenderHandler(OnAfterFrameRender);
-	SoundMixer.AddSource(&sndRenderer);
+	soundMixer.AddSource(&sndRenderer);
 }
 
 void C_Tape::Close(void)

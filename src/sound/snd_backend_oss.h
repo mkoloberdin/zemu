@@ -5,7 +5,7 @@
 
 #include "snd_backend.h"
 
-const unsigned SND_FQ = 44100;
+const unsigned SND_FQ = SOUND_FREQ;
 
 class CSndBackendOSS : public CSndBackend {
 public:

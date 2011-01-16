@@ -5,7 +5,7 @@
 
 #include "snd_backend.h"
 
-const unsigned SND_FQ = 44100;
+const unsigned SND_FQ = SOUND_FREQ;
 
 const unsigned MAXWQSIZE = 32;
 const unsigned MAXDSPIECE = (40000*4/20);

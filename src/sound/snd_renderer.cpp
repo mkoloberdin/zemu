@@ -124,7 +124,7 @@ void C_SndRenderer::EndFrame(unsigned clk)
 	unsigned prevMixL = mixL;
 	unsigned prevMixR = mixR;
 
-	// uint64_t endTick = ((passedClkTicks + clk) * multConst) >> MULT_C;
+	// don't use "((passedClkTicks + clk) * multConst) >> MULT_C", because it loose precision
 	uint64_t endTick = ((passedClkTicks + clk) * (uint64_t)sampleRate * TICK_F) / clockRate;
 
 	if (!activeCnt)

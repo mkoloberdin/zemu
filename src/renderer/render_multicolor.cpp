@@ -62,7 +62,7 @@ void RenderMulticolor(unsigned long nextClk)
 	}
 	else	// attributesHack == 2
 	{
-		bt = 0xC3;
+		bt = 0x3C;
 		cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 
 		if ((frames & 32) && (cl & 128))

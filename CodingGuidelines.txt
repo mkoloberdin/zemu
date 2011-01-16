@@ -69,6 +69,13 @@ Good:
 void foo(int a, int b, int c, int d, int e, int f);
 // even if line is wider than screen
 
+Still possible:
+
+void foo(
+	int a, int b, int c, int d,
+	int e, int f
+);
+
 8) Bad:
 
 class C_SomeClass

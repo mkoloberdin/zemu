@@ -103,8 +103,7 @@ bool C_VocFormat::Load(const char *fname)
 	allTicks = 0;
 	sampleSz = (bits == 8 ? 1 : (bits == 16 ? 2 : 3)) * channels;
 
-	divider = (71680 * 50) / rate;		// 71680 = MAX_FRAME_TACTS
-	// divider = 3500000 / rate;
+	divider = (MAX_FRAME_TACTS * 50) / rate;		// 71680 = MAX_FRAME_TACTS
 */
 	return true;
 }

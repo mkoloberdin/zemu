@@ -40,20 +40,20 @@ void C_TsFm::Init(void)
 	if (!strcasecmp(str, "tsfm")) mode = TSFM_MODE_TSFM;
 
 	ayChip[0].Init();
-	SoundMixer.AddSource(&ayChip[0].sndRenderer);
+	soundMixer.AddSource(&ayChip[0].sndRenderer);
 
 	if (mode >= TSFM_MODE_TS)
 	{
 		ayChip[1].Init();
-		SoundMixer.AddSource(&ayChip[1].sndRenderer);
+		soundMixer.AddSource(&ayChip[1].sndRenderer);
 
 		if (mode >= TSFM_MODE_TSFM)
 		{
-			SoundMixer.AddSource(&ym2203Chip[0].sndRenderer);
-			SoundMixer.AddSource(&ym2203Chip[1].sndRenderer);
+			soundMixer.AddSource(&ym2203Chip[0].sndRenderer);
+			soundMixer.AddSource(&ym2203Chip[1].sndRenderer);
 
 			if (mode >= TSFM_MODE_ZXM) {
-				SoundMixer.AddSource(&saa1099Chip.sndRenderer);
+				soundMixer.AddSource(&saa1099Chip.sndRenderer);
 			}
 		}
 	}

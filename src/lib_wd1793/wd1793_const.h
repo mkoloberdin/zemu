@@ -1,7 +1,9 @@
 #ifndef _WD1793_CONST_H_INCLUDED_
 #define _WD1793_CONST_H_INCLUDED_
 
-const int Z80FQ = 3500000; // todo: #define as (conf.frame*conf.intfq)
+#include "../params.h"
+
+const int Z80FQ = MAX_FRAME_TACTS * 50;
 const int FDD_RPS = 6; // rotation speed
 
 const int MAX_TRACK_LEN = 6400;

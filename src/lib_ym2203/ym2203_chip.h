@@ -2,9 +2,10 @@
 #define __YM2203_CHIP_H__
 
 #include "ym2203_emu.h"
+#include "../params.h"
 
-#define YM2203_SND_FQ 44100
-#define YM2203_CHIP_CLOCK 3500000
+#define YM2203_SND_FQ SOUND_FREQ
+#define YM2203_CHIP_CLOCK (MAX_FRAME_TACTS*50)
 
 class C_Ym2203Chip
 {

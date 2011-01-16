@@ -13,17 +13,7 @@
 	#define Z80EX_CONTEXT_PARAM
 #endif
 
-#define WIDTH 320
-#define HEIGHT 256
-
-#define FRAME_WAIT_MS 20
-#define MAX_SPEED_FRAME_SKIP 64
-
-#define MAX_FRAME_TACTS 71680
-#define MAX_DEV_CLK 72000
-
-#define MAX_TRACE_FORMAT 0x100
-
+#include "params.h"
 #define SOUND_ENABLED (!params.maxSpeed && params.sound)
 
 struct s_Action

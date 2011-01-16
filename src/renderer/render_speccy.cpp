@@ -62,7 +62,7 @@ void RenderSpeccy(unsigned long nextClk)
 	}
 	else	// attributesHack == 2
 	{
-		bt = (((zxLine & 6)==0 || (zxLine & 6)==6) ? 0xFF : 0xC3);
+		bt = (((zxLine & 6)==0 || (zxLine & 6)==6) ? 0x00 : 0x3C);
 		cl = dev_mman.ram[ zxScreen + 0x1800 + ((zxLine & 0xF8) << 2) + pos ];
 
 		if ((frames & 32) && (cl & 128))

@@ -19,9 +19,10 @@
 #endif
 
 #include "../defines.h"
+#include "../params.h"
 
-const unsigned SNDR_DEFAULT_SYSTICK_RATE = 3500000; // ZX-Spectrum Z80 clock
-const unsigned SNDR_DEFAULT_SAMPLE_RATE = 44100;
+const unsigned SNDR_DEFAULT_SYSTICK_RATE = MAX_FRAME_TACTS * 50; // ZX-Spectrum Z80 clock
+const unsigned SNDR_DEFAULT_SAMPLE_RATE = SOUND_FREQ;
 const unsigned SNDR_ACTIVE_CNT_UPD = 50;
 
 struct s_Sample
