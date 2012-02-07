@@ -16,3 +16,4 @@ cmake_install.cmake
 /rm-cm
 /src/*.sna
 /src/*.tap
+/install_manifest.txt

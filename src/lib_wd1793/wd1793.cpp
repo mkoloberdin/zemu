@@ -127,7 +127,7 @@ int C_Wd1793::process()
 
 		// TODO: test spinning
 
-		if (seldrive->rawdata && seldrive->motor && ((time+tshift) % (Z80FQ/FDD_RPS) < (Z80FQ*4/1000))) {
+		if (seldrive->rawdata && seldrive->motor && (((time+tshift) % TACTS_PER_ROTATE(1)) < TACTS_PER_INDEX)) {
 			status |= WDS_INDEX; // index every turn, len=4ms (if disk present)
 			is_index = true;
 		} else {
@@ -147,11 +147,11 @@ int C_Wd1793::process()
 			case S_WAIT:
 				if (time < next) return 1;
 				state = state2;
-				is_index = (seldrive->rawdata && seldrive->motor && ((time+tshift) % (Z80FQ/FDD_RPS) < (Z80FQ*4/1000)));
+				is_index = (seldrive->rawdata && seldrive->motor && (((time+tshift) % TACTS_PER_ROTATE(1)) < TACTS_PER_INDEX));
 				break;
 
 			case S_DELAY_BEFORE_CMD:
-				if (!wd93_nodelay && (cmd & CMD_DELAY)) next += Z80FQ*15/1000; // 15ms delay
+				if (!wd93_nodelay && (cmd & CMD_DELAY)) next += DELAY_IN_MS(15); // 15ms delay
 				status = (status | WDS_BUSY) & ~(WDS_DRQ | WDS_LOST | WDS_NOTFOUND | WDS_RECORDT | WDS_WRITEP);
 				state2 = S_CMD_RW;
 				state = S_WAIT;
@@ -168,7 +168,7 @@ int C_Wd1793::process()
 				if ((cmd & 0xC0)==0x80 || (cmd & 0xF8)==0xC0)
 				{
 					// read/write sectors or read am - find next AM
-					end_waiting_am = next + 5*Z80FQ/FDD_RPS; // max wait disk 5 turns
+					end_waiting_am = next + TACTS_PER_ROTATE(5); // max wait disk 5 turns
 					find_marker();
 					break;
 				}
@@ -202,7 +202,7 @@ int C_Wd1793::process()
 				if (!seldrive->rawdata)
 				{
 					// no disk - wait again
-					end_waiting_am = next + 5*Z80FQ/FDD_RPS;
+					end_waiting_am = next + TACTS_PER_ROTATE(5);
 					find_marker();
 					break;
 				}
@@ -312,7 +312,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 					if (rqs & DRQ) status |= WDS_LOST;
 
 					// [rst] существует ненулевая вероятность, что из-за этого фикса что-нибудь перестанет работать
-					if (!wd93_nodelay && read_track && is_index && (((time+tshift) % (Z80FQ/FDD_RPS)) > (Z80FQ*5/2/1000)) )
+					if (!wd93_nodelay && read_track && is_index && (((time+tshift) % TACTS_PER_ROTATE(1)) > TACTS_PER_INDEX_HACK))
 					{
 						status |= WDS_INDEX;
 						state = S_IDLE;
@@ -436,7 +436,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 				seldrive->optype |= 2;
 				state2 = S_WR_TRACK_DATA;
 				getindex();
-				end_waiting_am = next + 5*Z80FQ/FDD_RPS;
+				end_waiting_am = next + TACTS_PER_ROTATE(5);
 				break;
 
 			case S_WR_TRACK_DATA:
@@ -450,7 +450,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 				}
 
 				// [rst] существует ненулевая вероятность, что из-за этого фикса что-нибудь перестанет работать
-				if ( !wd93_nodelay && is_index && (((time+tshift) % (Z80FQ/FDD_RPS)) > (Z80FQ*5/2/1000)) )
+				if (!wd93_nodelay && is_index && (((time+tshift) % TACTS_PER_ROTATE(1)) > TACTS_PER_INDEX_HACK))
 				{
 					status |= WDS_INDEX;
 					state = S_IDLE;
@@ -519,7 +519,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 
 				if (fdd[drive].is_wprotected()) status |= WDS_WRITEP;
 
-				seldrive->motor = next + 2*Z80FQ;
+				seldrive->motor = next + DELAY_IN_MS(2000);
 				state2 = S_SEEKSTART; // default is seek/restore
 
 				if (cmd & 0xE0)
@@ -529,7 +529,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 					state2 = S_STEP;
 				}
 
-				if (!wd93_nodelay) next += Z80FQ/1000/8;
+				if (!wd93_nodelay) next += DELAY_IN_MS(1) / 8;
 				state = S_WAIT;
 				break;
 
@@ -558,7 +558,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 				trkcache.clear();
 
 				static const unsigned steps[] = { 6, 12, 20, 30 };
-				if (!wd93_nodelay) next += steps[cmd & CMD_SEEK_RATE] * Z80FQ / 1000;
+				if (!wd93_nodelay) next += DELAY_IN_MS(steps[cmd & CMD_SEEK_RATE]);
 
 				/*
 				 * TODO: fdd noise
@@ -596,7 +596,7 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 					break;
 				}
 
-				end_waiting_am = next + 6*Z80FQ/FDD_RPS; // max wait disk 6 turns
+				end_waiting_am = next + TACTS_PER_ROTATE(6); // max wait disk 6 turns
 				// load(); - [rst] load() is called in find_marker()
 				find_marker();
 				break;
@@ -612,12 +612,12 @@ read_first_byte:	data = trkcache.trkd[rwptr++];
 				}
 
 				// if (!seldrive->track) track = 0;
-				next += 6*Z80FQ/1000;
+				next += DELAY_IN_MS(6);
 				*/
 
 				state = S_IDLE;
 
-				if ((next-last_stepTime) < (Z80FQ/100))		// для BestView
+				if ((next-last_stepTime) < DELAY_IN_MS(10))		// для BestView
 				{
 					track = last_track;
 					seldrive->track = last_drvTrack;
@@ -642,7 +642,7 @@ void C_Wd1793::find_marker()
 	load();
 
 	foundid = ~0;
-	unsigned wait = 10*Z80FQ/FDD_RPS;
+	unsigned wait = TACTS_PER_ROTATE(10);
 
 	if (seldrive->motor && seldrive->rawdata)
 	{
@@ -663,7 +663,7 @@ void C_Wd1793::find_marker()
 		}
 
 		if (foundid != ~(unsigned)0) wait *= trkcache.ts_byte;
-		else wait = 10*Z80FQ/FDD_RPS;
+		else wait = TACTS_PER_ROTATE(10);
 
 		if (wd93_nodelay && (foundid != ~(unsigned)0))
 		{
@@ -709,10 +709,10 @@ void C_Wd1793::getindex()
 	{
 		// next += (trlen - ticks);
 
-		unsigned tmp = (next+tshift) % (Z80FQ/FDD_RPS);
-		if (tmp) tmp = (Z80FQ/FDD_RPS) - tmp;
+		unsigned tmp = (next+tshift) % TACTS_PER_ROTATE(1);
+		if (tmp) tmp = TACTS_PER_ROTATE(1) - tmp;
 
-		next += tmp + (Z80FQ*4/1000);
+		next += tmp + DELAY_IN_MS(4);
 	}
 
 	rwptr = 0;
@@ -805,7 +805,7 @@ void C_Wd1793::out(uint8_t port, uint8_t val, int64_t ttime, int *err)
 			}
 
 			// continue disk spinning
-			if (seldrive->motor || wd93_nodelay) seldrive->motor = next + 2*Z80FQ;
+			if (seldrive->motor || wd93_nodelay) seldrive->motor = next + DELAY_IN_MS(2000);
 
 			state = S_DELAY_BEFORE_CMD;
 			return;
@@ -853,8 +853,8 @@ void C_Wd1793::out(uint8_t port, uint8_t val, int64_t ttime, int *err)
 			state = S_RESET;
 
 			// move head to trk00
-			// steptime = 6 * (Z80FQ / 1000); // 6ms
-			// next += 1*Z80FQ/1000; // 1ms before command
+			// steptime = DELAY_IN_MS(6); // 6ms
+			// next += DELAY_IN_MS(1); // 1ms before command
 			// seldrive->track = 0;
 		}
 	}

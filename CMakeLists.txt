@@ -3,6 +3,7 @@ project (ZEmu)
 
 set (ZEMU_VERSION_MAJOR 0)
 set (ZEMU_VERSION_MINOR 99944)
+set (CMAKE_INSTALL_PREFIX /opt)
 
 include (TestBigEndian)
 test_big_endian(BIG_ENDIAN)
@@ -101,3 +102,8 @@ source_group (lib_ym2203 src/lib_ym2203/*)
 source_group (renderer src/renderer/*)
 source_group (sound src/sound/*)
 source_group (tape src/tape/*)
+
+# Install
+INSTALL_PROGRAMS(/zemu FILES ./zemu)
+INSTALL_FILES(/zemu FILES ./src/zemu.ini ./src/keys.config ./readme.utf8.text)
+INSTALL_FILES(/zemu/roms FILES ./src/roms/)

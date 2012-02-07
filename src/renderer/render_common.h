@@ -4,6 +4,8 @@
 #include "../zemu.h"
 #include "../devs.h"
 
+// TODO: add scorpion support (http://www.worldofspectrum.org/rusfaq/index.html)
+
 #define SCREEN_VERT_OFFSET_LINES 32
 #define SCREEN_HOR_OFFSET_TACTS 20
 #define SCREEN_TACTS_PER_PIXEL 2

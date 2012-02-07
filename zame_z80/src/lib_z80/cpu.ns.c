@@ -251,6 +251,9 @@
 
 		self->is_opcode = true;
 		CPU_INC_R(self);
+
+		// notice: if you thinking about submitting bug-report about IFF1 not copied to IFF2, you are not right :)
+		// actually IFF1 *not* copied to IFF2. this is tested on real hardware.
 		REG_IFF1(self) = 0;
 
 		self->ptr_write(--(REG_SP(self)), REG_PCH(self), self->data_write);

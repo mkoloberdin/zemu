@@ -3,8 +3,14 @@
 
 #include "../params.h"
 
-const int Z80FQ = MAX_FRAME_TACTS * 50;
-const int FDD_RPS = 6; // rotation speed
+const int64_t Z80FQ = MAX_FRAME_TACTS * 50;
+
+#define TACTS_PER_ROTATE(n) (n * Z80FQ / 5)
+#define DELAY_IN_MS(m) (m * Z80FQ / 1000)
+
+const int TACTS_PER_INDEX = DELAY_IN_MS(4);
+// const int TACTS_PER_INDEX_HACK = DELAY_IN_MS(5/2);
+const int TACTS_PER_INDEX_HACK = (DELAY_IN_MS(1) / 10);
 
 const int MAX_TRACK_LEN = 6400;
 const int MAX_CYLS = 86;            // don't load images with so many tracks

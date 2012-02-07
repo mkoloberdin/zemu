@@ -65,7 +65,7 @@ void C_TrkCache::seek(C_Fdd *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 		return;
 	}
 
-	ts_byte = Z80FQ / (trklen * FDD_RPS);
+	ts_byte = TACTS_PER_ROTATE(1) / trklen;
 	if (fs == JUST_SEEK) return; // else find sectors
 
 	for (unsigned i = 0; i < trklen-8; i++)
