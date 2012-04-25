@@ -72,7 +72,6 @@ void CSndBackendSDL::Write(uint8_t* data, unsigned len)
 		if (sz > len) sz = len;
 
 		len -= sz;
-
 		SDL_LockAudio();
 
 		while (sz--)
@@ -82,7 +81,6 @@ void CSndBackendSDL::Write(uint8_t* data, unsigned len)
 		}
 
 		SDL_UnlockAudio();
-
 		if (len <= 0) break;
 	}
 }
@@ -152,8 +150,9 @@ void CSndBackendSDL::AudioCallback(void *userData, Uint8 *stream, int len)
 		dist = self->size - self->audioPtr + self->dataPtr;
 	}
 
-	if (dist < len)
+	if (dist <= len)
 	{
+		// printf("CSndBackendSDL::AudioCallback - missing audio data\n");
 		self->currentPreAgainCnt += 2;
 
 		if (self->currentPreAgainCnt > self->preAgainCnt)

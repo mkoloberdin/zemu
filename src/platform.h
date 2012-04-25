@@ -13,6 +13,10 @@
 
 // - Fix for FreeBSD (by breeze)
 
+#ifdef __APPLE__
+	#define __linux__
+#endif
+
 //---------------
 // SDL Predefined
 //---------------

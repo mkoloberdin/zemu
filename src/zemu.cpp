@@ -1250,8 +1250,7 @@ void Process(void)
 	frames = 0;
 	params.maxSpeed = false;
 
-	btick = SDL_GetTicks() + FRAME_WAIT_MS;
-
+	btick = SDL_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
 	//*/ unsigned long lastDivider = 0L;
 
 	for (;;)
@@ -1296,16 +1295,17 @@ void Process(void)
 				//*/
 
 				ScaleImage();
+
+				// long tmp = SDL_GetTicks();
 				UpdateScreen();
+				// printf("UpdateScreen takes %d ticks\n", (int)(SDL_GetTicks() - tmp));
 			}
 
 			if (!params.maxSpeed)
 			{
 				SDL_Delay(1);
-				if (SDL_GetTicks() < btick) SDL_Delay(btick-SDL_GetTicks());
+				if (SDL_GetTicks() < btick) SDL_Delay(btick - SDL_GetTicks());
 			}
-
-			btick = SDL_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
 
 			i = cnt_afterFrameRender;
 			void (** ptr_afterFrameRender)(void) = hnd_afterFrameRender;
@@ -1320,6 +1320,8 @@ void Process(void)
 
 			soundMixer.FlushFrame(SOUND_ENABLED);
 		}
+
+		btick = SDL_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
 
 		isPaused = isPausedNx;
 		bool quitMode = false;
@@ -1379,15 +1381,17 @@ void InitAudio(void)
 	if (params.sndBackend == SND_BACKEND_SDL) {
 		soundMixer.InitBackendSDL(params.sdlBufferSize);
 	}
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 	else if (params.sndBackend == SND_BACKEND_OSS) {
 		soundMixer.InitBackendOSS(params.soundParam);
 	}
 #else
-	else if (params.sndBackend == SND_BACKEND_WIN32) {
-		soundMixer.InitBackendWin32(params.soundParam);
-	}
-#endif // !_WIN32
+	#ifdef _WIN32
+		else if (params.sndBackend == SND_BACKEND_WIN32) {
+			soundMixer.InitBackendWin32(params.soundParam);
+		}
+	#endif
+#endif // !_WIN32 && !__APPLE__
 
 	soundMixer.Init(params.mixerMode, recordWav, wavFileName);
 }
@@ -1595,7 +1599,7 @@ int main(int argc, char *argv[])
 		transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
 
 		if (str == "sdl") params.sndBackend = SND_BACKEND_SDL;
-		#ifndef _WIN32
+		#if !defined(_WIN32) && !defined(__APPLE__)
 			else if (str == "oss") params.sndBackend = SND_BACKEND_OSS;
 		#else
 			else if (str == "win32") params.sndBackend = SND_BACKEND_WIN32;
@@ -1631,6 +1635,7 @@ int main(int argc, char *argv[])
 #endif
 
 		videoSpec = SDL_SWSURFACE;
+
 		if (params.useFlipSurface) videoSpec |= SDL_DOUBLEBUF;
 		if (params.fullscreen) videoSpec |= SDL_FULLSCREEN;
 
@@ -1692,7 +1697,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (argc != 1) ParseCmdLine(argc, argv);
-		if (params.sound) InitAudio();
+		InitAudio();
 
 		// [boo_boo]
 		C_JoystickManager::Instance()->Init();

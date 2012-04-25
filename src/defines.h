@@ -29,9 +29,7 @@
 #endif
 
 #ifdef __linux__
-	// it seems that stricmp is not ANSI, but strcasecmp is
 	#define stricmp(s1,s2) strcasecmp((s1),(s2))
-	// it also seems that unistd is need for sleep and some others functions
 	#include <unistd.h>
 #endif
 
@@ -47,10 +45,17 @@
 	#define max(a,b) ((a)>(b)?(a):(b))
 #endif
 
-#define DRGB(r,g,b) (((r)<<0x10)|((g)<<8)|(b))
-#define GETR(c) ((c)>>0x10)
-#define GETG(c) (((c)>>8)&0xFF)
-#define GETB(c) ((c)&0xFF)
+#ifdef __APPLE__
+	#define DRGB(r,g,b) (((b)<<0x18)|((g)<<0x10)|((r)<<8))
+	#define GETB(c) ((c)>>0x18)
+	#define GETG(c) (((c)>>0x10)&0xFF)
+	#define GETR(c) (((c)>>8)&0xFF)
+#else
+	#define DRGB(r,g,b) (((r)<<0x10)|((g)<<8)|(b))
+	#define GETR(c) ((c)>>0x10)
+	#define GETG(c) (((c)>>8)&0xFF)
+	#define GETB(c) ((c)&0xFF)
+#endif
 
 #define GET_R GETR
 #define GET_G GETG

@@ -19,10 +19,12 @@ class C_SoundMixer
 	~C_SoundMixer();
 	void InitBackendSDL(int sdlBufferSize);
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 	void InitBackendOSS(int soundParam);
 #else
-	void InitBackendWin32(int soundParam);
+	#ifdef _WIN32
+		void InitBackendWin32(int soundParam);
+	#endif
 #endif
 
 	void Init(int mixerMode, bool recordWav, const char *wavFileName);

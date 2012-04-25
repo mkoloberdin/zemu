@@ -20,7 +20,7 @@ void C_SoundMixer::InitBackendSDL(int sdlBufferSize)
 	sndBackend->Init();
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 
 void C_SoundMixer::InitBackendOSS(int soundParam)
 {
@@ -29,6 +29,7 @@ void C_SoundMixer::InitBackendOSS(int soundParam)
 }
 
 #else
+	#ifdef _WIN32
 
 void C_SoundMixer::InitBackendWin32(int soundParam)
 {
@@ -36,7 +37,8 @@ void C_SoundMixer::InitBackendWin32(int soundParam)
 	sndBackend->Init();
 }
 
-#endif // !_WIN32
+	#endif
+#endif // !_WIN32 && !__APPLE__
 
 void C_SoundMixer::Init(int mixerModePtr, bool recordWav, const char *wavFileName)
 {
