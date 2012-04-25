@@ -880,7 +880,7 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 
 		for (j = WIDTH; j--;)
 		{
-#ifdef ZEMU_BIG_ENDIAN
+#if defined(ZEMU_BIG_ENDIAN) || defined(__APPLE__)
 			*(srw++) = 0; s1w++; s2w++;
 #endif
 
@@ -893,7 +893,7 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 			*srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
 			srw++; s1w++; s2w++;
 
-#ifndef ZEMU_BIG_ENDIAN
+#if !defined(ZEMU_BIG_ENDIAN) && !defined(__APPLE__)
 			*(srw++) = 0; s1w++; s2w++;
 #endif
 		}
