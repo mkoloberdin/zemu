@@ -17,7 +17,7 @@ void Labels_Load(const char *fname)
 	}
 	catch (C_E &e)
 	{
-		printf("Error loading labelf from \"%s\"\n", fname);
+		printf("Error loading labels from \"%s\"\n", fname);
 		return;
 	}
 

@@ -35,7 +35,7 @@ private:
 
 	void EnsurePaths(const char *app_name);
 
-	CConfig& operator=(const CConfig &dummy) {}
+	CConfig& operator=(const CConfig &dummy) { return *this; }
 	CConfig(const CConfig &dummy) {}
 };
 

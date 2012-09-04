@@ -98,7 +98,7 @@ class C_File
 	unsigned long readSize, readFileSize;
 	bool eof, un_eof, isCompressed;
 
-	C_File& operator=(const C_File &dummy) {}
+	C_File& operator=(const C_File &dummy) { return *this; }
 	C_File(const C_File &dummy) {}
 };
 

@@ -418,7 +418,7 @@ public:
             return *this;
         }
         bool ConvertToStore(const SI_CHAR * a_pszString) {
-            size_t uLen = SizeToStore(a_pszString);
+            size_t uLen = this->SizeToStore(a_pszString);
             if (uLen == (size_t)(-1)) {
                 return false;
             }
@@ -3255,4 +3255,3 @@ typedef CSimpleIniTempl<wchar_t,
 #endif
 
 #endif // INCLUDED_SimpleIni_h
-

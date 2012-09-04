@@ -368,7 +368,7 @@ bool TryLoadArcFile(const char *arcName, int drive)
 		return false;
 	}
 
-	sprintf(tmp, "%s list %s %s/files.txt", plugin_fn.c_str(), arcName, tempFolderName);
+	sprintf(tmp, "%s list \"%s\" %s/files.txt", plugin_fn.c_str(), arcName, tempFolderName);
 	if (system(tmp) == -1) DEBUG_MESSAGE("system failed");
 
 	sprintf(tmp, "%s/files.txt", tempFolderName);
@@ -386,7 +386,7 @@ bool TryLoadArcFile(const char *arcName, int drive)
 	if (!filesCount) return true; // "true" here means ONLY that the file is an archive
 
 	// currently load only first file
-	sprintf(tmp, "%s extract %s %s %s", plugin_fn.c_str(), arcName, files[0], tempFolderName);
+	sprintf(tmp, "%s extract \"%s\" \"%s\" %s", plugin_fn.c_str(), arcName, files[0], tempFolderName);
 	if (system(tmp) == -1) DEBUG_MESSAGE("system failed");
 	strcpy(tmp, C_DirWork::ExtractFileName(files[0]));
 
@@ -561,9 +561,13 @@ void Action_AttributesHack(void)
 	isPaused = false;
 	attributesHack = (attributesHack + 1) % 3;
 
-	char buf[0x20];
-	sprintf(buf, (attributesHack ? "AttributesHack #%d" : "AttributesHack OFF"), attributesHack);
-	SetMessage(buf);
+	if (attributesHack) {
+		char buf[0x20];
+		sprintf(buf, "AttributesHack #%d", attributesHack);
+		SetMessage(buf);
+	} else {
+		SetMessage("AttributesHack OFF");
+	}
 }
 
 void Action_ScreensHack(void)
@@ -927,21 +931,15 @@ void InitActClk(void)
 // ...
 // TODO: refactor
 
-inline void CpuCalcTacts(unsigned long cmdClk)
-{
-	if (turboMultiplier < 2)
-	{
+inline void CpuCalcTacts(unsigned long cmdClk) {
+	if (turboMultiplier < 2) {
 		devClkCounter += (uint64_t)cmdClk;
 		cpuClk += (uint64_t)cmdClk;
-	}
-	else if (unturbo)
-	{
+	} else if (unturbo) {
 		cmdClk *= turboMultiplier;
 		devClkCounter += (uint64_t)cmdClk;
 		cpuClk += (uint64_t)cmdClk;
-	}
-	else
-	{
+	} else {
 		actDevClkCounter += (uint64_t)cmdClk;
 		actClk += (uint64_t)cmdClk;
 
@@ -952,14 +950,20 @@ inline void CpuCalcTacts(unsigned long cmdClk)
 	devClk = cpuClk;
 	C_Tape::Process();
 
-	if (runDebuggerFlag)
-	{
+	if (runDebuggerFlag || breakpoints[z80ex_get_reg(cpu, regPC)]) {
+		if (SDL_MUSTLOCK(renderSurf)) {
+			SDL_UnlockSurface(renderSurf);
+		}
+
 		runDebuggerFlag = false;
 		RunDebugger();
-	}
-	else if (breakpoints[z80ex_get_reg(cpu, regPC)])
-	{
-		RunDebugger();
+
+		if (SDL_MUSTLOCK(renderSurf)) {
+			if (SDL_LockSurface(renderSurf) < 0) {
+				printf("Can't lock surface\n");
+				return;
+			}
+		}
 	}
 }
 
@@ -1634,10 +1638,15 @@ int main(int argc, char *argv[])
 		atexit(SDL_Quit);
 #endif
 
+// #ifdef __APPLE__
+		// videoSpec = SDL_SWSURFACE;
+		// videoSpec |= SDL_FULLSCREEN;
+		// videoSpec |= SDL_OPENGLBLIT;
+// #else
 		videoSpec = SDL_SWSURFACE;
-
-		if (params.useFlipSurface) videoSpec |= SDL_DOUBLEBUF;
 		if (params.fullscreen) videoSpec |= SDL_FULLSCREEN;
+		if (params.useFlipSurface) videoSpec |= SDL_DOUBLEBUF;
+// #endif
 
 		int actualWidth = WIDTH;
 		int actualHeight = HEIGHT;

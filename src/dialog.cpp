@@ -883,7 +883,7 @@ void DebugIt(void)
 		if (key == SDLK_F2)
 		{
 			breakpoints[userAddr] = !breakpoints[userAddr];
-	    	exactAddr = true;
+			exactAddr = true;
 		}
 		else
 		if (key=='w' || key=='W')
@@ -905,13 +905,13 @@ void DebugIt(void)
 				watches[watchesCount++] = userAddr;
 			}
 
-	    	exactAddr = true;
+			exactAddr = true;
 		}
 		else
 		if (key == SDLK_F4)
 		{
 			hexMode = !hexMode;
-	    	exactAddr = true;
+			exactAddr = true;
 		}
 		else
 		if (key == SDLK_F3)

@@ -4,7 +4,7 @@ list_files()
 {
 	[ -e "$2" ] && rm "$2" &> /dev/null
 
-	unzip -l "$1" | while read dummy1 dummy2 dummy3 fname ; do
+	unrar lb "$1" | while read fname ; do
 		ext=`echo ${fname##*.} | tr A-Z a-z`
 
 		if [ "$ext" = "scl" ] || [ "$ext" = "trd" ] || [ "$ext" = "z80" ] || [ "$ext" = "p" ] || [ "$ext" = "tap" ] ; then
@@ -15,11 +15,11 @@ list_files()
 
 extract_files()
 {
-	unzip -o -j "$1" "$2" -d "$3" &> /dev/null
+	unrar e -o+ -p- "$1" "$2" "$3" &> /dev/null
 }
 
-# arc/zip list <zip file> <result file>
-# arc/zip extract <zip file> <file to extract> <result folder>
+# arc/rar list <rar file> <result file>
+# arc/rar extract <rar file> <file to extract> <result folder>
 
 case "$1" in
 	list)

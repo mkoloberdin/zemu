@@ -60,7 +60,7 @@ class C_DirWork
 	char bpath[MAX_PATH];
 #endif
 
-	C_DirWork& operator=(const C_DirWork &dummy) {}
+	C_DirWork& operator=(const C_DirWork &dummy) { return *this; }
 	C_DirWork(const C_DirWork &dummy) {}
 };
 
