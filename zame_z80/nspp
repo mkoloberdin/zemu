@@ -19,7 +19,7 @@ def replace_ns(line, namespaces)
 end
 
 def process_file(filename, base, builddir)
-	resdir = builddir + File.dirname(filename)[base.size, filename.size]
+	resdir = builddir + (File.dirname(filename)[base.size, filename.size] || '')
 	FileUtils.mkdir_p(resdir)
 
 	resname = resdir + '/' + File.basename(filename).gsub(/(.+)\.ns(\.(?:h|c))$/, '\1\2')
