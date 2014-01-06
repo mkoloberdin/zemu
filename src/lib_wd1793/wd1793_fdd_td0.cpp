@@ -122,8 +122,8 @@ int C_Fdd::read_td0()
 		uint8_t s = *td0_src;
 		if (s == 0xFF) break;
 
-		max_cyl = max(max_cyl, td0_src[1]);
-		max_head = max(max_head, td0_src[2]);
+		max_cyl = zmax(max_cyl, td0_src[1]);
+		max_head = zmax(max_head, td0_src[2]);
 		td0_src += 4;
 
 		for (; s; s--)

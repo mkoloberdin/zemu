@@ -1,6 +1,7 @@
 *.o
 *.a
 callgrind.out.*
+/zemu
 /src/zemu
 /src/make
 .cproject

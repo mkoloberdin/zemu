@@ -91,7 +91,7 @@ void C_TrkCache::seek(C_Fdd *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 
 		if (h->l > 5) continue;
 
-		unsigned end = min(trklen-8, i+8+43); // 43-DD, 30-SD
+		unsigned end = zmin(trklen-8, i+8+43); // 43-DD, 30-SD
 
 		for (unsigned j = i+8; j < end; j++)
 		{

@@ -37,12 +37,12 @@
 	#define M_PI 3.1415926535897932
 #endif
 
-#ifndef min
-	#define min(a,b) ((a)<(b)?(a):(b))
+#ifndef zmin
+	#define zmin(a,b) ((a)<(b)?(a):(b))
 #endif
 
-#ifndef max
-	#define max(a,b) ((a)>(b)?(a):(b))
+#ifndef zmax
+	#define zmax(a,b) ((a)>(b)?(a):(b))
 #endif
 
 #ifdef __APPLE__
