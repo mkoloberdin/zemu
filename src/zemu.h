@@ -121,7 +121,6 @@ extern void (* renderPtr)(unsigned long);
 //--------------------------------------------------------------------------------------------------------------
 
 void TryNLoadFile(const char *fname, int drive=0);
-void ScaleImage(void);
 void UpdateScreen(void);
 void DisplayTurboMessage(void);
 

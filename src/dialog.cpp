@@ -61,7 +61,6 @@ bool DlgConfirm(const char *message)
 	DlgClearScreen();
 	Bar(x, y, x+wdt-1, y+hgt-1, DRGB(0x80, 0x20, 0x20));
 	font.PrintString(x+8, y+8, message);
-	ScaleImage();
 	UpdateScreen();
 
 	for (;;)
@@ -106,7 +105,6 @@ const char* DlgInputString(const char *message)
 		DlgClearScreen();
 		Bar(x, y, x+wdt-1, y+hgt-1, DRGB(0x80, 0x20, 0x20));
 		font.PrintString(x+8, y+8, buf);
-		ScaleImage();
 		UpdateScreen();
 
 		do
@@ -282,7 +280,6 @@ char* SelectFile(char *oldFile)
 				}
 
 				OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);
-				ScaleImage();
 				UpdateScreen();
 				SDL_Delay(10);
 			} while (key == 0);
@@ -532,7 +529,6 @@ int DbgAskHexNum(const char *message)
 
 		Bar(0, scrEnd, WIDTH-1, HEIGHT-1, DRGB(0x80, 0x20, 0x20));
 		fixed_font.PrintString(4, scrEnd+4, buf);
-		ScaleImage();
 		UpdateScreen();
 
 		do
@@ -855,7 +851,6 @@ void DebugIt(void)
 			sprintf(buf, "T    %d", (int)cpuClk);                         fixed_font.PrintString(x, y, buf); y += h;
 
 			OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);
-			ScaleImage();
 			UpdateScreen();
 			SDL_Delay(10);
 		} while (key == 0);

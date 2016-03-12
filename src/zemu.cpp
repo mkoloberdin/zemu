@@ -30,6 +30,11 @@
 #include <cctype>
 #include <algorithm>
 
+#if defined(__APPLE__)
+#include <SDL_Thread.h>
+#include <SDL_Mutex.h>
+#endif
+
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
 
@@ -63,6 +68,14 @@ char tempFolderName[MAX_PATH];
 
 bool recordWav = false;
 const char *wavFileName = "output.wav"; // TODO: make configurable + full filepath
+
+#if defined(__APPLE__)
+SDL_Thread * upadteScreenThread = NULL;
+SDL_sem * updateScreenThreadSem;
+volatile bool updateScreenThreadActive = true;
+
+int UpdateScreenThreadFunc(void * param);
+#endif
 
 //--------------------------------------------------------------------------------------------------------------
 
@@ -401,22 +414,34 @@ bool TryLoadArcFile(const char *arcName, int drive)
 
 void TryNLoadFile(const char *fname, int drive)
 {
+	char bname[MAX_PATH];
+	strcpy(bname, fname);
+
+	char *tname = bname;
+
+	if (tname[0] == '"') {
+		tname++;
+		int len = strlen(tname);
+
+		if (tname[len - 1] == '"') {
+			tname[len - 1] = '\0';
+		}
+	}
+
 	#ifdef _WIN32
-		char tname[MAX_PATH];
-
-		strcpy(tname, fname);
-
 		if (tname[0]=='/' && tname[2]=='/')
 		{
 			tname[0] = tname[1];
 			tname[1] = ':';
 		}
-	#else
-		const char *tname = fname;
 	#endif
 
-	if (!TryLoadArcFile(tname, drive)) {
-		LoadNormalFile(tname, drive);
+	if (tname[0] != 0) {
+		printf("Trying to load \"%s\" ...\n", tname);
+
+		if (!TryLoadArcFile(tname, drive)) {
+			LoadNormalFile(tname, drive);
+		}
 	}
 }
 
@@ -629,8 +654,8 @@ unsigned watchesCount = 0;
 
 Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void *userData)
 {
-    ptrOnReadByteFunc func = devMapRead[addr];
-    return func(addr, false);
+	ptrOnReadByteFunc func = devMapRead[addr];
+	return func(addr, false);
 }
 
 void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value)
@@ -833,6 +858,11 @@ void InitAll(void)
 		OutputByte, NULL,
 		ReadIntVec, NULL
 	);
+
+#if defined(__APPLE__)
+	updateScreenThreadSem = SDL_CreateSemaphore(0);
+	upadteScreenThread = SDL_CreateThread(UpdateScreenThreadFunc, NULL);
+#endif
 }
 
 #define INT_LENGTH 32
@@ -1092,14 +1122,14 @@ void Render(void)
 	InitActClk();
 	prevRenderClk = 0;
 
+	while (cpuClk < INT_LENGTH)
+	{
+		CpuStep();
+		CpuInt();
+	}
+
 	if (drawFrame)
 	{
-		while (cpuClk < INT_LENGTH)
-		{
-			CpuStep();
-			CpuInt();
-		}
-
 		while (cpuClk < MAX_FRAME_TACTS)
 		{
 			CpuStep();
@@ -1108,12 +1138,6 @@ void Render(void)
 	}
 	else
 	{
-		while (cpuClk < INT_LENGTH)
-		{
-			CpuStep();
-			CpuInt();
-		}
-
 		while (cpuClk < MAX_FRAME_TACTS) {
 			CpuStep();
 		}
@@ -1181,63 +1205,6 @@ void ResetSequence(void)
 	}
 }
 
-void ScaleImage(void)
-{
-	if (!params.scale2x) return;
-
-	if (SDL_MUSTLOCK(realScreen)) { if (SDL_LockSurface(realScreen) < 0) return; }
-
-	if (SDL_MUSTLOCK(screen)) {
-		if (SDL_LockSurface(screen) < 0) {
-			if (SDL_MUSTLOCK(realScreen)) SDL_UnlockSurface(realScreen);
-			return;
-		}
-	}
-
-	if (params.scanlines)
-	{
-		for (int i = HEIGHT-1; i >= 0; i--)
-		{
-			int* line = (int*)screen->pixels + i * PITCH + WIDTH-1;
-			int* lineA = (int*)realScreen->pixels + (i*2) * REAL_PITCH + (WIDTH*2-1);
-			int* lineB = (int*)realScreen->pixels + (i*2+1) * REAL_PITCH + (WIDTH*2-1);
-
-			for (int j = WIDTH; j--;)
-			{
-				int c = *(line--);
-				int dc = (c & 0xFEFEFE) >> 1;
-
-				*(lineA--) = c;
-				*(lineA--) = c;
-				*(lineB--) = dc;
-				*(lineB--) = dc;
-			}
-		}
-	}
-	else
-	{
-		for (int i = HEIGHT-1; i >= 0; i--)
-		{
-			int* line = (int*)screen->pixels + i * PITCH + WIDTH-1;
-			int* lineA = (int*)realScreen->pixels + (i*2) * REAL_PITCH + (WIDTH*2-1);
-			int* lineB = (int*)realScreen->pixels + (i*2+1) * REAL_PITCH + (WIDTH*2-1);
-
-			for (int j = WIDTH; j--;)
-			{
-				int c = *(line--);
-
-				*(lineA--) = c;
-				*(lineA--) = c;
-				*(lineB--) = c;
-				*(lineB--) = c;
-			}
-		}
-	}
-
-	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
-	if (SDL_MUSTLOCK(realScreen)) SDL_UnlockSurface(realScreen);
-}
-
 void Process(void)
 {
 	int key;
@@ -1298,11 +1265,7 @@ void Process(void)
 				for (i = 0; i < cnt_sndRenderers; i++) fixed_font.PrintString(16+i*4, 0, sndRenderers[i]->activeCnt ? "#" : "-");
 				//*/
 
-				ScaleImage();
-
-				// long tmp = SDL_GetTicks();
 				UpdateScreen();
-				// printf("UpdateScreen takes %d ticks\n", (int)(SDL_GetTicks() - tmp));
 			}
 
 			if (!params.maxSpeed)
@@ -1400,10 +1363,95 @@ void InitAudio(void)
 	soundMixer.Init(params.mixerMode, recordWav, wavFileName);
 }
 
+#if defined(__APPLE__)
+int UpdateScreenThreadFunc(void * param)
+{
+	while (updateScreenThreadActive) {
+		SDL_SemWait(updateScreenThreadSem);
+
+		if (params.useFlipSurface) SDL_Flip(realScreen);
+		else SDL_UpdateRect(realScreen, 0, 0, 0, 0);
+	}
+
+	return 0;
+}
+#endif
+
 void UpdateScreen(void)
 {
+	if (!params.scale2x) {
+		// do not use threading here, because realScreen == screen
+
+		if (params.useFlipSurface) SDL_Flip(realScreen);
+		else SDL_UpdateRect(realScreen, 0, 0, 0, 0);
+
+		return;
+	}
+
+#if defined(__APPLE__)
+	if (SDL_SemValue(updateScreenThreadSem)) {
+		return;
+	}
+#endif
+
+	if (SDL_MUSTLOCK(realScreen)) { if (SDL_LockSurface(realScreen) < 0) return; }
+
+	if (SDL_MUSTLOCK(screen)) {
+		if (SDL_LockSurface(screen) < 0) {
+			if (SDL_MUSTLOCK(realScreen)) SDL_UnlockSurface(realScreen);
+			return;
+		}
+	}
+
+	if (params.scanlines)
+	{
+		for (int i = HEIGHT-1; i >= 0; i--)
+		{
+			int* line = (int*)screen->pixels + i * PITCH + WIDTH-1;
+			int* lineA = (int*)realScreen->pixels + (i*2) * REAL_PITCH + (WIDTH*2-1);
+			int* lineB = (int*)realScreen->pixels + (i*2+1) * REAL_PITCH + (WIDTH*2-1);
+
+			for (int j = WIDTH; j--;)
+			{
+				int c = *(line--);
+				int dc = (c & 0xFEFEFE) >> 1;
+
+				*(lineA--) = c;
+				*(lineA--) = c;
+				*(lineB--) = dc;
+				*(lineB--) = dc;
+			}
+		}
+	}
+	else
+	{
+		for (int i = HEIGHT-1; i >= 0; i--)
+		{
+			int* line = (int*)screen->pixels + i * PITCH + WIDTH-1;
+			int* lineA = (int*)realScreen->pixels + (i*2) * REAL_PITCH + (WIDTH*2-1);
+			int* lineB = (int*)realScreen->pixels + (i*2+1) * REAL_PITCH + (WIDTH*2-1);
+
+			for (int j = WIDTH; j--;)
+			{
+				int c = *(line--);
+
+				*(lineA--) = c;
+				*(lineA--) = c;
+				*(lineB--) = c;
+				*(lineB--) = c;
+			}
+		}
+	}
+
+	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
+	if (SDL_MUSTLOCK(realScreen)) SDL_UnlockSurface(realScreen);
+
+#if defined(__APPLE__)
+	SDL_SemPost(updateScreenThreadSem);
+#else
 	if (params.useFlipSurface) SDL_Flip(realScreen);
 	else SDL_UpdateRect(realScreen, 0, 0, 0, 0);
+#endif
 }
 
 void FreeAll(void)
@@ -1412,6 +1460,14 @@ void FreeAll(void)
 	for (i = 0; devs[i]; i++) devs[i]->Close();
 
 	C_Tape::Close();
+
+	#if defined(__APPLE__)
+		if (upadteScreenThread) {
+			updateScreenThreadActive = false;
+			SDL_SemPost(updateScreenThreadSem);
+			SDL_WaitThread(upadteScreenThread, NULL);
+		}
+	#endif
 
 	#ifdef __linux__
 		// TODO: do in in more portable way
@@ -1638,15 +1694,9 @@ int main(int argc, char *argv[])
 		atexit(SDL_Quit);
 #endif
 
-// #ifdef __APPLE__
-		// videoSpec = SDL_SWSURFACE;
-		// videoSpec |= SDL_FULLSCREEN;
-		// videoSpec |= SDL_OPENGLBLIT;
-// #else
 		videoSpec = SDL_SWSURFACE;
 		if (params.fullscreen) videoSpec |= SDL_FULLSCREEN;
 		if (params.useFlipSurface) videoSpec |= SDL_DOUBLEBUF;
-// #endif
 
 		int actualWidth = WIDTH;
 		int actualHeight = HEIGHT;

@@ -5,6 +5,8 @@ void OutputGimpImage(int x, int y, s_GimpImage *img)
 	int i, j, r, g, b, a;
 	uint8_t *o;
 
+	if (SDL_MUSTLOCK(screen)) {if (SDL_LockSurface(screen) < 0) return;}
+
 	o = img->data;
 
 	if (img->bpp == 3)
@@ -35,6 +37,8 @@ void OutputGimpImage(int x, int y, s_GimpImage *img)
 			}
 		}
 	}
+
+	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
 }
 
 void Bar(int x1, int y1, int x2, int y2, int c)

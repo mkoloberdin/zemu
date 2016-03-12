@@ -52,21 +52,48 @@ void CConfig::Initialize(const char *app_name) {
 
 	// 1. try in current folder (allow use custom-configs for folder)
 	user_path = ".";
-	if (!ini.LoadFile(C_DirWork::Append(user_path, ini_name).c_str())) return;
+
+	const char * cfg_path = C_DirWork::Append(user_path, ini_name).c_str();
+	printf("Trying to load config from \"%s\" ...\n", cfg_path);
+
+	if (!ini.LoadFile(cfg_path)) {
+		printf("Config loaded successfully\n");
+		return;
+	}
 
 	if (executableDir) {
 		// 2. try in executable dir (useful for debug version && file associations)
 		user_path = executableDir;
-		if (!ini.LoadFile(C_DirWork::Append(user_path, ini_name).c_str())) return;
+
+		cfg_path = C_DirWork::Append(user_path, ini_name).c_str();
+		printf("Trying to load config from \"%s\" ...\n", cfg_path);
+
+		if (!ini.LoadFile(cfg_path)) {
+			printf("Config loaded successfully\n");
+			return;
+		}
 	}
 
 	// 3. try in home folder
 	user_path = home_path;
-	if (!ini.LoadFile(C_DirWork::Append(user_path, ini_name).c_str())) return;
+
+	cfg_path = C_DirWork::Append(user_path, ini_name).c_str();
+	printf("Trying to load config from \"%s\" ...\n", cfg_path);
+
+	if (!ini.LoadFile(C_DirWork::Append(user_path, ini_name).c_str())) {
+		printf("Config loaded successfully\n");
+		return;
+	}
 
 	#ifdef SHARE_PATH
 		// 4. try in shared folder
-		if (!ini.LoadFile(C_DirWork::Append(SHARE_PATH, ini_name))) return;
+		cfg_path = C_DirWork::Append(SHARE_PATH, ini_name).c_str();
+		printf("Trying to load config from \"%s\" ...\n", cfg_path);
+
+		if (!ini.LoadFile(cfg_path)) {
+			printf("Config loaded successfully\n");
+			return;
+		}
 	#endif
 }
 
