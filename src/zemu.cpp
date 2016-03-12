@@ -69,6 +69,13 @@ char tempFolderName[MAX_PATH];
 bool recordWav = false;
 const char *wavFileName = "output.wav"; // TODO: make configurable + full filepath
 
+bool isLongImageWrited = false;
+const char * longImageFileName = "longimage.ppm";
+C_File longImageFile;
+long longImageWidth;
+long longImageHeight;
+int longImagePos;
+
 #if defined(__APPLE__)
 SDL_Thread * upadteScreenThread = NULL;
 SDL_sem * updateScreenThreadSem;
@@ -312,6 +319,31 @@ void SetMessage(const char *str)
 {
 	strcpy(message, str);
 	messageTimeout = 50;
+}
+
+//--------------------------------------------------------------------------------------------------------------
+
+void TryFreeLongImage(void)
+{
+	if (!isLongImageWrited) {
+		return;
+	}
+
+	longImageFile.Close();
+
+	longImageFile.Write(longImageFileName);
+	longImageFile.PrintF("P6\n%ld %ld\n255\n", longImageWidth, longImageHeight);
+
+	C_File longImageTmp;
+
+	longImageTmp.Read("longimage.ppm.tmp");
+	while (!longImageTmp.Eof()) longImageFile.PutBYTE(longImageTmp.GetBYTE());
+
+	longImageTmp.Close();
+	longImageFile.Close();
+
+	unlink("longimage.ppm.tmp");
+	isLongImageWrited = false;
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -623,6 +655,25 @@ void Action_JoyOnKeyb(void)
 	SetMessage(joyOnKeyb ? "Kempston on keyboard ON" : "Kempston on keyboard OFF");
 }
 
+void Action_WriteLongImage(void)
+{
+	if (isLongImageWrited)
+	{
+		TryFreeLongImage();
+	}
+	else
+	{
+		isLongImageWrited = true;
+		longImageFile.Write("longimage.ppm.tmp");
+
+		longImageWidth = 256;
+		longImageHeight = 0;
+		longImagePos = 0;
+	}
+
+	SetMessage(isLongImageWrited ? "Long image write ON" : "Long image write OFF");
+}
+
 s_Action cfgActions[] =
 {
 	{"reset",			Action_Reset},
@@ -641,6 +692,7 @@ s_Action cfgActions[] =
 	{"flash_color",		Action_FlashColor},
 	{"pause",			Action_Pause},
 	{"joy_on_keyb",		Action_JoyOnKeyb},
+	{"write_longimage",	Action_WriteLongImage},
 	{"",				NULL}
 };
 
@@ -1102,7 +1154,7 @@ void Render(void)
 		sn = 1 - sn;
 	} else renderSurf = screen;
 
-	if (SDL_MUSTLOCK(renderSurf))
+	if ((drawFrame || isLongImageWrited) && SDL_MUSTLOCK(renderSurf))
 	{
 		if (SDL_LockSurface(renderSurf) < 0)
 		{
@@ -1128,7 +1180,7 @@ void Render(void)
 		CpuInt();
 	}
 
-	if (drawFrame)
+	if (drawFrame || isLongImageWrited)
 	{
 		while (cpuClk < MAX_FRAME_TACTS)
 		{
@@ -1148,8 +1200,30 @@ void Render(void)
 	cpuClk -= MAX_FRAME_TACTS;
 	devClk = cpuClk;
 
-	if (SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
-	if (params.antiFlicker && drawFrame) AntiFlicker(renderSurf, scrSurf[sn]);
+	if ((drawFrame || isLongImageWrited) && SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
+	if (params.antiFlicker && (drawFrame || isLongImageWrited)) AntiFlicker(renderSurf, scrSurf[sn]);
+
+	if (isLongImageWrited)
+	{
+		int * src = (int *)screen->pixels + (PITCH * (32 + longImagePos)) + 32;
+
+		for (int i = 256; i--;)
+		{
+			int c = *src;
+			int r = GETR(c);
+			int g = GETG(c);
+			int b = GETB(c);
+
+			longImageFile.PutBYTE(r);
+			longImageFile.PutBYTE(g);
+			longImageFile.PutBYTE(b);
+
+			*(src++) = DRGB(255 - r, 255 - g, 255 - b);
+		}
+
+		longImageHeight++;
+		longImagePos = (longImagePos + 1) % 192;
+	}
 }
 
 #include "images/floppy.h"
@@ -1468,6 +1542,8 @@ void FreeAll(void)
 			SDL_WaitThread(upadteScreenThread, NULL);
 		}
 	#endif
+
+	TryFreeLongImage();
 
 	#ifdef __linux__
 		// TODO: do in in more portable way
