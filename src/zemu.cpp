@@ -69,12 +69,17 @@ char tempFolderName[MAX_PATH];
 bool recordWav = false;
 const char *wavFileName = "output.wav"; // TODO: make configurable + full filepath
 
-bool isLongImageWrited = false;
-const char * longImageFileName = "longimage.ppm";
-C_File longImageFile;
-long longImageWidth;
-long longImageHeight;
-int longImagePos;
+// bool isLongImageWrited = false;
+// const char * longImageFileName = "longimage.ppm";
+// C_File longImageFile;
+// long longImageWidth;
+// long longImageHeight;
+// int longImagePos;
+
+bool isAvgImageWrited = false;
+const char * avgImageFileName = "avgimage.ppm";
+long * avgImageBuffer;
+int avgImageFrames;
 
 #if defined(__APPLE__)
 SDL_Thread * upadteScreenThread = NULL;
@@ -323,27 +328,52 @@ void SetMessage(const char *str)
 
 //--------------------------------------------------------------------------------------------------------------
 
-void TryFreeLongImage(void)
+// void TryFreeLongImage(void)
+// {
+// 	if (!isLongImageWrited) {
+// 		return;
+// 	}
+//
+// 	longImageFile.Close();
+//
+// 	longImageFile.Write(longImageFileName);
+// 	longImageFile.PrintF("P6\n%ld %ld\n255\n", longImageWidth, longImageHeight);
+//
+// 	C_File longImageTmp;
+//
+// 	longImageTmp.Read("longimage.ppm.tmp");
+// 	while (!longImageTmp.Eof()) longImageFile.PutBYTE(longImageTmp.GetBYTE());
+//
+// 	longImageTmp.Close();
+// 	longImageFile.Close();
+//
+// 	unlink("longimage.ppm.tmp");
+// 	isLongImageWrited = false;
+// }
+
+void TryFreeAvgImage(void)
 {
-	if (!isLongImageWrited) {
+	if (!isAvgImageWrited) {
 		return;
 	}
 
-	longImageFile.Close();
+	C_File avgImageFile;
+	avgImageFile.Write(avgImageFileName);
+	avgImageFile.PrintF("P6\n%ld %ld\n255\n", WIDTH, HEIGHT);
 
-	longImageFile.Write(longImageFileName);
-	longImageFile.PrintF("P6\n%ld %ld\n255\n", longImageWidth, longImageHeight);
+	long frames = (avgImageFrames > 0 ? avgImageFrames : 1);
+	long * ptr = avgImageBuffer;
 
-	C_File longImageTmp;
+	for (int i = WIDTH * HEIGHT * 3; i--;) {
+		avgImageFile.PutBYTE(*(ptr++) / frames);
+	}
 
-	longImageTmp.Read("longimage.ppm.tmp");
-	while (!longImageTmp.Eof()) longImageFile.PutBYTE(longImageTmp.GetBYTE());
+	avgImageFile.Close();
 
-	longImageTmp.Close();
-	longImageFile.Close();
+	delete[] avgImageBuffer;
+	avgImageBuffer = NULL;
 
-	unlink("longimage.ppm.tmp");
-	isLongImageWrited = false;
+	isAvgImageWrited = false;
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -655,23 +685,45 @@ void Action_JoyOnKeyb(void)
 	SetMessage(joyOnKeyb ? "Kempston on keyboard ON" : "Kempston on keyboard OFF");
 }
 
-void Action_WriteLongImage(void)
+// void Action_WriteLongImage(void)
+// {
+// 	if (isLongImageWrited)
+// 	{
+// 		TryFreeLongImage();
+// 	}
+// 	else
+// 	{
+// 		isLongImageWrited = true;
+// 		longImageFile.Write("longimage.ppm.tmp");
+//
+// 		longImageWidth = 256;
+// 		longImageHeight = 0;
+// 		longImagePos = 0;
+// 	}
+//
+// 	SetMessage(isLongImageWrited ? "Long image write ON" : "Long image write OFF");
+// }
+
+void Action_WriteAvgImage(void)
 {
-	if (isLongImageWrited)
+	if (isAvgImageWrited)
 	{
-		TryFreeLongImage();
+		TryFreeAvgImage();
 	}
 	else
 	{
-		isLongImageWrited = true;
-		longImageFile.Write("longimage.ppm.tmp");
+		isAvgImageWrited = true;
+		avgImageBuffer = new long[WIDTH * HEIGHT * 3];
+		avgImageFrames = 0;
 
-		longImageWidth = 256;
-		longImageHeight = 0;
-		longImagePos = 0;
+		long * ptr = avgImageBuffer;
+
+		for (int i = WIDTH * HEIGHT * 3; i--;) {
+			*(ptr++) = 0;
+		}
 	}
 
-	SetMessage(isLongImageWrited ? "Long image write ON" : "Long image write OFF");
+	SetMessage(isAvgImageWrited ? "Avg image write ON" : "Avg image write OFF");
 }
 
 s_Action cfgActions[] =
@@ -692,7 +744,8 @@ s_Action cfgActions[] =
 	{"flash_color",		Action_FlashColor},
 	{"pause",			Action_Pause},
 	{"joy_on_keyb",		Action_JoyOnKeyb},
-	{"write_longimage",	Action_WriteLongImage},
+	// {"write_longimage",	Action_WriteLongImage},
+	{"write_longimage",	Action_WriteAvgImage},
 	{"",				NULL}
 };
 
@@ -1154,7 +1207,7 @@ void Render(void)
 		sn = 1 - sn;
 	} else renderSurf = screen;
 
-	if ((drawFrame || isLongImageWrited) && SDL_MUSTLOCK(renderSurf))
+	if ((drawFrame || isAvgImageWrited /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
 	{
 		if (SDL_LockSurface(renderSurf) < 0)
 		{
@@ -1180,7 +1233,7 @@ void Render(void)
 		CpuInt();
 	}
 
-	if (drawFrame || isLongImageWrited)
+	if (drawFrame || isAvgImageWrited /* isLongImageWrited */)
 	{
 		while (cpuClk < MAX_FRAME_TACTS)
 		{
@@ -1200,29 +1253,53 @@ void Render(void)
 	cpuClk -= MAX_FRAME_TACTS;
 	devClk = cpuClk;
 
-	if ((drawFrame || isLongImageWrited) && SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
-	if (params.antiFlicker && (drawFrame || isLongImageWrited)) AntiFlicker(renderSurf, scrSurf[sn]);
+	if ((drawFrame || isAvgImageWrited /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
+	if (params.antiFlicker && (drawFrame || isAvgImageWrited /* isLongImageWrited */)) AntiFlicker(renderSurf, scrSurf[sn]);
 
-	if (isLongImageWrited)
+	// if (isLongImageWrited)
+	// {
+	//	int * src = (int *)screen->pixels + (PITCH * (32 + longImagePos)) + 32;
+	//
+	//	for (int i = 256; i--;)
+	//	{
+	//		unsigned int c = *src;
+	//		int r = GETR(c);
+	//		int g = GETG(c);
+	//		int b = GETB(c);
+	//
+	//		longImageFile.PutBYTE(r);
+	//		longImageFile.PutBYTE(g);
+	//		longImageFile.PutBYTE(b);
+	//
+	//		*(src++) = DRGB(255 - r, 255 - g, 255 - b);
+	//	}
+	//
+	//	longImageHeight++;
+	//	longImagePos = (longImagePos + 1) % 192;
+	// }
+
+	if (isAvgImageWrited)
 	{
-		int * src = (int *)screen->pixels + (PITCH * (32 + longImagePos)) + 32;
+		int * src = (int *)screen->pixels;
+		long * dst = avgImageBuffer;
 
-		for (int i = 256; i--;)
+		for (int i = HEIGHT; i--;)
 		{
-			int c = *src;
-			int r = GETR(c);
-			int g = GETG(c);
-			int b = GETB(c);
+			int * line = src;
 
-			longImageFile.PutBYTE(r);
-			longImageFile.PutBYTE(g);
-			longImageFile.PutBYTE(b);
+			for (int j = WIDTH; j--;)
+			{
+				unsigned int c = *(line++);
 
-			*(src++) = DRGB(255 - r, 255 - g, 255 - b);
+				*(dst++) += (long)GETR(c);
+				*(dst++) += (long)GETG(c);
+				*(dst++) += (long)GETB(c);
+			}
+
+			src += PITCH;
 		}
 
-		longImageHeight++;
-		longImagePos = (longImagePos + 1) % 192;
+		avgImageFrames++;
 	}
 }
 
@@ -1543,7 +1620,8 @@ void FreeAll(void)
 		}
 	#endif
 
-	TryFreeLongImage();
+	// TryFreeLongImage();
+	TryFreeAvgImage();
 
 	#ifdef __linux__
 		// TODO: do in in more portable way
