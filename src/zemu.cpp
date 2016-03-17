@@ -79,7 +79,7 @@ const char *wavFileName = "output.wav"; // TODO: make configurable + full filepa
 bool isAvgImageWrited = false;
 const char * avgImageFileName = "avgimage.ppm";
 long * avgImageBuffer;
-int avgImageFrames;
+// int avgImageFrames;
 
 #if defined(__APPLE__)
 SDL_Thread * upadteScreenThread = NULL;
@@ -361,11 +361,29 @@ void TryFreeAvgImage(void)
 	avgImageFile.Write(avgImageFileName);
 	avgImageFile.PrintF("P6\n%ld %ld\n255\n", WIDTH, HEIGHT);
 
-	long frames = (avgImageFrames > 0 ? avgImageFrames : 1);
+	long divider = 0;
 	long * ptr = avgImageBuffer;
 
+	for (int i = WIDTH * HEIGHT * 3; i--;)
+	{
+		long val = *(ptr++);
+
+		if (val > divider) {
+			divider = val;
+		}
+	}
+
+	divider /= 255;
+
+	if (divider < 1) {
+		divider = 1;
+	}
+
+	// long divider = (avgImageFrames > 0 ? avgImageFrames : 1);
+	ptr = avgImageBuffer;
+
 	for (int i = WIDTH * HEIGHT * 3; i--;) {
-		avgImageFile.PutBYTE(*(ptr++) / frames);
+		avgImageFile.PutBYTE(*(ptr++) / divider);
 	}
 
 	avgImageFile.Close();
@@ -714,7 +732,7 @@ void Action_WriteAvgImage(void)
 	{
 		isAvgImageWrited = true;
 		avgImageBuffer = new long[WIDTH * HEIGHT * 3];
-		avgImageFrames = 0;
+		// avgImageFrames = 0;
 
 		long * ptr = avgImageBuffer;
 
@@ -1299,7 +1317,7 @@ void Render(void)
 			src += PITCH;
 		}
 
-		avgImageFrames++;
+		// avgImageFrames++;
 	}
 }
 
