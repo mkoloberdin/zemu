@@ -19,3 +19,4 @@ cmake_install.cmake
 /src/*.tap
 /install_manifest.txt
 .DS_Store
+.kdev*
