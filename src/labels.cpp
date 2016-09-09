@@ -32,7 +32,7 @@ void Labels_Load(const char *fname)
         ishex(buf[3]) && ishex(buf[4]) && ishex(buf[5]) &&
         ishex(buf[6]) && buf[7] == ' ' && buf[8] != ' ')
     {
-      int bank = (unhex(buf[0]) * 0x10 + unhex(buf[1])) & BIN(0x11000111);
+      int bank = (unhex(buf[0]) * 0x10 + unhex(buf[1])) & 0b11000111;
       int addr = unhex(buf[3]) * 0x1000 + unhex(buf[4]) * 0x100 + unhex(buf[5]) * 0x10 + unhex(buf[6]);
 
       switch (bank)

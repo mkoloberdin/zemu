@@ -63,7 +63,7 @@ void C_TsFm::Close(void)
 
 bool C_TsFm::InputByteCheckPort(Z80EX_WORD port)
 {
-  return ((port & MAKEWORD(BIN(0x11000000), BIN(0x00000010))) == MAKEWORD(BIN(0x11000000), BIN(0x00000000)));	// 0xFFFD
+  return ((port & MAKEWORD(0b11000000, 0b00000010)) == MAKEWORD(0b11000000, 0b00000000)); // 0xFFFD
 }
 
 bool C_TsFm::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
@@ -91,9 +91,9 @@ bool C_TsFm::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
 bool C_TsFm::OutputByteCheckPort(Z80EX_WORD port)
 {
   return (
-           ((port & MAKEWORD(BIN(0x11000000), BIN(0x00000010))) == MAKEWORD(BIN(0x11000000), BIN(0x00000000)))	// 0xFFFD
+           ((port & MAKEWORD(0b11000000, 0b00000010)) == MAKEWORD(0b11000000, 0b00000000)) // 0xFFFD
            ||
-           ((port & MAKEWORD(BIN(0x11000000), BIN(0x00000010))) == MAKEWORD(BIN(0x10000000), BIN(0x00000000)))	// 0xBFFD
+           ((port & MAKEWORD(0b11000000, 0b00000010)) == MAKEWORD(0b10000000, 0b00000000)) // 0xBFFD
            ||
            (!C_TrDos::trdos && ((port == 0x00FF) || (port == 0x01FF)))
          );
@@ -113,9 +113,9 @@ bool C_TsFm::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
       saa1099Chip.WriteAddress(value);
     }
   }
-  else if ((port & MAKEWORD(BIN(0x11000000), BIN(0x00000010))) == MAKEWORD(BIN(0x11000000), BIN(0x00000000)))	// 0xFFFD
+  else if ((port & MAKEWORD(0b11000000, 0b00000010)) == MAKEWORD(0b11000000, 0b00000000)) // 0xFFFD
   {
-    if ((mode >= TSFM_MODE_TS) && ((value & BIN(0x11110000)) == BIN(0x11110000)))
+    if ((mode >= TSFM_MODE_TS) && ((value & 0b11110000) == 0b11110000))
     {
       pseudoReg = value & 15;
       return true;
