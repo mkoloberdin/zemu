@@ -7,19 +7,19 @@
 
 class C_Covox : public C_Device
 {
-	public:
+public:
 
-	static C_SndRenderer sndRenderer;
-	static bool enabled;
+  static C_SndRenderer sndRenderer;
+  static bool enabled;
 
-	void Init(void);
-	void Close(void);
+  void Init(void);
+  void Close(void);
 
-	static bool OutputByteCheckPort(Z80EX_WORD);
-	static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
-	static void OnFrameStart(void);
-	static void OnAfterFrameRender(void);
-	static void OnReset(void);
+  static bool OutputByteCheckPort(Z80EX_WORD);
+  static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
+  static void OnFrameStart(void);
+  static void OnAfterFrameRender(void);
+  static void OnReset(void);
 };
 
 #endif

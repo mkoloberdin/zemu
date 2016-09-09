@@ -11,53 +11,53 @@
 
 typedef struct
 {
-	int axis_treshold; // for fine-tunung analog sticks
-	bool init_ok;
-	bool up;
-	bool down;
-	bool left;
-	bool right;
-	bool fire;
+  int axis_treshold; // for fine-tunung analog sticks
+  bool init_ok;
+  bool up;
+  bool down;
+  bool left;
+  bool right;
+  bool fire;
 } JoystickState;
 
 class C_JoystickManager
 {
-	public:
+public:
 
-	// get singleton instance
-	static C_JoystickManager* Instance();
+  // get singleton instance
+  static C_JoystickManager *Instance();
 
-	void Init();	// [rst]
+  void Init();	// [rst]
 
-	// enable processing of joystick events
-	bool EnableProcessing();
+  // enable processing of joystick events
+  bool EnableProcessing();
 
-	// disable processing of joystick events
-	bool DisableProcessing();
+  // disable processing of joystick events
+  bool DisableProcessing();
 
-	// initialize joystick [joy_num] and mark it as managed, return true if joystick was added succesfully
-	bool AddJoystick(int joy_num, int axis_treshold=DEF_JOY_AXIS_TRESHOLD);
+  // initialize joystick [joy_num] and mark it as managed, return true if joystick was added succesfully
+  bool AddJoystick(int joy_num, int axis_treshold = DEF_JOY_AXIS_TRESHOLD);
 
-	// process SDL joystick event
-	bool ProcessJoystickEvent(SDL_Event &event);
+  // process SDL joystick event
+  bool ProcessJoystickEvent(SDL_Event &event);
 
-	// SDL joystick event callback
-	static bool OnJoystickEvent(SDL_Event &event);
+  // SDL joystick event callback
+  static bool OnJoystickEvent(SDL_Event &event);
 
-	// get state of joystick [joy_num]
-	JoystickState* GetJoystickState(int joy_num);
+  // get state of joystick [joy_num]
+  JoystickState *GetJoystickState(int joy_num);
 
-	protected:
+protected:
 
-	JoystickState jstate[MAX_JOYSTICKS];
+  JoystickState jstate[MAX_JOYSTICKS];
 
-	C_JoystickManager();
+  C_JoystickManager();
 
-	private:
+private:
 
-	bool is_enabled;
-	int num_joysticks;
-	static C_JoystickManager* _instance;
+  bool is_enabled;
+  int num_joysticks;
+  static C_JoystickManager *_instance;
 };
 
 #endif

@@ -13,35 +13,35 @@
 
 class C_SoundMixer
 {
-	public:
+public:
 
-	C_SoundMixer();
-	~C_SoundMixer();
-	void InitBackendSDL(int sdlBufferSize);
+  C_SoundMixer();
+  ~C_SoundMixer();
+  void InitBackendSDL(int sdlBufferSize);
 
 #if !defined(_WIN32) && !defined(__APPLE__)
-	void InitBackendOSS(int soundParam);
+  void InitBackendOSS(int soundParam);
 #else
-	#ifdef _WIN32
-		void InitBackendWin32(int soundParam);
-	#endif
+#ifdef _WIN32
+  void InitBackendWin32(int soundParam);
+#endif
 #endif
 
-	void Init(int mixerMode, bool recordWav, const char *wavFileName);
-	void AddSource(C_SndRenderer *source);
-	void FlushFrame(bool soundEnabled);
-	s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
+  void Init(int mixerMode, bool recordWav, const char *wavFileName);
+  void AddSource(C_SndRenderer *source);
+  void FlushFrame(bool soundEnabled);
+  s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
 
-	private:
+private:
 
-	bool initialized;
-	CSndBackend *sndBackend;
-	int mixerMode;
-	std::vector<C_SndRenderer *> sources;
-	uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
-	bool recordWav;
-	const char *wavFileName;
-	C_File wavFile;
+  bool initialized;
+  CSndBackend *sndBackend;
+  int mixerMode;
+  std::vector<C_SndRenderer *> sources;
+  uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
+  bool recordWav;
+  const char *wavFileName;
+  C_File wavFile;
 };
 
 extern C_SoundMixer soundMixer;

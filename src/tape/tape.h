@@ -9,32 +9,32 @@
 
 class C_Tape
 {
-	public:
+public:
 
-	static C_SndRenderer sndRenderer;
+  static C_SndRenderer sndRenderer;
 
-	static uint64_t prevDevClkCounter;
-	static C_TapeFormat *currentFormat;
+  static uint64_t prevDevClkCounter;
+  static C_TapeFormat *currentFormat;
 
-	static void Init(void);
-	static void Close(void);
-	static void OnFrameStart(void);
-	static void OnAfterFrameRender(void);
+  static void Init(void);
+  static void Close(void);
+  static void OnFrameStart(void);
+  static void OnAfterFrameRender(void);
 
-	static int GetCurrBit(void);
-	static void Process(void);
+  static int GetCurrBit(void);
+  static void Process(void);
 
-	static bool IsLoaded(void);
-	static bool IsActive(void);
-	static unsigned int GetPosPerc(void);
+  static bool IsLoaded(void);
+  static bool IsActive(void);
+  static unsigned int GetPosPerc(void);
 
-	static bool IsTapeFormat(const char *fname);
+  static bool IsTapeFormat(const char *fname);
 
-	static void Eject(void);
-	static bool Insert(const char *fname);
-	static void Start(void);
-	static void Stop(void);
-	static void Rewind(void);
+  static void Eject(void);
+  static bool Insert(const char *fname);
+  static void Start(void);
+  static void Stop(void);
+  static void Rewind(void);
 };
 
 #endif

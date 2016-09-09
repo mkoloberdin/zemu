@@ -10,18 +10,18 @@
 
 class C_Border : public C_Device
 {
-	public:
+public:
 
-	static C_SndRenderer sndRenderer;
-	static Z80EX_BYTE portFB;
+  static C_SndRenderer sndRenderer;
+  static Z80EX_BYTE portFB;
 
-	void Init(void);
-	void Close(void);
+  void Init(void);
+  void Close(void);
 
-	static bool OutputByteCheckPort(Z80EX_WORD port);
-	static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
-	static void OnFrameStart(void); // [boo]
-	static void OnAfterFrameRender(void); // [boo]
+  static bool OutputByteCheckPort(Z80EX_WORD port);
+  static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
+  static void OnFrameStart(void); // [boo]
+  static void OnAfterFrameRender(void); // [boo]
 };
 
 #endif

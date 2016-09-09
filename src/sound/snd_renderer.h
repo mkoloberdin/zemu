@@ -10,12 +10,12 @@
 */
 
 #ifdef _MSC_VER
-	typedef unsigned __int64 uint64_t;
+  typedef unsigned __int64 uint64_t;
 #endif
 
 #ifdef __GNUC__
-	#include <stdint.h>
-	#define HANDLE_PRAGMA_PACK_PUSH_POP
+  #include <stdint.h>
+  #define HANDLE_PRAGMA_PACK_PUSH_POP
 #endif
 
 #include "../defines.h"
@@ -27,41 +27,41 @@ const unsigned SNDR_ACTIVE_CNT_UPD = 50;
 
 struct s_Sample
 {
-	unsigned long left;
-	unsigned long right;
+  unsigned long left;
+  unsigned long right;
 };
 
 class C_SndRenderer
 {
-	public:
+public:
 
-	unsigned int samples;
-	unsigned int activeCnt;
-	s_Sample *mixBuffer;
+  unsigned int samples;
+  unsigned int activeCnt;
+  s_Sample *mixBuffer;
 
-	C_SndRenderer();
+  C_SndRenderer();
 
-	void SetTimings(unsigned clockRate, unsigned sampleRate);
+  void SetTimings(unsigned clockRate, unsigned sampleRate);
 
-	void StartFrame();
-	void Update(unsigned clk, unsigned left, unsigned right);
-	void EndFrame(unsigned clk);
+  void StartFrame();
+  void Update(unsigned clk, unsigned left, unsigned right);
+  void EndFrame(unsigned clk);
 
-	protected:
+protected:
 
-	void Flush(unsigned endTick);
+  void Flush(unsigned endTick);
 
-	s_Sample *startPos;
-	s_Sample *currPos;
+  s_Sample *startPos;
+  s_Sample *currPos;
 
-	unsigned mixL, mixR;
-	unsigned tick, baseTick;
-	unsigned s1l, s1r;
-	unsigned s2l, s2r;
+  unsigned mixL, mixR;
+  unsigned tick, baseTick;
+  unsigned s1l, s1r;
+  unsigned s2l, s2r;
 
-	unsigned sampleRate, clockRate;
-	uint64_t passedClkTicks, passedSndTicks;
-	unsigned multConst;
+  unsigned sampleRate, clockRate;
+  uint64_t passedClkTicks, passedSndTicks;
+  unsigned multConst;
 };
 
 #endif

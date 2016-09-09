@@ -1,10 +1,10 @@
 /* GIMP RGBA C-Source image dump (floppy_write.c) */
 
 static const struct {
-  unsigned int 	 width;
-  unsigned int 	 height;
-  unsigned int 	 bytes_per_pixel; /* 3:RGB, 4:RGBA */ 
-  unsigned char	 pixel_data[24 * 24 * 4 + 1];
+  unsigned int  width;
+  unsigned int  height;
+  unsigned int  bytes_per_pixel; /* 3:RGB, 4:RGBA */
+  unsigned char pixel_data[24 * 24 * 4 + 1];
 } img_floppyWrite = {
   24, 24, 4,
   "hp\237\0hp\237\377hp\237\377\36""6T\377\36""6T\377\216\216\305\377hp\237"

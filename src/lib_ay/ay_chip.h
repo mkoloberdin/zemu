@@ -29,87 +29,87 @@ const unsigned SNDR_DEFAULT_AY_RATE = 1774400; // original ZX-Spectrum soundchip
 
 class C_AyChipConfig
 {
-	public:
+public:
 
-	enum ChipType
-	{
-		TypeAy = 0,
-		TypeYm = 1
-	};
+  enum ChipType
+  {
+    TypeAy = 0,
+    TypeYm = 1
+  };
 
-	enum VolType
-	{
-		VolAy = 0,
-		VolYm = 1
-	};
+  enum VolType
+  {
+    VolAy = 0,
+    VolYm = 1
+  };
 
-	enum PanType
-	{
-		PanMono = 0,
-		PanABC = 1,
-		PanACB = 2,
-		PanBAC = 3,
-		PanBCA = 4,
-		PanCAB = 5,
-		PanCBA = 6
-	};
+  enum PanType
+  {
+    PanMono = 0,
+    PanABC = 1,
+    PanACB = 2,
+    PanBAC = 3,
+    PanBCA = 4,
+    PanCAB = 5,
+    PanCBA = 6
+  };
 
-	C_AyChipConfig();
+  C_AyChipConfig();
 
-	void ReadConfig(void);
+  void ReadConfig(void);
 
-	const unsigned * GetVolTab(void);
-	const unsigned * GetPanTab(void);
+  const unsigned *GetVolTab(void);
+  const unsigned *GetPanTab(void);
 
-	ChipType chipType;
-	VolType volType;
-	PanType panType;
+  ChipType chipType;
+  VolType volType;
+  PanType panType;
 };
 
 class C_AyChip
 {
-	public:
+public:
 
-	C_SndRenderer sndRenderer;
+  C_SndRenderer sndRenderer;
 
-	C_AyChip();
-	virtual ~C_AyChip();
+  C_AyChip();
+  virtual ~C_AyChip();
 
-	void Init(void);
+  void Init(void);
 
-	void StartFrame(void);
-	void EndFrame(unsigned devClk);
+  void StartFrame(void);
+  void EndFrame(unsigned devClk);
 
-	void Select(uint8_t reg);
-	void Write(unsigned devClk, uint8_t val);
-	uint8_t Read(void);
+  void Select(uint8_t reg);
+  void Write(unsigned devClk, uint8_t val);
+  uint8_t Read(void);
 
-	void Reset(unsigned devClk=0);	// call with default parameter, when context outside StartFrame/EndFrame block
+  void Reset(unsigned devClk = 0);	// call with default parameter, when context outside StartFrame/EndFrame block
 
-	protected:
+protected:
 
-	void Flush(unsigned tick);
-	void ApplyRegs(unsigned devClk=0);
-	void SetVolumes(unsigned globalVol, const unsigned * volTab, const unsigned * panTab);
-	void SetTimings(unsigned systemClockRate, unsigned chipClockRate, unsigned sampleRate);
+  void Flush(unsigned tick);
+  void ApplyRegs(unsigned devClk = 0);
+  void SetVolumes(unsigned globalVol, const unsigned *volTab, const unsigned *panTab);
+  void SetTimings(unsigned systemClockRate, unsigned chipClockRate, unsigned sampleRate);
 
-	C_AyChipConfig conf;
+  C_AyChipConfig conf;
 
-	unsigned t, ta, tb, tc, tn, te, env, denv;
-	unsigned bitA, bitB, bitC, bitN, ns;
-	unsigned bit0, bit1, bit2, bit3, bit4, bit5;
-	unsigned ea, eb, ec, va, vb, vc;
-	unsigned fa, fb, fc, fn, fe;
-	unsigned multConst;
+  unsigned t, ta, tb, tc, tn, te, env, denv;
+  unsigned bitA, bitB, bitC, bitN, ns;
+  unsigned bit0, bit1, bit2, bit3, bit4, bit5;
+  unsigned ea, eb, ec, va, vb, vc;
+  unsigned fa, fb, fc, fn, fe;
+  unsigned multConst;
 
-	unsigned vols[6][32];
+  unsigned vols[6][32];
 
-	uint8_t r13Reloaded;
-	uint8_t selectedReg;
-	uint8_t regs[0x10];
+  uint8_t r13Reloaded;
+  uint8_t selectedReg;
+  uint8_t regs[0x10];
 
-	unsigned chipClockRate, systemClockRate;
-	uint64_t passedChipTicks, passedClkTicks;
+  unsigned chipClockRate, systemClockRate;
+  uint64_t passedChipTicks, passedClkTicks;
 };
 
 #endif

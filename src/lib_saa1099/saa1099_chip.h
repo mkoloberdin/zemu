@@ -5,22 +5,22 @@
 
 class C_Saa1099Chip
 {
-	public:
+public:
 
-	C_SndRenderer sndRenderer;
+  C_SndRenderer sndRenderer;
 
-	C_Saa1099Chip();
-	virtual ~C_Saa1099Chip();
+  C_Saa1099Chip();
+  virtual ~C_Saa1099Chip();
 
-	void WriteAddress(unsigned char reg);
-	void WriteData(unsigned char data);
+  void WriteAddress(unsigned char reg);
+  void WriteData(unsigned char data);
 
-	void Reset(void);
-	void Render(unsigned devClk);
+  void Reset(void);
+  void Render(unsigned devClk);
 
-	protected:
+protected:
 
-	LPCSAASOUND chip;
+  LPCSAASOUND chip;
 };
 
 #endif

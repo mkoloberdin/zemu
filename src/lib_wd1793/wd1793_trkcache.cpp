@@ -6,176 +6,176 @@
 
 C_TrkCache::C_TrkCache()
 {
-	clear();
+  clear();
 }
 
 void C_TrkCache::set_i(unsigned pos)
 {
-	trki[pos / 8] |= (1 << (pos & 7));
+  trki[pos / 8] |= (1 << (pos & 7));
 }
 
 void C_TrkCache::clr_i(unsigned pos)
 {
-	trki[pos / 8] &= ~(1 << (pos & 7));
+  trki[pos / 8] &= ~(1 << (pos & 7));
 }
 
 uint8_t C_TrkCache::test_i(unsigned pos)
 {
-	return (trki[pos / 8] & (1 << (pos & 7)));
+  return (trki[pos / 8] & (1 << (pos & 7)));
 }
 
 void C_TrkCache::write(unsigned pos, uint8_t byte, char index)
 {
-	trkd[pos] = byte;
+  trkd[pos] = byte;
 
-	if (index) set_i(pos);
-	else clr_i(pos);
+  if (index) set_i(pos);
+  else clr_i(pos);
 }
 
 void C_TrkCache::clear()
 {
-	drive = 0;
-	trkd = 0;
+  drive = 0;
+  trkd = 0;
 }
 
 void C_TrkCache::seek(C_Fdd *d, unsigned cyl, unsigned side, SEEK_MODE fs)
 {
-	// if (!( ((int)d - (int)drive) | (sf - fs) | (cyl - this->cyl) | (side - this->side) )) return;
-	if ( (d == drive) && (sf == fs) && (cyl == this->cyl) && (side == this->side) ) return;
+  // if (!( ((int)d - (int)drive) | (sf - fs) | (cyl - this->cyl) | (side - this->side) )) return;
+  if ((d == drive) && (sf == fs) && (cyl == this->cyl) && (side == this->side)) return;
 
-	drive = d;
-	sf = fs;
-	s = 0;
+  drive = d;
+  sf = fs;
+  s = 0;
 
-	this->cyl = cyl;
-	this->side = side;
+  this->cyl = cyl;
+  this->side = side;
 
-	if (cyl >= d->cyls || !d->rawdata)
-	{
-		trkd = 0;
-		return;
-	}
+  if (cyl >= d->cyls || !d->rawdata)
+  {
+    trkd = 0;
+    return;
+  }
 
-	trkd = d->trkd[cyl][side];
-	trki = d->trki[cyl][side];
-	trklen = d->trklen[cyl][side];
+  trkd = d->trkd[cyl][side];
+  trki = d->trki[cyl][side];
+  trklen = d->trklen[cyl][side];
 
-	if (!trklen)
-	{
-		trkd = 0;
-		return;
-	}
+  if (!trklen)
+  {
+    trkd = 0;
+    return;
+  }
 
-	ts_byte = TACTS_PER_ROTATE(1) / trklen;
-	if (fs == JUST_SEEK) return; // else find sectors
+  ts_byte = TACTS_PER_ROTATE(1) / trklen;
+  if (fs == JUST_SEEK) return; // else find sectors
 
-	for (unsigned i = 0; i < trklen-8; i++)
-	{
-		if (trkd[i]!=0xA1 || trkd[i+1]!=0xFE || !test_i(i)) continue;
+  for (unsigned i = 0; i < trklen - 8; i++)
+  {
+    if (trkd[i] != 0xA1 || trkd[i + 1] != 0xFE || !test_i(i)) continue;
 
-		if (s >= (unsigned)MAX_SEC)
-		{
-			printf("too many sectors\n");
-			return;
-		}
+    if (s >= (unsigned)MAX_SEC)
+    {
+      printf("too many sectors\n");
+      return;
+    }
 
-		s_SecHdr *h = &hdr[s++];
-		h->id = trkd+i+2;
-		h->c = h->id[0];
-		h->s = h->id[1];
-		h->n = h->id[2];
-		h->l = h->id[3];
-		h->crc = WORD2(trkd[i+6], trkd[i+7]);
-		h->c1 = (wd1793_crc(trkd+i+1, 5) == h->crc);
-		h->data = NULL;
-		h->datlen = 0;
+    s_SecHdr *h = &hdr[s++];
+    h->id = trkd + i + 2;
+    h->c = h->id[0];
+    h->s = h->id[1];
+    h->n = h->id[2];
+    h->l = h->id[3];
+    h->crc = WORD2(trkd[i + 6], trkd[i + 7]);
+    h->c1 = (wd1793_crc(trkd + i + 1, 5) == h->crc);
+    h->data = NULL;
+    h->datlen = 0;
 
-		if (h->l > 5) continue;
+    if (h->l > 5) continue;
 
-		unsigned end = std::min(trklen-8, i+8+43); // 43-DD, 30-SD
+    unsigned end = std::min(trklen - 8, i + 8 + 43); // 43-DD, 30-SD
 
-		for (unsigned j = i+8; j < end; j++)
-		{
-			if (trkd[j]!=0xA1 || !test_i(j) || test_i(j+1)) continue;
+    for (unsigned j = i + 8; j < end; j++)
+    {
+      if (trkd[j] != 0xA1 || !test_i(j) || test_i(j + 1)) continue;
 
-			if (trkd[j+1]==0xF8 || trkd[j+1]==0xFB)
-			{
-				h->datlen = (128 << h->l);
-				h->data = trkd+j+2;
-				h->c2 = (wd1793_crc(h->data-1, h->datlen+1) == WORD2(h->data[h->datlen], h->data[h->datlen + 1]));
-			}
+      if (trkd[j + 1] == 0xF8 || trkd[j + 1] == 0xFB)
+      {
+        h->datlen = (128 << h->l);
+        h->data = trkd + j + 2;
+        h->c2 = (wd1793_crc(h->data - 1, h->datlen + 1) == WORD2(h->data[h->datlen], h->data[h->datlen + 1]));
+      }
 
-			break;
-		}
-	}
+      break;
+    }
+  }
 }
 
 void C_TrkCache::format()
 {
-	memset(trkd, 0, trklen);
-	memset(trki, 0, (trklen / 8) + ((trklen & 7) ? 1 : 0));
+  memset(trkd, 0, trklen);
+  memset(trki, 0, (trklen / 8) + ((trklen & 7) ? 1 : 0));
 
-	uint8_t *dst = trkd;
-	unsigned i;
+  uint8_t *dst = trkd;
+  unsigned i;
 
-	for (i = 0; i < 80; i++) *(dst++) = 0x4E; // 1st gap
-	for (i = 0; i < 12; i++) *(dst++) = 0;
-	for (i = 0; i < 3; i++) write((dst++) - trkd, 0xC2, 1);
-	*(dst++) = 0xFC; // index
+  for (i = 0; i < 80; i++) *(dst++) = 0x4E; // 1st gap
+  for (i = 0; i < 12; i++) *(dst++) = 0;
+  for (i = 0; i < 3; i++) write((dst++) - trkd, 0xC2, 1);
+  *(dst++) = 0xFC; // index
 
-	for (unsigned is = 0; is < s; is++)
-	{
-		for (i = 0; i < 50; i++) *(dst++) = 0x4E;
-		for (i = 0; i < 12; i++) *(dst++) = 0;
-		for (i = 0; i < 3; i++) write((dst++) - trkd, 0xA1, 1);
-		*(dst++) = 0xFE; // marker
+  for (unsigned is = 0; is < s; is++)
+  {
+    for (i = 0; i < 50; i++) *(dst++) = 0x4E;
+    for (i = 0; i < 12; i++) *(dst++) = 0;
+    for (i = 0; i < 3; i++) write((dst++) - trkd, 0xA1, 1);
+    *(dst++) = 0xFE; // marker
 
-		s_SecHdr *sechdr = hdr + is;
-		*(dst++) = sechdr->c;
-		*(dst++) = sechdr->s;
-		*(dst++) = sechdr->n;
-		*(dst++) = sechdr->l;
+    s_SecHdr *sechdr = hdr + is;
+    *(dst++) = sechdr->c;
+    *(dst++) = sechdr->s;
+    *(dst++) = sechdr->n;
+    *(dst++) = sechdr->l;
 
-		unsigned crc = wd1793_crc(dst-5, 5);
-		if (sechdr->c1 == 1) crc = sechdr->crc;
-		if (sechdr->c1 == 2) crc ^= 0xFFFF;
-		*(dst++) = (crc & 0xFF);
-		*(dst++) = (crc >> 8);
+    unsigned crc = wd1793_crc(dst - 5, 5);
+    if (sechdr->c1 == 1) crc = sechdr->crc;
+    if (sechdr->c1 == 2) crc ^= 0xFFFF;
+    *(dst++) = (crc & 0xFF);
+    *(dst++) = (crc >> 8);
 
-		if (sechdr->data)
-		{
-			for (i = 0; i < 22; i++) *(dst++) = 0x4E;
-			for (i = 0; i < 12; i++) *(dst++) = 0;
-			for (i = 0; i < 3; i++) write((dst++) - trkd, 0xA1, 1);
-			*(dst++) = 0xFB; // sector
+    if (sechdr->data)
+    {
+      for (i = 0; i < 22; i++) *(dst++) = 0x4E;
+      for (i = 0; i < 12; i++) *(dst++) = 0;
+      for (i = 0; i < 3; i++) write((dst++) - trkd, 0xA1, 1);
+      *(dst++) = 0xFB; // sector
 
-			if (sechdr->l > 5)
-			{
-				printf("strange sector\n");
-				return;
-			}
+      if (sechdr->l > 5)
+      {
+        printf("strange sector\n");
+        return;
+      }
 
-			unsigned len = (128 << sechdr->l);
+      unsigned len = (128 << sechdr->l);
 
-			if (sechdr->data && sechdr->data!=(uint8_t *)1) memcpy(dst, sechdr->data, len);
-			else memset(dst, 0, len);
+      if (sechdr->data && sechdr->data != (uint8_t *)1) memcpy(dst, sechdr->data, len);
+      else memset(dst, 0, len);
 
-			crc = wd1793_crc(dst-1, len+1);
-			if (sechdr->c2 == 1) crc = sechdr->crcd;
-			if (sechdr->c2 == 2) crc ^= 0xFFFF;
-			dst[len] = (crc & 0xFF);
-			dst[len+1] = (crc >> 8);
-			dst += len+2;
-		}
-	}
+      crc = wd1793_crc(dst - 1, len + 1);
+      if (sechdr->c2 == 1) crc = sechdr->crcd;
+      if (sechdr->c2 == 2) crc ^= 0xFFFF;
+      dst[len] = (crc & 0xFF);
+      dst[len + 1] = (crc >> 8);
+      dst += len + 2;
+    }
+  }
 
-	if (dst > trklen+trkd)
-	{
-		printf("track too long\n");
-		return;
-	}
+  if (dst > trklen + trkd)
+  {
+    printf("track too long\n");
+    return;
+  }
 
-	while (dst < trkd+trklen) *(dst++) = 0x4E;
+  while (dst < trkd + trklen) *(dst++) = 0x4E;
 }
 
 /*
@@ -191,29 +191,29 @@ void C_TrkCache::dump()
 
 int C_TrkCache::write_sector(unsigned sec, uint8_t *data)
 {
-	s_SecHdr *h = get_sector(sec);
-	if (!h || !h->data) return 0;
+  s_SecHdr *h = get_sector(sec);
+  if (!h || !h->data) return 0;
 
-	unsigned sz = h->datlen;
-	memcpy(h->data, data, sz);
+  unsigned sz = h->datlen;
+  memcpy(h->data, data, sz);
 
-	uint16_t crc = wd1793_crc(h->data-1, sz+1);
-	h->data[sz] = (crc & 0xFF);
-	h->data[sz+1] = (crc >> 8);
+  uint16_t crc = wd1793_crc(h->data - 1, sz + 1);
+  h->data[sz] = (crc & 0xFF);
+  h->data[sz + 1] = (crc >> 8);
 
-	return sz;
+  return sz;
 }
 
-s_SecHdr * C_TrkCache::get_sector(unsigned sec)
+s_SecHdr *C_TrkCache::get_sector(unsigned sec)
 {
-	unsigned i;
+  unsigned i;
 
-	for (i = 0; i < s; i++) {
-		if (hdr[i].n == sec) break;
-	}
+  for (i = 0; i < s; i++) {
+    if (hdr[i].n == sec) break;
+  }
 
-	if (i == s) return NULL;
-	if (hdr[i].l!=1 || hdr[i].c!=cyl) return NULL;
+  if (i == s) return NULL;
+  if (hdr[i].l != 1 || hdr[i].c != cyl) return NULL;
 
-	return &hdr[i];
+  return &hdr[i];
 }

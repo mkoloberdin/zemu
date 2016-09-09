@@ -8,9 +8,9 @@
 #include "sound/mixer.h"
 
 #ifndef Z80EX_ZAME_WRAPPER
-	#define Z80EX_CONTEXT_PARAM Z80EX_CONTEXT *cpu,
+  #define Z80EX_CONTEXT_PARAM Z80EX_CONTEXT *cpu,
 #else
-	#define Z80EX_CONTEXT_PARAM
+  #define Z80EX_CONTEXT_PARAM
 #endif
 
 #include "params.h"
@@ -18,34 +18,34 @@
 
 struct s_Action
 {
-	const char *name;
-	void (* action)(void);
+  const char *name;
+  void (*action)(void);
 };
 
 struct s_Params
 {
-	bool useFlipSurface;
-	bool fullscreen;
-	bool scale2x;
-	bool scanlines;
-	bool sound;
-	bool maxSpeed;
-	bool antiFlicker;
-	eSndBackend sndBackend;
-	int sdlBufferSize;
-	int mouseDiv;
-	bool showInactiveIcons;
-	int soundParam;
-	bool cpuTraceEnabled;
-	char cpuTraceFormat[MAX_TRACE_FORMAT];
-	char cpuTraceFileName[MAX_PATH];
-	int mixerMode;
-	int snapFormat;
+  bool useFlipSurface;
+  bool fullscreen;
+  bool scale2x;
+  bool scanlines;
+  bool sound;
+  bool maxSpeed;
+  bool antiFlicker;
+  eSndBackend sndBackend;
+  int sdlBufferSize;
+  int mouseDiv;
+  bool showInactiveIcons;
+  int soundParam;
+  bool cpuTraceEnabled;
+  char cpuTraceFormat[MAX_TRACE_FORMAT];
+  char cpuTraceFileName[MAX_PATH];
+  int mixerMode;
+  int snapFormat;
 
-	// [boo_boo]
-	bool kempstonEnable;
-	int kempstonOnStickNum;
-	int kempstonAxisTreshold;
+  // [boo_boo]
+  bool kempstonEnable;
+  int kempstonOnStickNum;
+  int kempstonAxisTreshold;
 };
 
 extern AppConfig config;
@@ -67,34 +67,37 @@ extern s_Action cfgActions[];
 
 typedef Z80EX_BYTE(*ptrOnReadByteFunc)(Z80EX_WORD, bool);
 
-void AttachZ80ReadHandler(ptrOnReadByteFunc (* check)(Z80EX_WORD, bool));
-void AttachZ80WriteHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE));
-void AttachZ80InputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE&));
-void AttachZ80OutputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE));
-void AttachFrameStartHandler(void (* func)(void));
-void AttachAfterFrameRenderHandler(void (* func)(void));
-void AttachSDLHandler(int eventType, bool (* func)(SDL_Event&));
-void AttachResetHandler(void (* func)(void));
+void AttachZ80ReadHandler(ptrOnReadByteFunc(*check)(Z80EX_WORD, bool));
+void AttachZ80WriteHandler(bool (*check)(Z80EX_WORD),
+                           bool (*func)(Z80EX_WORD, Z80EX_BYTE));
+void AttachZ80InputHandler(bool (*check)(Z80EX_WORD),
+                           bool (*func)(Z80EX_WORD, Z80EX_BYTE &));
+void AttachZ80OutputHandler(bool (*check)(Z80EX_WORD),
+                            bool (*func)(Z80EX_WORD, Z80EX_BYTE));
+void AttachFrameStartHandler(void (*func)(void));
+void AttachAfterFrameRenderHandler(void (*func)(void));
+void AttachSDLHandler(int eventType, bool (*func)(SDL_Event &));
+void AttachResetHandler(void (*func)(void));
 
-extern ptrOnReadByteFunc * devMapRead;
-extern bool (** devMapWrite)(Z80EX_WORD, Z80EX_BYTE);
-extern bool (** devMapInput)(Z80EX_WORD, Z80EX_BYTE&);
-extern bool (** devMapOutput)(Z80EX_WORD, Z80EX_BYTE);
+extern ptrOnReadByteFunc *devMapRead;
+extern bool (**devMapWrite)(Z80EX_WORD, Z80EX_BYTE);
+extern bool (**devMapInput)(Z80EX_WORD, Z80EX_BYTE &);
+extern bool (**devMapOutput)(Z80EX_WORD, Z80EX_BYTE);
 
 extern ptrOnReadByteFunc devMapRead_base[0x20000];
-extern bool (* devMapWrite_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
-extern bool (* devMapInput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
-extern bool (* devMapOutput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
+extern bool (*devMapWrite_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
+extern bool (*devMapInput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE &);
+extern bool (*devMapOutput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
 extern ptrOnReadByteFunc devMapRead_trdos[0x20000];
-extern bool (* devMapInput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
-extern bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
+extern bool (*devMapInput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE &);
+extern bool (*devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
 //--------------------------------------------------------------------------------------------------------------
 
 extern bool joyOnKeyb;
 extern int attributesHack;
-extern int screensHack;		// 0 = no hack, 8 = swap screens
+extern int screensHack;   // 0 = no hack, 8 = swap screens
 extern bool flashColor;
 extern int colors_base[0x10];
 extern int colors[0x10];
@@ -116,11 +119,11 @@ void DebugStep(void);
 extern SDL_Surface *renderSurf;
 extern int renderPitch;
 extern unsigned long prevRenderClk;
-extern void (* renderPtr)(unsigned long);
+extern void (*renderPtr)(unsigned long);
 
 //--------------------------------------------------------------------------------------------------------------
 
-void TryNLoadFile(const char *fname, int drive=0);
+void TryNLoadFile(const char *fname, int drive = 0);
 void UpdateScreen(void);
 void DisplayTurboMessage(void);
 

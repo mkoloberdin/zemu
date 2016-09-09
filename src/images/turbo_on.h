@@ -1,10 +1,10 @@
 /* GIMP RGBA C-Source image dump (turbo_on.c) */
 
 static const struct {
-  unsigned int 	 width;
-  unsigned int 	 height;
-  unsigned int 	 bytes_per_pixel; /* 3:RGB, 4:RGBA */ 
-  unsigned char	 pixel_data[24 * 24 * 4 + 1];
+  unsigned int  width;
+  unsigned int  height;
+  unsigned int  bytes_per_pixel; /* 3:RGB, 4:RGBA */
+  unsigned char pixel_data[24 * 24 * 4 + 1];
 } img_turboOn = {
   24, 24, 4,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\377"

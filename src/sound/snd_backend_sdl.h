@@ -7,35 +7,35 @@
 #define SDLWAVE_CALLBACK_BUFFER_SIZE 4096
 
 class CSndBackendSDL : public CSndBackend {
-	public:
+public:
 
-	CSndBackendSDL(unsigned int bufferSize);
-	CSndBackendSDL(unsigned int bufferSize, unsigned int preBufferSize);
-	~CSndBackendSDL();
+  CSndBackendSDL(unsigned int bufferSize);
+  CSndBackendSDL(unsigned int bufferSize, unsigned int preBufferSize);
+  ~CSndBackendSDL();
 
-	void Init(void);
-	void Write(uint8_t* data, unsigned len);
+  void Init(void);
+  void Write(uint8_t *data, unsigned len);
 
-	protected:
+protected:
 
-	void Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt);
-	unsigned int CalcDist(void);
+  void Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt);
+  unsigned int CalcDist(void);
 
-	static void AudioCallback(void *userData, Uint8 *stream, int len);
+  static void AudioCallback(void *userData, Uint8 *stream, int len);
 
-	bool alreadyInited;
-	volatile bool firstRun;
+  bool alreadyInited;
+  volatile bool firstRun;
 
-	unsigned int size, mask, preBufferSize, preAgainCnt;
-	volatile unsigned int audioPtr, dataPtr;
-	unsigned int currentPreAgainCnt;
+  unsigned int size, mask, preBufferSize, preAgainCnt;
+  volatile unsigned int audioPtr, dataPtr;
+  unsigned int currentPreAgainCnt;
 
-	uint8_t* ringBuffer;
+  uint8_t *ringBuffer;
 
-	private:
+private:
 
-	CSndBackendSDL(const CSndBackendSDL& f);
-	CSndBackendSDL& operator=(const CSndBackendSDL& f);
+  CSndBackendSDL(const CSndBackendSDL &f);
+  CSndBackendSDL &operator=(const CSndBackendSDL &f);
 };
 
 #endif // ZEMU_SND_BACKEND_SDL_H

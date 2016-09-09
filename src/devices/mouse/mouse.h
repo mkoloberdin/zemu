@@ -6,20 +6,20 @@
 
 class C_Mouse : public C_Device
 {
-	public:
+public:
 
-	static Z80EX_BYTE portFBDF;
-	static Z80EX_BYTE portFFDF;
-	static Z80EX_BYTE portFADF;
-	static Z80EX_BYTE wheelCnt;
+  static Z80EX_BYTE portFBDF;
+  static Z80EX_BYTE portFFDF;
+  static Z80EX_BYTE portFADF;
+  static Z80EX_BYTE wheelCnt;
 
-	void Init(void);
-	void Close(void);
+  void Init(void);
+  void Close(void);
 
-	static void UpdateState(void);
-	static bool InputByteCheckPort(Z80EX_WORD port);
-	static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
-	static bool OnSdlMouseButtonDown(SDL_Event &ev);
+  static void UpdateState(void);
+  static bool InputByteCheckPort(Z80EX_WORD port);
+  static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
+  static bool OnSdlMouseButtonDown(SDL_Event &ev);
 };
 
 #endif

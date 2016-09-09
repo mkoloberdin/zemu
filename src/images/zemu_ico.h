@@ -1,10 +1,10 @@
 /* GIMP RGBA C-Source image dump (zemu_ico.c) */
 
 static const struct {
-  unsigned int 	 width;
-  unsigned int 	 height;
-  unsigned int 	 bytes_per_pixel; /* 3:RGB, 4:RGBA */ 
-  unsigned char	 pixel_data[40 * 40 * 4 + 1];
+  unsigned int  width;
+  unsigned int  height;
+  unsigned int  bytes_per_pixel; /* 3:RGB, 4:RGBA */ 
+  unsigned char pixel_data[40 * 40 * 4 + 1];
 } img_zemuIco = {
   40, 40, 4,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"

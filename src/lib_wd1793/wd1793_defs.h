@@ -9,18 +9,18 @@
 
 struct s_SecHdr
 {
-	uint8_t c, s, n, l;
-	uint16_t crc;
-	uint8_t c1, c2; // flags: correct CRCs in address and data
-	uint8_t *data, *id;
-	unsigned datlen;
-	unsigned crcd;        // used to load specific CRC from FDI-file
+  uint8_t c, s, n, l;
+  uint16_t crc;
+  uint8_t c1, c2;		// flags: correct CRCs in address and data
+  uint8_t *data, *id;
+  unsigned datlen;
+  unsigned crcd;		// used to load specific CRC from FDI-file
 };
 
 enum SEEK_MODE
 {
-	JUST_SEEK = 0,
-	LOAD_SECTORS = 1
+  JUST_SEEK = 0,
+  LOAD_SECTORS = 1
 };
 
 #endif
