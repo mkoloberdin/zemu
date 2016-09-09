@@ -48,7 +48,7 @@ struct s_Params
 	int kempstonAxisTreshold;
 };
 
-extern CConfig config;
+extern AppConfig config;
 extern Z80EX_CONTEXT *cpu;
 extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;

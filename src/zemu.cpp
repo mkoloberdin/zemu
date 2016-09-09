@@ -55,7 +55,7 @@ SDL_Surface *screen, *realScreen, *scrSurf[2];
 int PITCH, REAL_PITCH;
 bool drawFrame;
 int frames;
-CConfig config;
+AppConfig config;
 C_Font font, fixed_font;
 bool disableSound = false;
 bool doCopyOfSurfaces = false;
@@ -1664,8 +1664,8 @@ void FreeAll(void)
 
 	z80ex_destroy(cpu);
 
-	if (CConfig::executableDir) {
-		free(CConfig::executableDir);
+	if (AppConfig::executableDir) {
+		free(AppConfig::executableDir);
 	}
 }
 
@@ -1766,9 +1766,9 @@ int main(int argc, char *argv[])
 	OutputLogo();
 
 	if (argc > 0) {		// just for case
-		CConfig::executableDir = AllocNstrcpy(C_DirWork::ExtractPath(argv[0]));
+		AppConfig::executableDir = AllocNstrcpy(C_DirWork::ExtractPath(argv[0]));
 	} else {
-		CConfig::executableDir = AllocNstrcpy(".");
+		AppConfig::executableDir = AllocNstrcpy(".");
 	}
 
 	config.Initialize("zemu");

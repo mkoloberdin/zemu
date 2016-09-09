@@ -7,10 +7,10 @@
 
 using namespace std;
 
-class CConfig {
+class AppConfig {
 public:
-	CConfig();
-	~CConfig();
+	AppConfig();
+	~AppConfig();
 
 	void Initialize(const char *app_name);
 	int GetInt(const char *section, const char *key, int default_value);
@@ -35,8 +35,8 @@ private:
 
 	void EnsurePaths(const char *app_name);
 
-	CConfig& operator=(const CConfig &dummy) { return *this; }
-	CConfig(const CConfig &dummy) {}
+	AppConfig& operator=(const AppConfig &dummy) { return *this; }
+	AppConfig(const AppConfig &dummy) {}
 };
 
 #endif // ZEMU_CONFIG_H
