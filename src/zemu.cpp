@@ -89,7 +89,7 @@ volatile bool updateScreenThreadActive = true;
 int UpdateScreenThreadFunc(void *param);
 #endif
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 ptrOnReadByteFunc *devMapRead;
 bool (** devMapWrite)(Z80EX_WORD, Z80EX_BYTE);
@@ -105,7 +105,7 @@ ptrOnReadByteFunc devMapRead_trdos[0x20000];
 bool (* devMapInput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE &);
 bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 struct s_ReadItem
 {
@@ -133,7 +133,7 @@ struct s_SdlItem
   bool (* func)(SDL_Event &);
 };
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 s_ReadItem hnd_z80read[MAX_HANDLERS];
 s_WriteItem hnd_z80write[MAX_HANDLERS];
@@ -225,7 +225,7 @@ void AttachResetHandler(void (* func)(void))
   hnd_reset[cnt_reset++] = func;
 }
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 C_Border dev_border;
 C_ExtPort dev_extport;
@@ -298,7 +298,7 @@ int c64_colors_base[0x10] = {
 
 int colors[0x10];
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 int messageTimeout = 0;
 char message[0x100];
@@ -326,7 +326,7 @@ void SetMessage(const char *str)
   messageTimeout = 50;
 }
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 // void TryFreeLongImage(void)
 // {
@@ -394,7 +394,7 @@ void TryFreeAvgImage(void)
   isAvgImageWrited = false;
 }
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 void ResetSequence(void);
 
@@ -525,7 +525,7 @@ void TryNLoadFile(const char *fname, int drive)
   }
 }
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 void Action_Reset(void)
 {
@@ -551,7 +551,8 @@ void Action_MaxSpeed(void)
 
 void Action_QuickLoad(void)
 {
-  bool (* loadSnap)(const char *filename, Z80EX_CONTEXT * cpu, C_MemoryManager & mmgr, C_Border & border);
+  bool (* loadSnap)(const char *filename, Z80EX_CONTEXT * cpu, C_MemoryManager & mmgr,
+                    C_Border & border);
 
   isPaused = false;
 
@@ -564,7 +565,8 @@ void Action_QuickLoad(void)
 
 void Action_QuickSave(void)
 {
-  void (* saveSnap)(const char *filename, Z80EX_CONTEXT * cpu, C_MemoryManager & mmgr, C_Border & border);
+  void (* saveSnap)(const char *filename, Z80EX_CONTEXT * cpu, C_MemoryManager & mmgr,
+                    C_Border & border);
 
   isPaused = false;
 
@@ -767,7 +769,7 @@ s_Action cfgActions[] =
   {"",				NULL}
 };
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 bool runDebuggerFlag = false;
 bool breakpoints[0x10000];
@@ -839,7 +841,7 @@ Z80EX_BYTE ReadIntVec(Z80EX_CONTEXT_PARAM void *userData)
   return 0xFF;
 }
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 void InitDevMapRead(ptrOnReadByteFunc *map)
 {
@@ -935,16 +937,18 @@ void InitDevMaps(void)
   devMapOutput = devMapOutput_base;
 }
 
-//--------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 void InitSurfaces(void)
 {
   SDL_PixelFormat *fmt = screen->format;
 
-  scrSurf[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0);
+  scrSurf[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
+                                    fmt->Gmask, fmt->Bmask, 0);
   if (scrSurf[0] == NULL) StrikeError("Unable to create primary surface: %s\n", SDL_GetError());
 
-  scrSurf[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0);
+  scrSurf[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
+                                    fmt->Gmask, fmt->Bmask, 0);
   if (scrSurf[1] == NULL) StrikeError("Unable to create secondary surface: %s\n", SDL_GetError());
 }
 
@@ -1114,7 +1118,8 @@ inline void CpuCalcTacts(unsigned long cmdClk) {
     actDevClkCounter += (uint64_t)cmdClk;
     actClk += (uint64_t)cmdClk;
 
-    devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier - 1)) / (uint64_t)turboMultiplier;
+    devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier - 1)) /
+                                        (uint64_t)turboMultiplier;
     cpuClk = (actClk + (uint64_t)(turboMultiplier - 1)) / (uint64_t)turboMultiplier;
   }
 
@@ -1156,7 +1161,8 @@ inline void DebugCpuCalcTacts(unsigned long cmdClk)
     actDevClkCounter += (uint64_t)cmdClk;
     actClk += (uint64_t)cmdClk;
 
-    devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier - 1)) / (uint64_t)turboMultiplier;
+    devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier - 1)) /
+                                        (uint64_t)turboMultiplier;
     cpuClk = (actClk + (uint64_t)(turboMultiplier - 1)) / (uint64_t)turboMultiplier;
   }
 
@@ -1289,8 +1295,10 @@ void Render(void)
   cpuClk -= MAX_FRAME_TACTS;
   devClk = cpuClk;
 
-  if ((drawFrame || isAvgImageWrited /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
-  if (params.antiFlicker && (drawFrame || isAvgImageWrited /* isLongImageWrited */)) AntiFlicker(renderSurf, scrSurf[sn]);
+  if ((drawFrame || isAvgImageWrited /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
+    SDL_UnlockSurface(renderSurf);
+  if (params.antiFlicker && (drawFrame || isAvgImageWrited /* isLongImageWrited */))
+    AntiFlicker(renderSurf, scrSurf[sn]);
 
   // if (isLongImageWrited)
   // {
@@ -1869,7 +1877,9 @@ int main(int argc, char *argv[])
 
     // cputrace
     params.cpuTraceEnabled = config.GetBool("cputrace", "enable", false);
-    str = config.GetString("cputrace", "format", "[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] HL=[HL] IX=[IX] IY=[IY] SP=[SP] I=[I] R=[R] AF'=[AF'] BC'=[BC'] DE'=[DE'] HL'=[HL'] IFF1=[IFF1] IFF2=[IFF2] IM=[IM] INTR=[INTR]");
+    str = config.GetString("cputrace", "format", "[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] "
+      "HL=[HL] IX=[IX] IY=[IY] SP=[SP] I=[I] R=[R] AF'=[AF'] BC'=[BC'] DE'=[DE'] HL'=[HL'] "
+      "IFF1=[IFF1] IFF2=[IFF2] IM=[IM] INTR=[INTR]");
     strcpy(params.cpuTraceFormat, str.c_str());
     str = config.GetString("cputrace", "filename", "cputrace.log");
     strcpy(params.cpuTraceFileName, str.c_str());
@@ -1907,7 +1917,8 @@ int main(int argc, char *argv[])
     {
       SDL_PixelFormat *fmt = realScreen->format;
 
-      screen = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0);
+      screen = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
+                                    fmt->Gmask, fmt->Bmask, 0);
       if (screen == NULL) StrikeError("Unable to create screen surface: %s\n", SDL_GetError());
 
       PITCH = screen->pitch / 4;
