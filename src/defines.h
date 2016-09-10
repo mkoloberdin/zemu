@@ -37,14 +37,6 @@
   #define M_PI 3.1415926535897932
 #endif
 
-#ifndef zmin
-  #define zmin(a,b) ((a)<(b)?(a):(b))
-#endif
-
-#ifndef zmax
-  #define zmax(a,b) ((a)>(b)?(a):(b))
-#endif
-
 #ifdef __APPLE__
   #define DRGB(r,g,b) (((b)<<0x18)|((g)<<0x10)|((r)<<8))
   #define GETB(c) ((c)>>0x18)

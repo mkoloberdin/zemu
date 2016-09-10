@@ -36,6 +36,7 @@
 */
 
 #include <stdio.h>
+#include <algorithm>
 #include "file.h"
 #include "exceptions.h"
 #include <memory.h>
@@ -152,7 +153,8 @@ void C_File::Read(const char *filename)
 
 	if (!eof)
 	{
-		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != zmin((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
+		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) !=
+      std::min((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
 			DEBUG_MESSAGE("_read failed");
 		}
 
@@ -234,7 +236,8 @@ uint8_t C_File::GetBYTE(void)
 
 	if (len >= FILECACHE_SIZE)
 	{
-		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != zmin((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
+		if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) !=
+      std::min((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
 			DEBUG_MESSAGE("_read failed");
 		}
 
