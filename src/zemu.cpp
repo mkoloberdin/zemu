@@ -748,25 +748,25 @@ void Action_WriteAvgImage(void)
 
 s_Action cfgActions[] =
 {
-  {"reset",			Action_Reset},
-  {"reset_trdos",		Action_ResetTrDos},
-  {"max_speed",		Action_MaxSpeed},
-  {"quick_load",		Action_QuickLoad},
-  {"quick_save",		Action_QuickSave},
-  {"anti_flicker",	Action_AntiFlicker},
-  {"load_file",		Action_LoadFile},
-  {"fullscreen",		Action_Fullscreen},
-  {"debugger",		Action_Debugger},
-  {"turbo",			Action_Turbo},
-  {"unturbo",			Action_UnTurbo},
-  {"attrib_hack",		Action_AttributesHack},
-  {"screens_hack",	Action_ScreensHack},
-  {"flash_color",		Action_FlashColor},
-  {"pause",			Action_Pause},
-  {"joy_on_keyb",		Action_JoyOnKeyb},
-  // {"write_longimage",	Action_WriteLongImage},
-  {"write_longimage",	Action_WriteAvgImage},
-  {"",				nullptr}
+  {"reset",           Action_Reset},
+  {"reset_trdos",     Action_ResetTrDos},
+  {"max_speed",       Action_MaxSpeed},
+  {"quick_load",      Action_QuickLoad},
+  {"quick_save",      Action_QuickSave},
+  {"anti_flicker",    Action_AntiFlicker},
+  {"load_file",       Action_LoadFile},
+  {"fullscreen",      Action_Fullscreen},
+  {"debugger",        Action_Debugger},
+  {"turbo",           Action_Turbo},
+  {"unturbo",         Action_UnTurbo},
+  {"attrib_hack",     Action_AttributesHack},
+  {"screens_hack",    Action_ScreensHack},
+  {"flash_color",     Action_FlashColor},
+  {"pause",           Action_Pause},
+  {"joy_on_keyb",     Action_JoyOnKeyb},
+  // {"write_longimage", Action_WriteLongImage},
+  {"write_longimage", Action_WriteAvgImage},
+  {"",                nullptr}
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -945,11 +945,13 @@ void InitSurfaces(void)
 
   scrSurf[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
                                     fmt->Gmask, fmt->Bmask, 0);
-  if (scrSurf[0] == nullptr) StrikeError("Unable to create primary surface: %s\n", SDL_GetError());
+  if (scrSurf[0] == nullptr)
+    StrikeError("Unable to create primary surface: %s\n", SDL_GetError());
 
   scrSurf[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
                                     fmt->Gmask, fmt->Bmask, 0);
-  if (scrSurf[1] == nullptr) StrikeError("Unable to create secondary surface: %s\n", SDL_GetError());
+  if (scrSurf[1] == nullptr)
+    StrikeError("Unable to create secondary surface: %s\n", SDL_GetError());
 }
 
 void InitFont(void)
@@ -1262,8 +1264,8 @@ void Render(void)
 
   if (dev_extport.Is16Colors()) renderPtr = Render16c;
   else if (dev_extport.IsMulticolor()) renderPtr = RenderMulticolor;
-//	else if (dev_extport.Is512x192()) renderPtr = Render512x192;
-//	else if (dev_extport.Is384x304()) renderPtr = Render384x304;
+//  else if (dev_extport.Is512x192()) renderPtr = Render512x192;
+//  else if (dev_extport.Is384x304()) renderPtr = Render384x304;
   else renderPtr = RenderSpeccy;
 
   InitActClk();
@@ -1302,24 +1304,24 @@ void Render(void)
 
   // if (isLongImageWrited)
   // {
-  //	int * src = (int *)screen->pixels + (PITCH * (32 + longImagePos)) + 32;
+  //  int * src = (int *)screen->pixels + (PITCH * (32 + longImagePos)) + 32;
   //
-  //	for (int i = 256; i--;)
-  //	{
-  //		unsigned int c = *src;
-  //		int r = GETR(c);
-  //		int g = GETG(c);
-  //		int b = GETB(c);
+  //  for (int i = 256; i--;)
+  //  {
+  //    unsigned int c = *src;
+  //    int r = GETR(c);
+  //    int g = GETG(c);
+  //    int b = GETB(c);
   //
-  //		longImageFile.PutBYTE(r);
-  //		longImageFile.PutBYTE(g);
-  //		longImageFile.PutBYTE(b);
+  //    longImageFile.PutBYTE(r);
+  //    longImageFile.PutBYTE(g);
+  //    longImageFile.PutBYTE(b);
   //
-  //		*(src++) = DRGB(255 - r, 255 - g, 255 - b);
-  //	}
+  //    *(src++) = DRGB(255 - r, 255 - g, 255 - b);
+  //  }
   //
-  //	longImageHeight++;
-  //	longImagePos = (longImagePos + 1) % 192;
+  //  longImageHeight++;
+  //  longImagePos = (longImagePos + 1) % 192;
   // }
 
   if (isAvgImageWrited)
@@ -1910,7 +1912,8 @@ int main(int argc, char *argv[])
 
     realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
 
-    if (realScreen == nullptr) StrikeError("Unable to set requested video mode: %s\n", SDL_GetError());
+    if (realScreen == nullptr)
+      StrikeError("Unable to set requested video mode: %s\n", SDL_GetError());
     REAL_PITCH = realScreen->pitch / 4;
 
     if (params.scale2x)
@@ -1919,7 +1922,8 @@ int main(int argc, char *argv[])
 
       screen = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
                                     fmt->Gmask, fmt->Bmask, 0);
-      if (screen == nullptr) StrikeError("Unable to create screen surface: %s\n", SDL_GetError());
+      if (screen == nullptr)
+        StrikeError("Unable to create screen surface: %s\n", SDL_GetError());
 
       PITCH = screen->pitch / 4;
     }
