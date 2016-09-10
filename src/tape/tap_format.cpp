@@ -19,7 +19,7 @@ C_TapFormat::C_TapFormat()
   state = TAPE_STATE_STOP;
   tapeBit = 1;
   counter = 0;
-  data = NULL;
+  data = nullptr;
   size = 0;
 
   blockPos = 0;
@@ -31,7 +31,7 @@ C_TapFormat::C_TapFormat()
 
 C_TapFormat::~C_TapFormat()
 {
-  if (data != NULL) delete[] data;
+  if (data != nullptr) delete[] data;
 }
 
 Z80EX_BYTE C_TapFormat::Data(long pos)
@@ -44,7 +44,7 @@ bool C_TapFormat::Load(const char *fname)
   if (!C_File::FileExists(fname)) return false;
   size = C_File::FileSize(fname);
 
-  if (data != NULL) delete[] data;
+  if (data != nullptr) delete[] data;
   data = new Z80EX_BYTE[size];
 
   C_File fl;
@@ -180,7 +180,7 @@ void C_TapFormat::Stop(void)
 
 void C_TapFormat::Start(void)
 {
-  if (data != NULL) state = TAPE_STATE_PLAY;
+  if (data != nullptr) state = TAPE_STATE_PLAY;
 }
 
 void C_TapFormat::Rewind(void)

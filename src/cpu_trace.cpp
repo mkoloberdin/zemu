@@ -63,10 +63,14 @@ void CpuTrace_Log(void)
         else if (!strcmp(str, "IFF1")) CpuTrace_PutByte(z80ex_get_reg(cpu, regIFF1));
         else if (!strcmp(str, "IFF2")) CpuTrace_PutByte(z80ex_get_reg(cpu, regIFF2));
         else if (!strcmp(str, "IM")) CpuTrace_PutByte(z80ex_get_reg(cpu, regIM));
-        else if (!strcmp(str, "M1")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC), NULL));
-        else if (!strcmp(str, "M2")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 1, NULL));
-        else if (!strcmp(str, "M3")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 2, NULL));
-        else if (!strcmp(str, "M4")) CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 3, NULL));
+        else if (!strcmp(str, "M1"))
+          CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC), nullptr));
+        else if (!strcmp(str, "M2"))
+          CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 1, nullptr));
+        else if (!strcmp(str, "M3"))
+          CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 2, nullptr));
+        else if (!strcmp(str, "M4"))
+          CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 3, nullptr));
         else traceFile.PrintF("[%s]", str);
       }
       else traceFile.PrintF("[%s", str);

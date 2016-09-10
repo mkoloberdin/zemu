@@ -15,7 +15,7 @@ SDL_Surface *ExtractImage(uint8_t *data)
   spitch = surf->pitch / 4;
 
   if (SDL_MUSTLOCK(surf)) {
-    if (SDL_LockSurface(surf) < 0) return NULL;
+    if (SDL_LockSurface(surf) < 0) return nullptr;
   }
 
   for (i = 0; i < hgt; i++)
@@ -60,7 +60,7 @@ SDL_Surface *CopySurfaceX(SDL_Surface *src)
 
 C_Font::C_Font()
 {
-  surf = NULL;
+  surf = nullptr;
 }
 
 C_Font::~C_Font()

@@ -11,7 +11,7 @@ Z80EX_BYTE C_GSound::regOutput = 0;
 Z80EX_BYTE C_GSound::volume[4] = { 0, 0, 0, 0 };
 Z80EX_BYTE C_GSound::channel[4] = { 0, 0, 0, 0 };
 Z80EX_BYTE C_GSound::memPage = 0;
-Z80EX_CONTEXT *C_GSound::gsCpu = NULL;
+Z80EX_CONTEXT *C_GSound::gsCpu = nullptr;
 Z80EX_BYTE C_GSound::mem[0x8000 * GS_MEM_PAGES];
 
 unsigned C_GSound::gsClk = 0;
@@ -47,11 +47,11 @@ void C_GSound::Init(void)
     }
 
     gsCpu = z80ex_create(
-              GsReadByte, NULL,
-              GsWriteByte, NULL,
-              GsInputByte, NULL,
-              GsOutputByte, NULL,
-              GsReadIntVec, NULL
+              GsReadByte, nullptr,
+              GsWriteByte, nullptr,
+              GsInputByte, nullptr,
+              GsOutputByte, nullptr,
+              GsReadIntVec, nullptr
             );
 
     Reset();
@@ -63,7 +63,7 @@ void C_GSound::Close(void)
   if (gsCpu)
   {
     z80ex_destroy(gsCpu);
-    gsCpu = NULL;
+    gsCpu = nullptr;
   }
 }
 
@@ -155,10 +155,10 @@ void C_GSound::UpdateMaps()
   readMap[2] = &mem[0x8000 * memPage];
   readMap[3] = &mem[0x8000 * memPage + 0x4000];
 
-  writeMap[0] = NULL;
+  writeMap[0] = nullptr;
   writeMap[1] = &mem[0x8000 + 0x4000];
-  writeMap[2] = (memPage == 0 ? NULL : &mem[0x8000 * memPage]);
-  writeMap[3] = (memPage == 0 ? NULL : &mem[0x8000 * memPage + 0x4000]);
+  writeMap[2] = (memPage == 0 ? nullptr : &mem[0x8000 * memPage]);
+  writeMap[3] = (memPage == 0 ? nullptr : &mem[0x8000 * memPage + 0x4000]);
 }
 
 void C_GSound::Update(unsigned clk)

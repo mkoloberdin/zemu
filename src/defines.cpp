@@ -112,7 +112,7 @@ void AddLog(const char *fmt, ...)
   }
   else fp = fopen("debuglog.txt", "ab");
 
-  if (fp != NULL)
+  if (fp != nullptr)
   {
     fprintf(fp, "%s\n", buf);
     fclose(fp);
@@ -136,7 +136,7 @@ void AddLogN(const char *fmt, ...)
   }
   else fp = fopen("debuglog.txt", "ab");
 
-  if (fp != NULL)
+  if (fp != nullptr)
   {
     fprintf(fp, "%s", buf);
     fclose(fp);

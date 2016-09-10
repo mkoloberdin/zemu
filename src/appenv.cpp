@@ -32,7 +32,7 @@
   #include <shlwapi.h>
 #endif
 
-char *AppEnv::executableDir = NULL;
+char *AppEnv::executableDir = nullptr;
 
 AppEnv::AppEnv() {
   changed = false;
@@ -134,7 +134,7 @@ void AppEnv::EnsurePaths(const char *app_name) {
 }
 
 int AppEnv::GetInt(const char *section, const char *key, int default_value) {
-  const char *cval = ini.GetValue(section, key, NULL);
+  const char *cval = ini.GetValue(section, key, nullptr);
   if (cval) {
     return atoi(cval);
   } else {
@@ -151,7 +151,7 @@ void AppEnv::SetInt(const char *section, const char *key, int value) {
 }
 
 string AppEnv::GetString(const char *section, const char *key, const string &default_value) {
-  const char *cval = ini.GetValue(section, key, NULL);
+  const char *cval = ini.GetValue(section, key, nullptr);
   if (cval) {
     return string(cval);
   } else {
@@ -166,7 +166,7 @@ void AppEnv::SetString(const char *section, const char *key, const string &value
 }
 
 bool AppEnv::GetBool(const char *section, const char *key, bool default_value) {
-  const char *cval = ini.GetValue(section, key, NULL);
+  const char *cval = ini.GetValue(section, key, nullptr);
   if (cval) {
     if (!strcasecmp(cval, "true") || !strcasecmp(cval, "yes")) {
       return true;

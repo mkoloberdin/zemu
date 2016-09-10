@@ -82,7 +82,7 @@ long *avgImageBuffer;
 // int avgImageFrames;
 
 #if defined(__APPLE__)
-SDL_Thread *upadteScreenThread = NULL;
+SDL_Thread *upadteScreenThread = nullptr;
 SDL_sem *updateScreenThreadSem;
 volatile bool updateScreenThreadActive = true;
 
@@ -250,7 +250,7 @@ C_Device *devs[] =
   &dev_covox,
   &dev_kempston, // [boo_boo]
   &dev_gsound,
-  NULL
+  nullptr
 };
 
 int colors_base[0x10] = {
@@ -389,7 +389,7 @@ void TryFreeAvgImage(void)
   avgImageFile.Close();
 
   delete[] avgImageBuffer;
-  avgImageBuffer = NULL;
+  avgImageBuffer = nullptr;
 
   isAvgImageWrited = false;
 }
@@ -409,7 +409,7 @@ void StrToLower(char *str)
 #define MAX_FILES 4096
 #define MAX_FNAME 256
 
-void LoadNormalFile(const char *fname, int drive, const char *arcName = NULL)
+void LoadNormalFile(const char *fname, int drive, const char *arcName = nullptr)
 {
   if (C_Tape::IsTapeFormat(fname))
   {
@@ -766,7 +766,7 @@ s_Action cfgActions[] =
   {"joy_on_keyb",		Action_JoyOnKeyb},
   // {"write_longimage",	Action_WriteLongImage},
   {"write_longimage",	Action_WriteAvgImage},
-  {"",				NULL}
+  {"",				nullptr}
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -789,7 +789,7 @@ void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value)
   {
     bool (* func)(Z80EX_WORD, Z80EX_BYTE) = devMapWrite[addr];
 
-    if (func == NULL) return;
+    if (func == nullptr) return;
     if (func(addr, value)) return;
   }
 }
@@ -807,7 +807,7 @@ void WriteByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, Z80EX_BYTE value, void *user
   {
     bool (* func)(Z80EX_WORD, Z80EX_BYTE) = devMapWrite[addr];
 
-    if (func == NULL) return;
+    if (func == nullptr) return;
     if (func(addr, value)) return;
   }
 }
@@ -820,7 +820,7 @@ Z80EX_BYTE InputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, void *userData)
   {
     bool (* func)(Z80EX_WORD, Z80EX_BYTE &) = devMapInput[port];
 
-    if (func == NULL) return 0xFF;
+    if (func == nullptr) return 0xFF;
     if (func(port, retval)) return retval;
   }
 }
@@ -831,7 +831,7 @@ void OutputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, Z80EX_BYTE value, void *use
   {
     bool (* func)(Z80EX_WORD, Z80EX_BYTE) = devMapOutput[port];
 
-    if (func == NULL) return;
+    if (func == nullptr) return;
     if (func(port, value)) return;
   }
 }
@@ -851,11 +851,11 @@ void InitDevMapRead(ptrOnReadByteFunc *map)
   {
     for (unsigned addr = 0; addr < 0x10000; addr++)
     {
-      map[addr + (m1_state ? 0x10000 : 0)] = NULL;
+      map[addr + (m1_state ? 0x10000 : 0)] = nullptr;
 
       for (int i = 0; i < cnt_z80read; i++)
       {
-        if ((func = hnd_z80read[i].check(addr, m1_state)) != NULL)
+        if ((func = hnd_z80read[i].check(addr, m1_state)) != nullptr)
         {
           map[addr + (m1_state ? 0x10000 : 0)] = func;
           break;
@@ -869,7 +869,7 @@ void InitDevMapWrite(bool (** map)(Z80EX_WORD, Z80EX_BYTE))
 {
   for (unsigned addr = 0; addr < 0x10000; addr++)
   {
-    map[addr] = NULL;
+    map[addr] = nullptr;
 
     for (int i = 0; i < cnt_z80write; i++)
     {
@@ -886,7 +886,7 @@ void InitDevMapInput(bool (** map)(Z80EX_WORD, Z80EX_BYTE &))
 {
   for (unsigned port = 0; port < 0x10000; port++)
   {
-    map[port] = NULL;
+    map[port] = nullptr;
 
     for (int i = 0; i < cnt_z80input; i++)
     {
@@ -903,7 +903,7 @@ void InitDevMapOutput(bool (** map)(Z80EX_WORD, Z80EX_BYTE))
 {
   for (unsigned port = 0; port < 0x10000; port++)
   {
-    map[port] = NULL;
+    map[port] = nullptr;
 
     for (int i = 0; i < cnt_z80output; i++)
     {
@@ -945,11 +945,11 @@ void InitSurfaces(void)
 
   scrSurf[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
                                     fmt->Gmask, fmt->Bmask, 0);
-  if (scrSurf[0] == NULL) StrikeError("Unable to create primary surface: %s\n", SDL_GetError());
+  if (scrSurf[0] == nullptr) StrikeError("Unable to create primary surface: %s\n", SDL_GetError());
 
   scrSurf[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
                                     fmt->Gmask, fmt->Bmask, 0);
-  if (scrSurf[1] == NULL) StrikeError("Unable to create secondary surface: %s\n", SDL_GetError());
+  if (scrSurf[1] == nullptr) StrikeError("Unable to create secondary surface: %s\n", SDL_GetError());
 }
 
 void InitFont(void)
@@ -979,16 +979,16 @@ void InitAll(void)
   for (i = 0; i < 0x10000; i++) breakpoints[i] = false;
 
   cpu = z80ex_create(
-          ReadByte, NULL,
-          WriteByte, NULL,
-          InputByte, NULL,
-          OutputByte, NULL,
-          ReadIntVec, NULL
+          ReadByte, nullptr,
+          WriteByte, nullptr,
+          InputByte, nullptr,
+          OutputByte, nullptr,
+          ReadIntVec, nullptr
         );
 
 #if defined(__APPLE__)
   updateScreenThreadSem = SDL_CreateSemaphore(0);
-  upadteScreenThread = SDL_CreateThread(UpdateScreenThreadFunc, NULL);
+  upadteScreenThread = SDL_CreateThread(UpdateScreenThreadFunc, nullptr);
 #endif
 }
 
@@ -1237,7 +1237,7 @@ void DebugStep(void)
 SDL_Surface *renderSurf;
 int renderPitch;
 unsigned long prevRenderClk;
-void (* renderPtr)(unsigned long) = NULL;
+void (* renderPtr)(unsigned long) = nullptr;
 
 void Render(void)
 {
@@ -1290,7 +1290,7 @@ void Render(void)
     }
   }
 
-  renderPtr = NULL;
+  renderPtr = nullptr;
   lastDevClk = devClk;
   cpuClk -= MAX_FRAME_TACTS;
   devClk = cpuClk;
@@ -1376,7 +1376,7 @@ void DrawIndicators(void)
 
   for (unsigned i = 0; i < watchesCount; i++)
   {
-    Z80EX_BYTE val = ReadByteDasm(watches[i], NULL);
+    Z80EX_BYTE val = ReadByteDasm(watches[i], nullptr);
     sprintf(buf, "%04X:%02X", watches[i], val);
 
     int wdt = fixed_font.StrLenPx(buf);
@@ -1662,7 +1662,7 @@ void FreeAll(void)
   if (upadteScreenThread) {
     updateScreenThreadActive = false;
     SDL_SemPost(updateScreenThreadSem);
-    SDL_WaitThread(upadteScreenThread, NULL);
+    SDL_WaitThread(upadteScreenThread, nullptr);
   }
 #endif
 
@@ -1762,10 +1762,10 @@ HWND hwnd;
 
 void windows_init()
 {
-  HINSTANCE handle = ::GetModuleHandle(NULL);
+  HINSTANCE handle = ::GetModuleHandle(nullptr);
   windows_icon = ::LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
 
-  if (windows_icon == NULL) {
+  if (windows_icon == nullptr) {
     StrikeError("Error: %d\n", GetLastError());
   }
 
@@ -1910,7 +1910,7 @@ int main(int argc, char *argv[])
 
     realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
 
-    if (realScreen == NULL) StrikeError("Unable to set requested video mode: %s\n", SDL_GetError());
+    if (realScreen == nullptr) StrikeError("Unable to set requested video mode: %s\n", SDL_GetError());
     REAL_PITCH = realScreen->pitch / 4;
 
     if (params.scale2x)
@@ -1919,7 +1919,7 @@ int main(int argc, char *argv[])
 
       screen = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
                                     fmt->Gmask, fmt->Bmask, 0);
-      if (screen == NULL) StrikeError("Unable to create screen surface: %s\n", SDL_GetError());
+      if (screen == nullptr) StrikeError("Unable to create screen surface: %s\n", SDL_GetError());
 
       PITCH = screen->pitch / 4;
     }

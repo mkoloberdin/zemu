@@ -12,7 +12,7 @@ C_Wd1793::C_Wd1793()
   for (int i = 0; i < 4; i++)
   {
     fdd[i].set_trkcache(&trkcache);
-    fdd[i].set_appendboot(NULL);
+    fdd[i].set_appendboot(nullptr);
   }
 
   seldrive = &fdd[0];

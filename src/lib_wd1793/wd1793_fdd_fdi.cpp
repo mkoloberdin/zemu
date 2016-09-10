@@ -32,7 +32,7 @@ int C_Fdd::read_fdi()
 
         if (trk[4] & 0x40)
         {
-          t.hdr[sec].data = NULL;
+          t.hdr[sec].data = nullptr;
         }
         else
         {
@@ -43,7 +43,7 @@ int C_Fdd::read_fdi()
 
         if (t.hdr[sec].l > 5)
         {
-          t.hdr[sec].data = NULL;
+          t.hdr[sec].data = nullptr;
           if (!(trk[4] & 0x40)) res = 0;
         }
 

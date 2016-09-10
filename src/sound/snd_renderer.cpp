@@ -85,7 +85,7 @@ void C_SndRenderer::SetTimings(unsigned clockRate, unsigned sampleRate)
   this->clockRate = clockRate;
 
   tick = 0;
-  startPos = NULL;
+  startPos = nullptr;
   currPos = 0;
   passedSndTicks = 0;
   passedClkTicks = 0;

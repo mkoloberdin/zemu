@@ -24,7 +24,7 @@ void C_Keyboard::ReadKbdConfig(void)
 
   hk.normal.count = 0;
   hk.mods.count = 0;
-  hk.action = NULL;
+  hk.action = nullptr;
 
   for (i = 0; i < SDLK_LAST; i++)
   {
@@ -107,7 +107,7 @@ void C_Keyboard::ReadKbdConfig(void)
     }
 
     canAct = true;
-    act = NULL;
+    act = nullptr;
     zxk.count = 0;
     s++;
 
@@ -133,7 +133,7 @@ void C_Keyboard::ReadKbdConfig(void)
             }
           }
 
-          if (act == NULL) StrikeError("Action %s not defined (line %d of %s)", p, ln, fname);
+          if (act == nullptr) StrikeError("Action %s not defined (line %d of %s)", p, ln, fname);
           break;
         }
         else StrikeError("Mixing ZX keys and actions are not allowed (line %d of %s)", ln, fname);

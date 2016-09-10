@@ -81,7 +81,7 @@ public:
   int load_dimage (const char *filename);	/*load disk image */
   int save_dimage (char *filename, enum DIMAGE_TYPE type);
   char is_changed ();		/*whether disk in drive has been changed */
-  void set_appendboot (const char *boot_name);	/*name for file with boot, or NULL */
+  void set_appendboot (const char *boot_name);	/*name for file with boot, or nullptr */
   char *get_appendboot (void);
   void set_trd_interleave (int iv);
   int is_disk_loaded ();

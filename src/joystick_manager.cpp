@@ -62,7 +62,7 @@ bool C_JoystickManager::AddJoystick(int joy_num, int axis_treshold)
 {
   SDL_Joystick *joy;
 
-  if (joy_num >= num_joysticks || NULL == (joy = SDL_JoystickOpen(joy_num))) return false;
+  if (joy_num >= num_joysticks || nullptr == (joy = SDL_JoystickOpen(joy_num))) return false;
 
   jstate[joy_num].init_ok = true;
   jstate[joy_num].axis_treshold = axis_treshold;

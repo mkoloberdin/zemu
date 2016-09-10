@@ -87,7 +87,7 @@ void C_TrkCache::seek(C_Fdd *d, unsigned cyl, unsigned side, SEEK_MODE fs)
     h->l = h->id[3];
     h->crc = WORD2(trkd[i + 6], trkd[i + 7]);
     h->c1 = (wd1793_crc(trkd + i + 1, 5) == h->crc);
-    h->data = NULL;
+    h->data = nullptr;
     h->datlen = 0;
 
     if (h->l > 5) continue;
@@ -212,8 +212,8 @@ s_SecHdr *C_TrkCache::get_sector(unsigned sec)
     if (hdr[i].n == sec) break;
   }
 
-  if (i == s) return NULL;
-  if (hdr[i].l != 1 || hdr[i].c != cyl) return NULL;
+  if (i == s) return nullptr;
+  if (hdr[i].l != 1 || hdr[i].c != cyl) return nullptr;
 
   return &hdr[i];
 }
