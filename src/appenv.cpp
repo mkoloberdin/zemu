@@ -5,7 +5,7 @@
 #include "platform.h"
 #include "dirwork.h"
 #include "file.h"
-#include "config.h"
+#include "appenv.h"
 
 #ifdef _WIN32
   #include <io.h> // for _access()
@@ -32,19 +32,19 @@
   #include <shlwapi.h>
 #endif
 
-char *AppConfig::executableDir = NULL;
+char *AppEnv::executableDir = NULL;
 
-AppConfig::AppConfig() {
+AppEnv::AppEnv() {
   changed = false;
 }
 
-AppConfig::~AppConfig() {
+AppEnv::~AppEnv() {
   if (changed && !user_path.empty() && !ini_name.empty()) {
     ini.SaveFile(C_DirWork::Append(user_path, ini_name).c_str());
   }
 }
 
-void AppConfig::Initialize(const char *app_name) {
+void AppEnv::Initialize(const char *app_name) {
   changed = false;
   ini_name = string(app_name) + ".ini";
 
@@ -97,7 +97,7 @@ void AppConfig::Initialize(const char *app_name) {
 #endif
 }
 
-void AppConfig::EnsurePaths(const char *app_name) {
+void AppEnv::EnsurePaths(const char *app_name) {
   if (!home_path.empty()) {
     return;
   }
@@ -133,7 +133,7 @@ void AppConfig::EnsurePaths(const char *app_name) {
   }
 }
 
-int AppConfig::GetInt(const char *section, const char *key, int default_value) {
+int AppEnv::GetInt(const char *section, const char *key, int default_value) {
   const char *cval = ini.GetValue(section, key, NULL);
   if (cval) {
     return atoi(cval);
@@ -143,14 +143,14 @@ int AppConfig::GetInt(const char *section, const char *key, int default_value) {
   }
 }
 
-void AppConfig::SetInt(const char *section, const char *key, int value) {
+void AppEnv::SetInt(const char *section, const char *key, int value) {
   char buffer[0x100];
   sprintf(buffer, "%d", value);
   ini.SetValue(section, key, buffer);
   changed = true;
 }
 
-string AppConfig::GetString(const char *section, const char *key, const string &default_value) {
+string AppEnv::GetString(const char *section, const char *key, const string &default_value) {
   const char *cval = ini.GetValue(section, key, NULL);
   if (cval) {
     return string(cval);
@@ -160,12 +160,12 @@ string AppConfig::GetString(const char *section, const char *key, const string &
   }
 }
 
-void AppConfig::SetString(const char *section, const char *key, const string &value) {
+void AppEnv::SetString(const char *section, const char *key, const string &value) {
   ini.SetValue(section, key, value.c_str());
   changed = true;
 }
 
-bool AppConfig::GetBool(const char *section, const char *key, bool default_value) {
+bool AppEnv::GetBool(const char *section, const char *key, bool default_value) {
   const char *cval = ini.GetValue(section, key, NULL);
   if (cval) {
     if (!strcasecmp(cval, "true") || !strcasecmp(cval, "yes")) {
@@ -179,13 +179,13 @@ bool AppConfig::GetBool(const char *section, const char *key, bool default_value
   }
 }
 
-void AppConfig::SetBool(const char *section, const char *key, bool value) {
+void AppEnv::SetBool(const char *section, const char *key, bool value) {
   ini.SetValue(section, key, value ? "yes" : "no");
   changed = true;
 }
 
-size_t AppConfig::LoadDataFile(const char *prefix, const char *filename, uint8_t *buffer, size_t size, size_t offset) {
-  string path = AppConfig::FindDataFile(prefix, filename);
+size_t AppEnv::LoadDataFile(const char *prefix, const char *filename, uint8_t *buffer, size_t size, size_t offset) {
+  string path = AppEnv::FindDataFile(prefix, filename);
 
   if (path.empty()) {
     return 0;
@@ -225,7 +225,7 @@ bool CConfig::SaveDataFile(const char *prefix, const char *filename, const uint8
 }
 */
 
-string AppConfig::FindDataFile(const char *prefix, const char *filename) {
+string AppEnv::FindDataFile(const char *prefix, const char *filename) {
   string path;
   string append_path = C_DirWork::Append(prefix, filename);
 

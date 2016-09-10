@@ -7,10 +7,10 @@
 
 using namespace std;
 
-class AppConfig {
+class AppEnv {
 public:
-  AppConfig();
-  ~AppConfig();
+  AppEnv();
+  ~AppEnv();
 
   void Initialize(const char *app_name);
   int GetInt(const char *section, const char *key, int default_value);
@@ -37,8 +37,8 @@ private:
 
   void EnsurePaths(const char *app_name);
 
-  AppConfig &operator= (const AppConfig &dummy) { return *this; }
-  AppConfig(const AppConfig &dummy) {}
+  AppEnv &operator= (const AppEnv &dummy) { return *this; }
+  AppEnv(const AppEnv &dummy) {}
 };
 
 #endif // ZEMU_CONFIG_H

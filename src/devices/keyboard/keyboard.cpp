@@ -31,8 +31,8 @@ void C_Keyboard::ReadKbdConfig(void)
     hostKeyPressed[i] = false;
   }
 
-  string value = config.GetString("input", "keymap", "keys.config");
-  string keysConfigPath = config.FindDataFile("", value.c_str());
+  string value = env.GetString("input", "keymap", "keys.config");
+  string keysConfigPath = env.FindDataFile("", value.c_str());
 
   if (keysConfigPath.empty()) {
     throw C_E(E_FileNotFound, value.c_str());

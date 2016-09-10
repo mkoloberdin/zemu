@@ -24,7 +24,7 @@ Z80EX_BYTE *C_GSound::writeMap[4];
 
 void C_GSound::Init(void)
 {
-  enabled = config.GetBool("sound", "enablegs", false);
+  enabled = env.GetBool("sound", "enablegs", false);
 
   if (enabled)
   {
@@ -39,10 +39,10 @@ void C_GSound::Init(void)
     string filename;
     size_t offset;
 
-    filename = config.GetString("sound", "gsrom", "gs105a.rom");
+    filename = env.GetString("sound", "gsrom", "gs105a.rom");
     filename = split_romname(filename, &offset);
 
-    if (config.LoadDataFile("roms", filename.c_str(), mem, 0x8000, offset) != 0x8000) {
+    if (env.LoadDataFile("roms", filename.c_str(), mem, 0x8000, offset) != 0x8000) {
       throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 

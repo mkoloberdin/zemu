@@ -487,7 +487,7 @@ void FileDialogInit(void)
 {
   string str;
 
-  str = config.GetString("beta128", "diskA", "/");
+  str = env.GetString("beta128", "diskA", "/");
   if (!str.empty()) strcpy(oldFileName[0], str.c_str());
   else strcpy(oldFileName[0], "/");
 }

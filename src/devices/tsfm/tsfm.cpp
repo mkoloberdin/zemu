@@ -30,7 +30,7 @@ void C_TsFm::Init(void)
   AttachAfterFrameRenderHandler(OnAfterFrameRender);
   AttachResetHandler(OnReset);
 
-  string s = config.GetString("sound", "tsfmmode", "zxm");
+  string s = env.GetString("sound", "tsfmmode", "zxm");
   str = s.c_str();
 
   if (!strcasecmp(str, "ay")) mode = TSFM_MODE_AY;

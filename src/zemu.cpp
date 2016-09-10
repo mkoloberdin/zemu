@@ -55,7 +55,7 @@ SDL_Surface *screen, *realScreen, *scrSurf[2];
 int PITCH, REAL_PITCH;
 bool drawFrame;
 int frames;
-AppConfig config;
+AppEnv env;
 C_Font font, fixed_font;
 bool disableSound = false;
 bool doCopyOfSurfaces = false;
@@ -455,7 +455,7 @@ bool TryLoadArcFile(const char *arcName, int drive)
 
   StrToLower(tmp);
 
-  plugin_fn = config.FindDataFile("arc", tmp);
+  plugin_fn = env.FindDataFile("arc", tmp);
 
   if (plugin_fn.empty()) {
     return false;
@@ -1692,8 +1692,8 @@ void FreeAll(void)
 
   z80ex_destroy(cpu);
 
-  if (AppConfig::executableDir) {
-    free(AppConfig::executableDir);
+  if (AppEnv::executableDir) {
+    free(AppEnv::executableDir);
   }
 }
 
@@ -1793,60 +1793,60 @@ int main(int argc, char *argv[])
   OutputLogo();
 
   if (argc > 0) {		// just for case
-    AppConfig::executableDir = AllocNstrcpy(C_DirWork::ExtractPath(argv[0]));
+    AppEnv::executableDir = AllocNstrcpy(C_DirWork::ExtractPath(argv[0]));
   } else {
-    AppConfig::executableDir = AllocNstrcpy(".");
+    AppEnv::executableDir = AllocNstrcpy(".");
   }
 
-  config.Initialize("zemu");
+  env.Initialize("zemu");
 
   try
   {
     string str;
 
     // core
-    str = config.GetString("core", "snapformat", "sna");
+    str = env.GetString("core", "snapformat", "sna");
     transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
 
     if (str == "sna") params.snapFormat = SNAP_FORMAT_SNA;
     else params.snapFormat = SNAP_FORMAT_Z80;
 
     // beta128
-    str = config.GetString("beta128", "diskA", "");
+    str = env.GetString("beta128", "diskA", "");
     if (!str.empty()) wd1793_load_dimage(str.c_str(), 0);
 
-    str = config.GetString("beta128", "diskB", "");
+    str = env.GetString("beta128", "diskB", "");
     if (!str.empty()) wd1793_load_dimage(str.c_str(), 1);
 
-    str = config.GetString("beta128", "diskC", "");
+    str = env.GetString("beta128", "diskC", "");
     if (!str.empty()) wd1793_load_dimage(str.c_str(), 2);
 
-    str = config.GetString("beta128", "diskD", "");
+    str = env.GetString("beta128", "diskD", "");
     if (!str.empty()) wd1793_load_dimage(str.c_str(), 3);
 
-    wd1793_set_nodelay(config.GetBool("beta128", "nodelay", false));
+    wd1793_set_nodelay(env.GetBool("beta128", "nodelay", false));
 
-    str = config.GetString("beta128", "sclboot", "boot.$b");
+    str = env.GetString("beta128", "sclboot", "boot.$b");
 
-    str = config.FindDataFile("boot", str.c_str());
+    str = env.FindDataFile("boot", str.c_str());
     if (!str.empty()) wd1793_set_appendboot(str.c_str());
 
     // display
-    params.fullscreen = config.GetBool("display", "fullscreen", false);
-    params.scale2x = config.GetBool("display", "scale2x", true);
-    params.scanlines = config.GetBool("display", "scanlines", false);
-    params.useFlipSurface = config.GetBool("display", "sdl_useflipsurface", false);
-    params.antiFlicker = config.GetBool("display", "antiflicker", false);
-    params.showInactiveIcons = config.GetBool("display", "showinactiveicons", false);
+    params.fullscreen = env.GetBool("display", "fullscreen", false);
+    params.scale2x = env.GetBool("display", "scale2x", true);
+    params.scanlines = env.GetBool("display", "scanlines", false);
+    params.useFlipSurface = env.GetBool("display", "sdl_useflipsurface", false);
+    params.antiFlicker = env.GetBool("display", "antiflicker", false);
+    params.showInactiveIcons = env.GetBool("display", "showinactiveicons", false);
 
     // input
-    params.mouseDiv = config.GetInt("input", "mousediv", 1);
+    params.mouseDiv = env.GetInt("input", "mousediv", 1);
     if (params.mouseDiv <= 0) params.mouseDiv = 1;
     else if (params.mouseDiv > 8) params.mouseDiv = 8;
 
     // sound
-    params.sound = config.GetBool("sound", "enable", true);
-    params.mixerMode = config.GetInt("sound", "mixermode", 1);
+    params.sound = env.GetBool("sound", "enable", true);
+    params.mixerMode = env.GetInt("sound", "mixermode", 1);
 
 #ifdef _WIN32
     eSndBackend default_snd_backend = SND_BACKEND_WIN32;
@@ -1854,7 +1854,7 @@ int main(int argc, char *argv[])
     eSndBackend default_snd_backend = SND_BACKEND_SDL;
 #endif
 
-    str = config.GetString("sound", "sound_backend", "auto");
+    str = env.GetString("sound", "sound_backend", "auto");
     transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
 
     if (str == "sdl") params.sndBackend = SND_BACKEND_SDL;
@@ -1865,10 +1865,10 @@ int main(int argc, char *argv[])
 #endif
     else params.sndBackend = default_snd_backend;
 
-    params.sdlBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
+    params.sdlBufferSize = env.GetInt("sound", "sdlbuffersize", 4);
 
 #ifdef __linux__
-    params.soundParam = config.GetInt("sound", "ossfragnum", 8);
+    params.soundParam = env.GetInt("sound", "ossfragnum", 8);
 #endif
 
 #ifdef _WIN32
@@ -1876,12 +1876,12 @@ int main(int argc, char *argv[])
 #endif
 
     // cputrace
-    params.cpuTraceEnabled = config.GetBool("cputrace", "enable", false);
-    str = config.GetString("cputrace", "format", "[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] "
+    params.cpuTraceEnabled = env.GetBool("cputrace", "enable", false);
+    str = env.GetString("cputrace", "format", "[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] "
       "HL=[HL] IX=[IX] IY=[IY] SP=[SP] I=[I] R=[R] AF'=[AF'] BC'=[BC'] DE'=[DE'] HL'=[HL'] "
       "IFF1=[IFF1] IFF2=[IFF2] IM=[IM] INTR=[INTR]");
     strcpy(params.cpuTraceFormat, str.c_str());
-    str = config.GetString("cputrace", "filename", "cputrace.log");
+    str = env.GetString("cputrace", "filename", "cputrace.log");
     strcpy(params.cpuTraceFileName, str.c_str());
 
     int spec = SDL_INIT_VIDEO;
@@ -1951,7 +1951,7 @@ int main(int argc, char *argv[])
     InitAll();
     ResetSequence();
 
-    if (config.GetBool("core", "trdos_at_start", false))
+    if (env.GetBool("core", "trdos_at_start", false))
     {
       dev_mman.OnOutputByte(0x7FFD, 0x10);
       dev_trdos.Enable();
