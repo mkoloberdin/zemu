@@ -1,4 +1,6 @@
 #include "covox.h"
+#include <zemu_env.h>
+#include <zemu.h>
 
 C_SndRenderer C_Covox::sndRenderer;
 bool C_Covox::enabled = false;

@@ -1,7 +1,7 @@
 #ifndef _TSFM_H_INCLUDED_
 #define _TSFM_H_INCLUDED_
 
-#include "zemu.h"
+#include <z80ex.h>
 #include "../device.h"
 #include "sound/mixer.h"
 #include "lib_ay/ay_chip.h"

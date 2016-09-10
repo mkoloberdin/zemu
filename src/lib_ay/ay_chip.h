@@ -1,7 +1,6 @@
 #ifndef __AY_CHIP__
 #define __AY_CHIP__
 
-#include "../zemu.h"
 #include "sound/mixer.h"
 
 /*

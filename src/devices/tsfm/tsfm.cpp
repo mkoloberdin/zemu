@@ -1,5 +1,7 @@
+#include <string>
+#include <zemu_env.h>
+#include <bin.h>
 #include "tsfm.h"
-#include "../../bin.h"
 #include "../trdos/trdos.h"
 
 #define CHIP_FLAG_MASK 1
@@ -30,7 +32,7 @@ void C_TsFm::Init(void)
   AttachAfterFrameRenderHandler(OnAfterFrameRender);
   AttachResetHandler(OnReset);
 
-  string s = env.GetString("sound", "tsfmmode", "zxm");
+  std::string s = env.GetString("sound", "tsfmmode", "zxm");
   str = s.c_str();
 
   if (!strcasecmp(str, "ay")) mode = TSFM_MODE_AY;

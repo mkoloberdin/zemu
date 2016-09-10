@@ -1,7 +1,7 @@
 #ifndef _GSOUND_H_INCLUDED_
 #define _GSOUND_H_INCLUDED_
 
-#include "../../zemu.h"
+#include <zemu_env.h>
 #include "../device.h"
 #include "sound/mixer.h"
 

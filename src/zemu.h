@@ -4,14 +4,7 @@
 #include "defines.h"
 #include <SDL.h>
 #include <z80ex.h>
-#include "appenv.h"
 #include "sound/mixer.h"
-
-#ifndef Z80EX_ZAME_WRAPPER
-  #define Z80EX_CONTEXT_PARAM Z80EX_CONTEXT *cpu,
-#else
-  #define Z80EX_CONTEXT_PARAM
-#endif
 
 #include "params.h"
 #define SOUND_ENABLED (!params.maxSpeed && params.sound)
@@ -48,7 +41,6 @@ struct s_Params
   int kempstonAxisTreshold;
 };
 
-extern AppEnv env;
 extern Z80EX_CONTEXT *cpu;
 extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;

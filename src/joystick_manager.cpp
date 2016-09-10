@@ -3,6 +3,7 @@
 #include "joystick_manager.h"
 #include "exceptions.h"
 #include "devs.h"
+#include "zemu_env.h"
 
 C_JoystickManager *C_JoystickManager::_instance = 0;
 

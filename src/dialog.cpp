@@ -1,5 +1,6 @@
 #include <string.h>
 #include <ctype.h>
+#include <string>
 #include "dialog.h"
 #include "font.h"
 #include "dirwork.h"
@@ -485,7 +486,7 @@ void FileDialog(void)
 
 void FileDialogInit(void)
 {
-  string str;
+  std::string str;
 
   str = env.GetString("beta128", "diskA", "/");
   if (!str.empty()) strcpy(oldFileName[0], str.c_str());

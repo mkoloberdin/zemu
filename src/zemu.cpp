@@ -1,5 +1,6 @@
 #include <string.h>
 #include <ctype.h>
+#include "zemu_env.h"
 #include "zemu.h"
 #include "exceptions.h"
 #include "bin.h"
@@ -55,7 +56,6 @@ SDL_Surface *screen, *realScreen, *scrSurf[2];
 int PITCH, REAL_PITCH;
 bool drawFrame;
 int frames;
-AppEnv env;
 C_Font font, fixed_font;
 bool disableSound = false;
 bool doCopyOfSurfaces = false;

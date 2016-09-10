@@ -1,7 +1,7 @@
 #ifndef _KEYBOARD_H_INCLUDED_
 #define _KEYBOARD_H_INCLUDED_
 
-#include "../../zemu.h"
+#include <z80ex.h>
 #include "../device.h"
 
 #define MAX_HOST_KEY_MODS 5

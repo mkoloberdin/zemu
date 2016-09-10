@@ -1,7 +1,7 @@
 #ifndef _EXTPORT_H_INCLUDED_
 #define _EXTPORT_H_INCLUDED_
 
-#include "../../zemu.h"
+#include <z80ex.h>
 #include "../device.h"
 
 class C_ExtPort : public C_Device

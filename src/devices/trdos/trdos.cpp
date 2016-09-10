@@ -1,5 +1,6 @@
+#include <zemu_env.h>
+#include <exceptions.h>
 #include "trdos.h"
-#include "../../exceptions.h"
 #include "../mmanager/mmanager.h"
 
 extern C_MemoryManager dev_mman;

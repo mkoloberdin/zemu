@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include <zemu_env.h>
 #include "keys.h"
 #include "keyboard.h"
 #include "../../file.h"

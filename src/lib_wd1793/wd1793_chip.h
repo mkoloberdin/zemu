@@ -7,6 +7,8 @@
  *
  */
 
+#include <cstdint>
+
 #ifndef _WD1793_CHIP_INCLUDED_
 #define _WD1793_CHIP_INCLUDED_
 

@@ -1,4 +1,6 @@
 #include "extport.h"
+#include <zemu_env.h>
+#include <zemu.h>
 
 #define EXTPORT_16COLORS_MASK     1  // 16 colors (4bits per pixel)
 #define EXTPORT_512x192_MASK      2  // 512x192 monochrome

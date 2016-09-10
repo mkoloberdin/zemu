@@ -1,3 +1,4 @@
+#include <zemu_env.h>
 #include "mmanager.h"
 #include "../../exceptions.h"
 #include "../extport/extport.h"
@@ -14,11 +15,11 @@ Z80EX_BYTE *C_MemoryManager::ram_map;
 bool C_MemoryManager::enable512;
 bool C_MemoryManager::enable1024;
 
-string split_romname(string &romname, size_t *offset) {
+std::string split_romname(std::string &romname, size_t *offset) {
   size_t pos;
   *offset = 0;
-  if ((pos = romname.rfind(':')) != string::npos) {
-    string str_offset = romname.substr(pos + 1);
+  if ((pos = romname.rfind(':')) != std::string::npos) {
+    std::string str_offset = romname.substr(pos + 1);
     if (!str_offset.empty()) {
       *offset = atoi(str_offset.c_str());
       if (*offset < 32) { // assume that it is a page number, not a literal offset

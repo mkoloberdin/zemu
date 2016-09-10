@@ -1,3 +1,4 @@
+#include <zemu_env.h>
 #include "ay_chip.h"
 
 /*

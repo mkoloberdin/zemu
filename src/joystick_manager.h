@@ -4,7 +4,6 @@
 #define _JOYSTICK_MANAGER_H_ 1
 
 #include <SDL.h>
-#include "zemu.h"
 
 #define MAX_JOYSTICKS 5
 #define DEF_JOY_AXIS_TRESHOLD 3200		// default axis movement treshold (useful for fine-tunung analog sticks)

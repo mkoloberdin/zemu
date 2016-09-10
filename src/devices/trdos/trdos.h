@@ -1,7 +1,8 @@
 #ifndef _TRDOS_INCLUDED_
 #define _TRDOS_INCLUDED_
 
-#include "../../zemu.h"
+#include <z80ex.h>
+#include <zemu.h>
 #include "../device.h"
 #include "../../lib_wd1793/wd1793_chip.h"
 

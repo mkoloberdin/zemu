@@ -1,7 +1,7 @@
 #ifndef _COVOX_H_INCLUDED_
 #define _COVOX_H_INCLUDED_
 
-#include "../../zemu.h"
+#include <z80ex.h>
 #include "../device.h"
 #include "sound/mixer.h"
 

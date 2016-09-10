@@ -14,7 +14,7 @@
 #endif
 
 #ifdef __GNUC__
-  #include <stdint.h>
+  #include <cstdint>
   #define HANDLE_PRAGMA_PACK_PUSH_POP
 #endif
 
