@@ -12,7 +12,7 @@
 	#define DW_ENUM_FILES 2
 #endif
 
-#ifdef __linux__
+#ifdef __unix__
 	#include <sys/types.h>
 	#include <dirent.h>
 #endif
@@ -55,7 +55,7 @@ class C_DirWork
 	std::list<char> availDrives;
 #endif
 
-#ifdef __linux__
+#ifdef __unix__
 	DIR *hDir;
 	char bpath[MAX_PATH];
 #endif

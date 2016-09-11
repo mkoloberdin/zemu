@@ -182,7 +182,7 @@ void C_DirWork::EnumClose(void)
 
 #endif	// _WIN32
 
-#ifdef __linux__
+#ifdef __unix__
 
 #include <sys/stat.h>
 
@@ -258,7 +258,7 @@ void C_DirWork::EnumClose(void)
 	hDir = NULL;
 }
 
-#endif	// __linux__
+#endif	// __unix__
 
 char* C_DirWork::Normalize(const char *path, bool isFile)
 {
@@ -443,7 +443,7 @@ char* C_DirWork::LastDirName(const char *path)
 {
 	static char result[MAX_PATH];
 
-#ifdef __linux__
+#ifdef __unix__
 	if (realpath(C_DirWork::ExtractPath(path), result) == NULL)
 	{
 		strcpy(result, "");

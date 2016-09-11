@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdint.h> // TODO: For compilation with MSVC an external stdint.h will be needed
 
-#ifdef __linux__
+#ifdef __unix__
   #include <limits.h>
 #endif
 
@@ -28,7 +28,7 @@
   #define SleepX() sleep(0)
 #endif
 
-#ifdef __linux__
+#ifdef __unix__
   #define stricmp(s1,s2) strcasecmp((s1),(s2))
   #include <unistd.h>
 #endif

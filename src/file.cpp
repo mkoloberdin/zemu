@@ -63,8 +63,8 @@
 	#define _write write
 	#define _vsnprintf vsnprintf
 
-	#ifdef __linux__
-		// there a no "special text files" in linux
+	#ifdef __unix__
+		// there a no "special text files" in Unix
 		#define _O_BINARY 0
 	#else
 		// if O_BINARY is not defined on your system, define it to zero

@@ -592,7 +592,7 @@ void Action_LoadFile(void)
 
 void Action_Fullscreen(void)
 {
-#ifdef __linux__
+#ifdef __unix__
   SDL_WM_ToggleFullScreen(realScreen);
 #else
   videoSpec ^= SDL_FULLSCREEN;
@@ -1671,7 +1671,7 @@ void FreeAll(void)
   // TryFreeLongImage();
   TryFreeAvgImage();
 
-#ifdef __linux__
+#ifdef __unix__
   // TODO: do in in more portable way
   char cmd[MAX_PATH];
   strcpy(cmd, "rm -rf ");
@@ -1869,7 +1869,7 @@ int main(int argc, char *argv[])
 
     params.sdlBufferSize = env.GetInt("sound", "sdlbuffersize", 4);
 
-#ifdef __linux__
+#ifdef __unix__
     params.soundParam = env.GetInt("sound", "ossfragnum", 8);
 #endif
 
