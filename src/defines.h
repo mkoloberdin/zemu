@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <cstdint>
+#include <z80ex.h>
 #include "platform.h"
 
 #ifndef Z80EX_ZAME_WRAPPER

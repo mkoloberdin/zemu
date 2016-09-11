@@ -1,7 +1,7 @@
 #ifndef _DIALOG_H_INCLUDED_
 #define _DIALOG_H_INCLUDED_ 1
 
-#include "zemu_env.h"
+#include <defines.h>
 
 bool DlgConfirm(const char *message);
 void FileDialog(void);

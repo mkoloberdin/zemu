@@ -2,6 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <string>
+#include <zemu_env.h>
 #include "dialog.h"
 #include "font.h"
 #include "dirwork.h"
