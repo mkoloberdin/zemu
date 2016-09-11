@@ -4,19 +4,19 @@
 
 C_SndRenderer C_GSound::sndRenderer;
 bool C_GSound::enabled = false;
-Z80EX_BYTE C_GSound::regCommand = 0;
-Z80EX_BYTE C_GSound::regStatus = 0x7E;
-Z80EX_BYTE C_GSound::regData = 0;
-Z80EX_BYTE C_GSound::regOutput = 0;
-Z80EX_BYTE C_GSound::volume[4] = { 0, 0, 0, 0 };
-Z80EX_BYTE C_GSound::channel[4] = { 0, 0, 0, 0 };
-Z80EX_BYTE C_GSound::memPage = 0;
+uint8_t C_GSound::regCommand = 0;
+uint8_t C_GSound::regStatus = 0x7E;
+uint8_t C_GSound::regData = 0;
+uint8_t C_GSound::regOutput = 0;
+uint8_t C_GSound::volume[4] = { 0, 0, 0, 0 };
+uint8_t C_GSound::channel[4] = { 0, 0, 0, 0 };
+uint8_t C_GSound::memPage = 0;
 Z80EX_CONTEXT *C_GSound::gsCpu = nullptr;
-Z80EX_BYTE C_GSound::mem[0x8000 * GS_MEM_PAGES];
+uint8_t C_GSound::mem[0x8000 * GS_MEM_PAGES];
 
 unsigned C_GSound::gsClk = 0;
-Z80EX_BYTE *C_GSound::readMap[4];
-Z80EX_BYTE *C_GSound::writeMap[4];
+uint8_t *C_GSound::readMap[4];
+uint8_t *C_GSound::writeMap[4];
 
 #define GS_DEV_TO_CLK(clk) ((clk) << 2)
 #define GS_CLK_TO_DEV(clk) ((clk) >> 2)
@@ -67,17 +67,17 @@ void C_GSound::Close(void)
   }
 }
 
-bool C_GSound::InputByteCheckPort(Z80EX_WORD port)
+bool C_GSound::InputByteCheckPort(uint16_t port)
 {
   return ((port & 0xFF) == 0xB3 || (port & 0xFF) == 0xBB);
 }
 
-bool C_GSound::OutputByteCheckPort(Z80EX_WORD port)
+bool C_GSound::OutputByteCheckPort(uint16_t port)
 {
   return ((port & 0xFF) == 0xB3 || (port & 0xFF) == 0xBB);
 }
 
-bool C_GSound::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
+bool C_GSound::OnInputByte(uint16_t port, uint8_t &retval)
 {
   Update(devClk);
 
@@ -95,7 +95,7 @@ bool C_GSound::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
   return true;
 }
 
-bool C_GSound::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
+bool C_GSound::OnOutputByte(uint16_t port, uint8_t value)
 {
   Update(devClk);
   // printf("zx out: %02X, %02X\n", port, value);
@@ -208,9 +208,9 @@ void C_GSound::UpdateSound()
   sndRenderer.Update((unsigned)GS_CLK_TO_DEV(gsClk), (lt << 1) + (rt >> 4), (rt << 1) + (lt >> 4));
 }
 
-Z80EX_BYTE C_GSound::GsReadByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, int m1_state, void *userData)
+uint8_t C_GSound::GsReadByte(Z80EX_CONTEXT_PARAM uint16_t addr, int m1_state, void *userData)
 {
-  Z80EX_BYTE value = readMap[(unsigned)addr >> 14][addr & 0x3FFF];
+  uint8_t value = readMap[(unsigned)addr >> 14][addr & 0x3FFF];
 
   if ((addr & 0xE000) == 0x6000)
   {
@@ -224,7 +224,7 @@ Z80EX_BYTE C_GSound::GsReadByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, int m1_stat
   return value;
 }
 
-void C_GSound::GsWriteByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, Z80EX_BYTE value, void *userData)
+void C_GSound::GsWriteByte(Z80EX_CONTEXT_PARAM uint16_t addr, uint8_t value, void *userData)
 {
   unsigned bank = (unsigned)addr >> 14;
 
@@ -233,7 +233,7 @@ void C_GSound::GsWriteByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, Z80EX_BYTE value
   }
 }
 
-Z80EX_BYTE C_GSound::GsInputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, void *userData)
+uint8_t C_GSound::GsInputByte(Z80EX_CONTEXT_PARAM uint16_t port, void *userData)
 {
   switch (port & 0x0F)
   {
@@ -267,7 +267,7 @@ Z80EX_BYTE C_GSound::GsInputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, void *user
   return 0xFF;
 }
 
-void C_GSound::GsOutputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, Z80EX_BYTE value, void *userData)
+void C_GSound::GsOutputByte(Z80EX_CONTEXT_PARAM uint16_t port, uint8_t value, void *userData)
 {
   // printf("gs out: %02X, %02X\n", port & 0xFF, value);
 
@@ -309,7 +309,7 @@ void C_GSound::GsOutputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, Z80EX_BYTE valu
   }
 }
 
-Z80EX_BYTE C_GSound::GsReadIntVec(Z80EX_CONTEXT_PARAM void *userData)
+uint8_t C_GSound::GsReadIntVec(Z80EX_CONTEXT_PARAM void *userData)
 {
   return 0xFF;
 }

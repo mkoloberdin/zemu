@@ -324,12 +324,12 @@ bool C_Keyboard::OnKeyUp(SDL_Event &event)
   return false;
 }
 
-bool C_Keyboard::InputByteCheckPort(Z80EX_WORD port)
+bool C_Keyboard::InputByteCheckPort(uint16_t port)
 {
   return (!(port & 1));
 }
 
-bool C_Keyboard::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
+bool C_Keyboard::OnInputByte(uint16_t port, uint8_t &retval)
 {
   retval = 255;
   int hport = (port >> 8);

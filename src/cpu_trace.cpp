@@ -1,3 +1,4 @@
+#include <cstdint>
 #include "cpu_trace.h"
 #include "file.h"
 #include "devs.h"
@@ -13,12 +14,12 @@ void CpuTrace_Init(void)
   }
 }
 
-static void CpuTrace_PutByte(Z80EX_BYTE val)
+static void CpuTrace_PutByte(uint8_t val)
 {
   traceFile.PrintF("%02X", val);
 }
 
-static void CpuTrace_PutWord(Z80EX_WORD val)
+static void CpuTrace_PutWord(uint16_t val)
 {
   traceFile.PrintF("%04X", val);
 }

@@ -63,12 +63,12 @@ void C_TsFm::Close(void)
 {
 }
 
-bool C_TsFm::InputByteCheckPort(Z80EX_WORD port)
+bool C_TsFm::InputByteCheckPort(uint16_t port)
 {
   return ((port & MAKEWORD(0b11000000, 0b00000010)) == MAKEWORD(0b11000000, 0b00000000)); // 0xFFFD
 }
 
-bool C_TsFm::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
+bool C_TsFm::OnInputByte(uint16_t port, uint8_t &retval)
 {
   if (mode >= TSFM_MODE_TSFM)
   {
@@ -90,7 +90,7 @@ bool C_TsFm::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
   return true;
 }
 
-bool C_TsFm::OutputByteCheckPort(Z80EX_WORD port)
+bool C_TsFm::OutputByteCheckPort(uint16_t port)
 {
   return (
            ((port & MAKEWORD(0b11000000, 0b00000010)) == MAKEWORD(0b11000000, 0b00000000)) // 0xFFFD
@@ -101,7 +101,7 @@ bool C_TsFm::OutputByteCheckPort(Z80EX_WORD port)
          );
 }
 
-bool C_TsFm::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
+bool C_TsFm::OnOutputByte(uint16_t port, uint8_t value)
 {
   if (port == 0x00FF)
   {

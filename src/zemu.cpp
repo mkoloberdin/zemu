@@ -92,37 +92,37 @@ int UpdateScreenThreadFunc(void *param);
 //--------------------------------------------------------------------------------------------------
 
 ptrOnReadByteFunc *devMapRead;
-bool (** devMapWrite)(Z80EX_WORD, Z80EX_BYTE);
-bool (** devMapInput)(Z80EX_WORD, Z80EX_BYTE &);
-bool (** devMapOutput)(Z80EX_WORD, Z80EX_BYTE);
+bool (** devMapWrite)(uint16_t, uint8_t);
+bool (** devMapInput)(uint16_t, uint8_t &);
+bool (** devMapOutput)(uint16_t, uint8_t);
 
 ptrOnReadByteFunc devMapRead_base[0x20000];
-bool (* devMapWrite_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
-bool (* devMapInput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE &);
-bool (* devMapOutput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
+bool (* devMapWrite_base[0x10000])(uint16_t, uint8_t);
+bool (* devMapInput_base[0x10000])(uint16_t, uint8_t &);
+bool (* devMapOutput_base[0x10000])(uint16_t, uint8_t);
 
 ptrOnReadByteFunc devMapRead_trdos[0x20000];
-bool (* devMapInput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE &);
-bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
+bool (* devMapInput_trdos[0x10000])(uint16_t, uint8_t &);
+bool (* devMapOutput_trdos[0x10000])(uint16_t, uint8_t);
 
 //--------------------------------------------------------------------------------------------------
 
 struct s_ReadItem
 {
-  ptrOnReadByteFunc(* check)(Z80EX_WORD, bool);
-//	bool (* func)(Z80EX_WORD, bool, Z80EX_BYTE&);
+  ptrOnReadByteFunc(* check)(uint16_t, bool);
+//	bool (* func)(uint16_t, bool, uint8_t&);
 };
 
 struct s_WriteItem
 {
-  bool (* check)(Z80EX_WORD);
-  bool (* func)(Z80EX_WORD, Z80EX_BYTE);
+  bool (* check)(uint16_t);
+  bool (* func)(uint16_t, uint8_t);
 };
 
 struct s_InputItem
 {
-  bool (* check)(Z80EX_WORD);
-  bool (* func)(Z80EX_WORD, Z80EX_BYTE &);
+  bool (* check)(uint16_t);
+  bool (* func)(uint16_t, uint8_t &);
 };
 
 typedef s_WriteItem s_OutputItem;
@@ -153,7 +153,7 @@ int cnt_afterFrameRender = 0;
 int cnt_sdl = 0;
 int cnt_reset = 0;
 
-void AttachZ80ReadHandler(ptrOnReadByteFunc(* check)(Z80EX_WORD, bool))
+void AttachZ80ReadHandler(ptrOnReadByteFunc(* check)(uint16_t, bool))
 {
   if (cnt_z80read >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
@@ -163,7 +163,7 @@ void AttachZ80ReadHandler(ptrOnReadByteFunc(* check)(Z80EX_WORD, bool))
   hnd_z80read[cnt_z80read++] = item;
 }
 
-void AttachZ80WriteHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE))
+void AttachZ80WriteHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t))
 {
   if (cnt_z80write >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
@@ -174,7 +174,7 @@ void AttachZ80WriteHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD,
   hnd_z80write[cnt_z80write++] = item;
 }
 
-void AttachZ80InputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE &))
+void AttachZ80InputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t &))
 {
   if (cnt_z80input >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
@@ -185,7 +185,7 @@ void AttachZ80InputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD,
   hnd_z80input[cnt_z80input++] = item;
 }
 
-void AttachZ80OutputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE))
+void AttachZ80OutputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t))
 {
   if (cnt_z80output >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
@@ -774,69 +774,69 @@ s_Action cfgActions[] =
 bool runDebuggerFlag = false;
 bool breakpoints[0x10000];
 
-Z80EX_WORD watches[MAX_WATCHES];
+uint16_t watches[MAX_WATCHES];
 unsigned watchesCount = 0;
 
-Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void *userData)
+uint8_t ReadByteDasm(uint16_t addr, void *userData)
 {
   ptrOnReadByteFunc func = devMapRead[addr];
   return func(addr, false);
 }
 
-void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value)
+void WriteByteDasm(uint16_t addr, uint8_t value)
 {
   for (;;)
   {
-    bool (* func)(Z80EX_WORD, Z80EX_BYTE) = devMapWrite[addr];
+    bool (* func)(uint16_t, uint8_t) = devMapWrite[addr];
 
     if (func == nullptr) return;
     if (func(addr, value)) return;
   }
 }
 
-Z80EX_BYTE ReadByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, int m1_state, void *userData)
+uint8_t ReadByte(Z80EX_CONTEXT_PARAM uint16_t addr, int m1_state, void *userData)
 {
   unsigned raddr = addr + (m1_state ? 0x10000 : 0);
   ptrOnReadByteFunc func = devMapRead[raddr];
   return func(addr, m1_state);
 }
 
-void WriteByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, Z80EX_BYTE value, void *userData)
+void WriteByte(Z80EX_CONTEXT_PARAM uint16_t addr, uint8_t value, void *userData)
 {
   for (;;)
   {
-    bool (* func)(Z80EX_WORD, Z80EX_BYTE) = devMapWrite[addr];
+    bool (* func)(uint16_t, uint8_t) = devMapWrite[addr];
 
     if (func == nullptr) return;
     if (func(addr, value)) return;
   }
 }
 
-Z80EX_BYTE InputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, void *userData)
+uint8_t InputByte(Z80EX_CONTEXT_PARAM uint16_t port, void *userData)
 {
-  Z80EX_BYTE retval;
+  uint8_t retval;
 
   for (;;)
   {
-    bool (* func)(Z80EX_WORD, Z80EX_BYTE &) = devMapInput[port];
+    bool (* func)(uint16_t, uint8_t &) = devMapInput[port];
 
     if (func == nullptr) return 0xFF;
     if (func(port, retval)) return retval;
   }
 }
 
-void OutputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, Z80EX_BYTE value, void *userData)
+void OutputByte(Z80EX_CONTEXT_PARAM uint16_t port, uint8_t value, void *userData)
 {
   for (;;)
   {
-    bool (* func)(Z80EX_WORD, Z80EX_BYTE) = devMapOutput[port];
+    bool (* func)(uint16_t, uint8_t) = devMapOutput[port];
 
     if (func == nullptr) return;
     if (func(port, value)) return;
   }
 }
 
-Z80EX_BYTE ReadIntVec(Z80EX_CONTEXT_PARAM void *userData)
+uint8_t ReadIntVec(Z80EX_CONTEXT_PARAM void *userData)
 {
   return 0xFF;
 }
@@ -865,7 +865,7 @@ void InitDevMapRead(ptrOnReadByteFunc *map)
   }
 }
 
-void InitDevMapWrite(bool (** map)(Z80EX_WORD, Z80EX_BYTE))
+void InitDevMapWrite(bool (** map)(uint16_t, uint8_t))
 {
   for (unsigned addr = 0; addr < 0x10000; addr++)
   {
@@ -882,7 +882,7 @@ void InitDevMapWrite(bool (** map)(Z80EX_WORD, Z80EX_BYTE))
   }
 }
 
-void InitDevMapInput(bool (** map)(Z80EX_WORD, Z80EX_BYTE &))
+void InitDevMapInput(bool (** map)(uint16_t, uint8_t &))
 {
   for (unsigned port = 0; port < 0x10000; port++)
   {
@@ -899,7 +899,7 @@ void InitDevMapInput(bool (** map)(Z80EX_WORD, Z80EX_BYTE &))
   }
 }
 
-void InitDevMapOutput(bool (** map)(Z80EX_WORD, Z80EX_BYTE))
+void InitDevMapOutput(bool (** map)(uint16_t, uint8_t))
 {
   for (unsigned port = 0; port < 0x10000; port++)
   {
@@ -1378,7 +1378,7 @@ void DrawIndicators(void)
 
   for (unsigned i = 0; i < watchesCount; i++)
   {
-    Z80EX_BYTE val = ReadByteDasm(watches[i], nullptr);
+    uint8_t val = ReadByteDasm(watches[i], nullptr);
     sprintf(buf, "%04X:%02X", watches[i], val);
 
     int wdt = fixed_font.StrLenPx(buf);

@@ -16,7 +16,7 @@
 #define EXTPORT_OLD_GIGASCREEN_MASK 16  // gigascreen
 #define EXTPORT_OLD_16COLORS_MASK   32  // 16 colors (4bits per pixel)
 
-Z80EX_BYTE C_ExtPort::portEFF7;
+uint8_t C_ExtPort::portEFF7;
 bool C_ExtPort::oldEFF7Mode;
 bool C_ExtPort::useEFF7Turbo;
 bool C_ExtPort::enabled;
@@ -45,12 +45,12 @@ void C_ExtPort::Close(void)
 {
 }
 
-bool C_ExtPort::OutputByteCheckPort(Z80EX_WORD port)
+bool C_ExtPort::OutputByteCheckPort(uint16_t port)
 {
   return (port == 0xEFF7);
 }
 
-bool C_ExtPort::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
+bool C_ExtPort::OnOutputByte(uint16_t port, uint8_t value)
 {
   if (useEFF7Turbo && ((value & EXTPORT_TURBO_MASK) != (portEFF7 & EXTPORT_TURBO_MASK)))
   {

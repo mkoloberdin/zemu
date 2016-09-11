@@ -1,14 +1,14 @@
 #ifndef _EXTPORT_H_INCLUDED_
 #define _EXTPORT_H_INCLUDED_
 
-#include <z80ex.h>
+#include <cstdint>
 #include "../device.h"
 
 class C_ExtPort : public C_Device
 {
 public:
 
-  static Z80EX_BYTE portEFF7;
+  static uint8_t portEFF7;
   static bool oldEFF7Mode;
   static bool useEFF7Turbo;
   static bool enabled;
@@ -25,8 +25,8 @@ public:
   static bool Is384x304(void);
   static bool IsCmos(void);
 
-  static bool OutputByteCheckPort(Z80EX_WORD port);
-  static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
+  static bool OutputByteCheckPort(uint16_t port);
+  static bool OnOutputByte(uint16_t port, uint8_t value);
   static void OnReset(void);
 };
 

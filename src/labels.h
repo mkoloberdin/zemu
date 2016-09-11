@@ -1,6 +1,7 @@
 #ifndef _LABELS_H_INCLUDED_
 #define _LABELS_H_INCLUDED_
 
+#include <cstdint>
 #include "zemu.h"
 #include <string>
 #include <list>
@@ -11,7 +12,7 @@
 
 struct s_LabelItem
 {
-  Z80EX_WORD addr;
+  uint16_t addr;
   std::string label;
 };
 

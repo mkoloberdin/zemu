@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cstdint>
 #include "snap_z80.h"
 #include "exceptions.h"
 #include "zemu.h"
@@ -9,57 +10,57 @@
 #pragma pack(push,1)
 struct Z80_snap_header
 {
-  Z80EX_BYTE A;
-  Z80EX_BYTE F;
+  uint8_t A;
+  uint8_t F;
 
-  Z80EX_BYTE C;
-  Z80EX_BYTE B;
+  uint8_t C;
+  uint8_t B;
 
-  Z80EX_BYTE L;
-  Z80EX_BYTE H;
+  uint8_t L;
+  uint8_t H;
 
-  Z80EX_BYTE PCl;
-  Z80EX_BYTE PCh;
+  uint8_t PCl;
+  uint8_t PCh;
 
-  Z80EX_BYTE SPl;
-  Z80EX_BYTE SPh;
+  uint8_t SPl;
+  uint8_t SPh;
 
-  Z80EX_BYTE I;
-  Z80EX_BYTE R;
-  Z80EX_BYTE R7_n_misc; // bit0: R7, bit1-3: border, bit5: data is compressed
+  uint8_t I;
+  uint8_t R;
+  uint8_t R7_n_misc; // bit0: R7, bit1-3: border, bit5: data is compressed
 
-  Z80EX_BYTE E;
-  Z80EX_BYTE D;
+  uint8_t E;
+  uint8_t D;
 
-  Z80EX_BYTE C_;
-  Z80EX_BYTE B_;
+  uint8_t C_;
+  uint8_t B_;
 
-  Z80EX_BYTE E_;
-  Z80EX_BYTE D_;
+  uint8_t E_;
+  uint8_t D_;
 
-  Z80EX_BYTE L_;
-  Z80EX_BYTE H_;
+  uint8_t L_;
+  uint8_t H_;
 
-  Z80EX_BYTE A_;
-  Z80EX_BYTE F_;
+  uint8_t A_;
+  uint8_t F_;
 
-  Z80EX_BYTE IYl;
-  Z80EX_BYTE IYh;
+  uint8_t IYl;
+  uint8_t IYh;
 
-  Z80EX_BYTE IXl;
-  Z80EX_BYTE IXh;
+  uint8_t IXl;
+  uint8_t IXh;
 
-  Z80EX_BYTE IFF1;
-  Z80EX_BYTE IFF2;
+  uint8_t IFF1;
+  uint8_t IFF2;
 
-  Z80EX_BYTE IM_n_misc; // bit0-1: Interrupt mode
+  uint8_t IM_n_misc; // bit0-1: Interrupt mode
 };
 #pragma pack(pop)
 
 // [rst] function now use C_File for file operations
-bool block_read(C_File &fl, C_MemoryManager &mmgr, Z80EX_WORD mem_offset, Z80EX_WORD len, int is_compressed)
+bool block_read(C_File &fl, C_MemoryManager &mmgr, uint16_t mem_offset, uint16_t len, int is_compressed)
 {
-  Z80EX_BYTE b, b_prev, rep_byte, rep_count;
+  uint8_t b, b_prev, rep_byte, rep_count;
   unsigned addr;
   int cb;
 
@@ -95,11 +96,11 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 {
   C_File fl;
   Z80_snap_header hdr;
-  Z80EX_WORD tmp;
-  Z80EX_BYTE *header_add = nullptr;
-  Z80EX_BYTE border_color;
-  Z80EX_BYTE mode;
-  Z80EX_BYTE page_num;
+  uint16_t tmp;
+  uint8_t *header_add = nullptr;
+  uint8_t border_color;
+  uint8_t mode;
+  uint8_t page_num;
   int is_compressed;
   int ver = 1;
   int i;
@@ -174,7 +175,7 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
       ver = 3;
     }
 
-    header_add = new Z80EX_BYTE[tmp];	// вроду как нет понту проверять header_addr на NULL, ибо stdc++ либа сама кинет эксцэпшн если не получиться выделить память
+    header_add = new uint8_t[tmp];	// вроду как нет понту проверять header_addr на NULL, ибо stdc++ либа сама кинет эксцэпшн если не получиться выделить память
 
     try
     {
@@ -270,7 +271,7 @@ void save_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 {
   C_File fl;
   Z80_snap_header hdr;
-  Z80EX_BYTE add_header[23];  // Z80 v3 header
+  uint8_t add_header[23];  // Z80 v3 header
   int i, j;
 
   fl.Write(filename);

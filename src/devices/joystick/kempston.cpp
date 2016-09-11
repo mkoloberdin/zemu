@@ -4,7 +4,7 @@
 #include "../../joystick_manager.h"
 
 int C_KempstonStick::joy_num = -1;
-Z80EX_BYTE C_KempstonStick::joy_kbd = 0;
+uint8_t C_KempstonStick::joy_kbd = 0;
 
 void C_KempstonStick::Init(void)
 {
@@ -89,12 +89,12 @@ bool C_KempstonStick::OnKeyUp(SDL_Event &event)
   return false;
 }
 
-bool C_KempstonStick::InputByteCheckPort(Z80EX_WORD port)
+bool C_KempstonStick::InputByteCheckPort(uint16_t port)
 {
   return (!(port & 0x20));
 }
 
-bool C_KempstonStick::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
+bool C_KempstonStick::OnInputByte(uint16_t port, uint8_t &retval)
 {
   retval = 0;
 

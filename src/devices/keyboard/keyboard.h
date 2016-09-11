@@ -1,7 +1,7 @@
 #ifndef _KEYBOARD_H_INCLUDED_
 #define _KEYBOARD_H_INCLUDED_
 
-#include <z80ex.h>
+#include <cstdint>
 #include "../device.h"
 
 #define MAX_HOST_KEY_MODS 5
@@ -44,8 +44,8 @@ public:
   static bool OnKeyDown(SDL_Event &event);
   static bool OnKeyUp(SDL_Event &event);
 
-  static bool InputByteCheckPort(Z80EX_WORD port);
-  static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
+  static bool InputByteCheckPort(uint16_t port);
+  static bool OnInputByte(uint16_t port, uint8_t &retval);
 };
 
 #endif

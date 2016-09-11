@@ -1,7 +1,7 @@
 #ifndef _TSFM_H_INCLUDED_
 #define _TSFM_H_INCLUDED_
 
-#include <z80ex.h>
+#include <cstdint>
 #include "../device.h"
 #include "sound/mixer.h"
 #include "lib_ay/ay_chip.h"
@@ -26,10 +26,10 @@ public:
   void Init(void);
   void Close(void);
 
-  static bool InputByteCheckPort(Z80EX_WORD port);
-  static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
-  static bool OutputByteCheckPort(Z80EX_WORD port);
-  static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
+  static bool InputByteCheckPort(uint16_t port);
+  static bool OnInputByte(uint16_t port, uint8_t &retval);
+  static bool OutputByteCheckPort(uint16_t port);
+  static bool OnOutputByte(uint16_t port, uint8_t value);
   static void OnFrameStart(void);
   static void OnAfterFrameRender(void);
   static void OnReset(void);

@@ -7,11 +7,11 @@
 
 extern C_ExtPort dev_extport;
 
-Z80EX_BYTE C_MemoryManager::port7FFD;
-Z80EX_BYTE C_MemoryManager::rom[0x8000];
-Z80EX_BYTE C_MemoryManager::ram[0x4000 * 64];
-Z80EX_BYTE *C_MemoryManager::rom_map;
-Z80EX_BYTE *C_MemoryManager::ram_map;
+uint8_t C_MemoryManager::port7FFD;
+uint8_t C_MemoryManager::rom[0x8000];
+uint8_t C_MemoryManager::ram[0x4000 * 64];
+uint8_t *C_MemoryManager::rom_map;
+uint8_t *C_MemoryManager::ram_map;
 bool C_MemoryManager::enable512;
 bool C_MemoryManager::enable1024;
 
@@ -80,7 +80,7 @@ void C_MemoryManager::Remap(void)
   rom_map = &rom[(port7FFD & 16) ? 0x4000 : 0];
 }
 
-ptrOnReadByteFunc C_MemoryManager::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
+ptrOnReadByteFunc C_MemoryManager::ReadByteCheckAddr(uint16_t addr, bool m1)
 {
   if (addr < 0x4000) return OnReadByte_ROM;
   else if (addr < 0x8000) return OnReadByte_Bank5;
@@ -88,32 +88,32 @@ ptrOnReadByteFunc C_MemoryManager::ReadByteCheckAddr(Z80EX_WORD addr, bool m1)
   else return OnReadByte_C000;
 }
 
-Z80EX_BYTE C_MemoryManager::OnReadByte_ROM(Z80EX_WORD addr, bool m1)
+uint8_t C_MemoryManager::OnReadByte_ROM(uint16_t addr, bool m1)
 {
   return (dev_extport.IsRamMapRom() ? ram[addr] : rom_map[addr]);
 }
 
-Z80EX_BYTE C_MemoryManager::OnReadByte_Bank5(Z80EX_WORD addr, bool m1)
+uint8_t C_MemoryManager::OnReadByte_Bank5(uint16_t addr, bool m1)
 {
   return ram[addr - 0x4000 + RAM_BANK5];
 }
 
-Z80EX_BYTE C_MemoryManager::OnReadByte_Bank2(Z80EX_WORD addr, bool m1)
+uint8_t C_MemoryManager::OnReadByte_Bank2(uint16_t addr, bool m1)
 {
   return ram[addr - 0x8000 + RAM_BANK2];
 }
 
-Z80EX_BYTE C_MemoryManager::OnReadByte_C000(Z80EX_WORD addr, bool m1)
+uint8_t C_MemoryManager::OnReadByte_C000(uint16_t addr, bool m1)
 {
   return ram_map[addr - 0xC000];
 }
 
-bool C_MemoryManager::WriteByteCheckAddr(Z80EX_WORD addr)
+bool C_MemoryManager::WriteByteCheckAddr(uint16_t addr)
 {
   return true;
 }
 
-bool C_MemoryManager::OnWriteByte(Z80EX_WORD addr, Z80EX_BYTE value)
+bool C_MemoryManager::OnWriteByte(uint16_t addr, uint8_t value)
 {
   if (addr < 0x4000)
   {
@@ -128,12 +128,12 @@ bool C_MemoryManager::OnWriteByte(Z80EX_WORD addr, Z80EX_BYTE value)
   return true;
 }
 
-bool C_MemoryManager::OutputByteCheckPort(Z80EX_WORD port)
+bool C_MemoryManager::OutputByteCheckPort(uint16_t port)
 {
   return ((port & 0x8003) == 0x0001);		// 0x7FFD
 }
 
-bool C_MemoryManager::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
+bool C_MemoryManager::OnOutputByte(uint16_t port, uint8_t value)
 {
   bool himemEnabled = !dev_extport.Is128Lock();
 

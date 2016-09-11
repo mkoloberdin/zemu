@@ -1,6 +1,6 @@
 #include "border.h"
 
-Z80EX_BYTE C_Border::portFB;
+uint8_t C_Border::portFB;
 C_SndRenderer C_Border::sndRenderer;
 
 void C_Border::Init(void)
@@ -18,12 +18,12 @@ void C_Border::Close(void)
 {
 }
 
-bool C_Border::OutputByteCheckPort(Z80EX_WORD port)
+bool C_Border::OutputByteCheckPort(uint16_t port)
 {
   return (!(port & 1));
 }
 
-bool C_Border::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value)
+bool C_Border::OnOutputByte(uint16_t port, uint8_t value)
 {
   if (SOUND_ENABLED)
   {

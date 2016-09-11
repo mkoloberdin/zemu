@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <string.h>
 #include <ctype.h>
 #include <string>
@@ -564,12 +565,12 @@ int DbgAskHexNum(const char *message)
 
 struct s_Instruction
 {
-  Z80EX_WORD addr;
-  Z80EX_WORD size;
+  uint16_t addr;
+  uint16_t size;
   char cmd[MAX_INSTR_SIZE];
 };
 
-bool IsWatched(Z80EX_WORD addr)
+bool IsWatched(uint16_t addr)
 {
   for (unsigned i = 0; i < watchesCount; i++) {
     if (watches[i] == addr) {
@@ -580,7 +581,7 @@ bool IsWatched(Z80EX_WORD addr)
   return false;
 }
 
-const char *GetLabel(Z80EX_WORD addr)
+const char *GetLabel(uint16_t addr)
 {
   std::list<s_LabelItem>::iterator it;
 
@@ -604,7 +605,7 @@ const char *ReplaceLabels(const char *cmd)
   {
     if (cmd[0] == '#' && ishex(cmd[1]) && ishex(cmd[2]) && ishex(cmd[3]) && ishex(cmd[4]))
     {
-      Z80EX_WORD addr = unhex(cmd[1]) * 0x1000 + unhex(cmd[2]) * 0x100 + unhex(cmd[3]) * 0x10 + unhex(cmd[4]);
+      uint16_t addr = unhex(cmd[1]) * 0x1000 + unhex(cmd[2]) * 0x100 + unhex(cmd[3]) * 0x10 + unhex(cmd[4]);
       const char *lbl = GetLabel(addr);
 
       if (lbl)
@@ -647,8 +648,8 @@ void DebugIt(void)
   char buf[100];
   s_Instruction *dispBuf = new s_Instruction[mx];
 
-  Z80EX_WORD curAddr = z80ex_get_reg(cpu, regPC);
-  Z80EX_WORD userAddr = curAddr;
+  uint16_t curAddr = z80ex_get_reg(cpu, regPC);
+  uint16_t userAddr = curAddr;
   bool correctAddr = true;
   int userPos;
 
@@ -657,23 +658,23 @@ void DebugIt(void)
 
   if (restoreBpAddr >= 0)
   {
-    breakpoints[(Z80EX_WORD)restoreBpAddr] = restoreBpVal;
+    breakpoints[(uint16_t)restoreBpAddr] = restoreBpVal;
     restoreBpAddr = -1;
   }
 
   do
   {
     int pos = (mx / 2) - 2;
-    Z80EX_WORD addr = userAddr;
+    uint16_t addr = userAddr;
 
     while (pos >= -2)
     {
-      Z80EX_WORD nxaddr = addr - 1;
-      Z80EX_WORD instrSz = 1;
+      uint16_t nxaddr = addr - 1;
+      uint16_t instrSz = 1;
 
-      for (Z80EX_WORD off = 8; off > 0; off--)
+      for (uint16_t off = 8; off > 0; off--)
       {
-        instrSz = z80ex_dasm(buf, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, (Z80EX_WORD)(addr - off), NULL);
+        instrSz = z80ex_dasm(buf, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, (uint16_t)(addr - off), NULL);
 
         if (instrSz == off)
         {
@@ -694,14 +695,14 @@ void DebugIt(void)
 
     while (pos < mx)
     {
-      Z80EX_WORD instrSz = z80ex_dasm(dispBuf[pos].cmd, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, addr, NULL);
+      uint16_t instrSz = z80ex_dasm(dispBuf[pos].cmd, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, addr, NULL);
 
       if (exactAddr && (addr < userAddr && (addr + instrSz) > userAddr))
       {
         strcpy(dispBuf[pos].cmd, "DB ");
         bool sep = false;
 
-        for (Z80EX_WORD tmpAddr = addr; tmpAddr < userAddr ; tmpAddr++)
+        for (uint16_t tmpAddr = addr; tmpAddr < userAddr ; tmpAddr++)
         {
           if (sep) strcat(dispBuf[pos].cmd, ",");
 
@@ -949,7 +950,7 @@ void DebugIt(void)
       int val = DbgAskHexNum(buf);
 
       if (val >= 0 && val <= 0xFF) {
-        WriteByteDasm(userAddr, (Z80EX_BYTE)val);
+        WriteByteDasm(userAddr, (uint8_t)val);
       }
     }
     else if (key == SDLK_F7)

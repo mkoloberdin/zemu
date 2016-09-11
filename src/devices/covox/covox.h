@@ -1,7 +1,7 @@
 #ifndef _COVOX_H_INCLUDED_
 #define _COVOX_H_INCLUDED_
 
-#include <z80ex.h>
+#include <cstdint>
 #include "../device.h"
 #include "sound/mixer.h"
 
@@ -15,8 +15,8 @@ public:
   void Init(void);
   void Close(void);
 
-  static bool OutputByteCheckPort(Z80EX_WORD);
-  static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
+  static bool OutputByteCheckPort(uint16_t);
+  static bool OnOutputByte(uint16_t port, uint8_t value);
   static void OnFrameStart(void);
   static void OnAfterFrameRender(void);
   static void OnReset(void);

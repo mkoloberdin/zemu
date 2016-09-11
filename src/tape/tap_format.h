@@ -1,7 +1,7 @@
 #ifndef _TAP_FORMAT_H_
 #define _TAP_FORMAT_H_
 
-#include "../zemu.h"
+#include <cstdint>
 #include "tape_format.h"
 
 class C_TapFormat : public C_TapeFormat
@@ -11,13 +11,13 @@ public:
   int state;
   int tapeBit;
   int counter;
-  Z80EX_BYTE *data;
+  uint8_t *data;
   long size;
 
   long blockPos;
   int blockSize;
   int posInBlock;
-  Z80EX_BYTE currentByte;
+  uint8_t currentByte;
   int delay;
 
   C_TapFormat();
@@ -32,7 +32,7 @@ public:
   unsigned int GetPosPerc(void);
   bool IsActive(void);
 
-  Z80EX_BYTE Data(long pos);
+  uint8_t Data(long pos);
 };
 
 #endif /* _TAP_FORMAT_H_ */
