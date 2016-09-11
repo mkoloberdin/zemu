@@ -22,6 +22,7 @@
   #endif
 #endif
 
+// FIXME: SleepX() - unused. Remove?
 #ifdef _WIN32
   #define SleepX() Sleep(1)
 #else
