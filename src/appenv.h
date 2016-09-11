@@ -42,4 +42,3 @@ private:
 };
 
 #endif // ZEMU_CONFIG_H
-
