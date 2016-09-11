@@ -139,7 +139,9 @@ void C_Keyboard::ReadKbdConfig(void)
         else StrikeError("Mixing ZX keys and actions are not allowed (line %d of %s)", ln, fname);
       }
 
-      if (zxk.count >= MAX_ZX_KEYS_MAP) StrikeError("Maximum %d ZX keys per line allowed (line %d of %s)", MAX_ZX_KEYS_MAP, ln, fname);
+      if (zxk.count >= MAX_ZX_KEYS_MAP)
+        StrikeError("Maximum %d ZX keys per line allowed (line %d of %s)",
+                    MAX_ZX_KEYS_MAP, ln, fname);
       canAct = false;
 
       p = s;
@@ -150,18 +152,22 @@ void C_Keyboard::ReadKbdConfig(void)
         if (!stricmp(p, cfgZxKeys[i].cfgname)) break;
       }
 
-      if (!cfgZxKeys[i].cfgname[0]) StrikeError("ZX key \"%s\" not found at line %d of %s", p, ln, fname);
+      if (!cfgZxKeys[i].cfgname[0])
+        StrikeError("ZX key \"%s\" not found at line %d of %s", p, ln, fname);
 
       zxk.portnum[zxk.count] = cfgZxKeys[i].portnum;
       zxk.bitmask[zxk.count] = cfgZxKeys[i].bitmask;
       zxk.count++;
     }
 
-    if (!zxk.count && !act) StrikeError("No ZX keys or actions defined at line %d of %s", ln, fname);
+    if (!zxk.count && !act)
+      StrikeError("No ZX keys or actions defined at line %d of %s", ln, fname);
 
     if (kmod)
     {
-      if (hostKeys[hkey].mods.count >= MAX_HOST_KEY_MODS) StrikeError("Maximum %d overloads for host key allowed (line %d of %s)", MAX_HOST_KEY_MODS, ln, fname);
+      if (hostKeys[hkey].mods.count >= MAX_HOST_KEY_MODS)
+        StrikeError("Maximum %d overloads for host key allowed (line %d of %s)",
+                    MAX_HOST_KEY_MODS, ln, fname);
       hostKeys[hkey].mods.keyMod[hostKeys[hkey].mods.count] = kmod;
       hostKeys[hkey].mods.actions[hostKeys[hkey].mods.count] = act;
       hostKeys[hkey].mods.zxKeys[hostKeys[hkey].mods.count] = zxk;
@@ -169,7 +175,9 @@ void C_Keyboard::ReadKbdConfig(void)
 
       if (hkeyadd)
       {
-        if (hostKeys[hkeyadd].mods.count >= MAX_HOST_KEY_MODS) StrikeError("Maximum %d overloads for host key allowed (line %d of %s)", MAX_HOST_KEY_MODS, ln, fname);
+        if (hostKeys[hkeyadd].mods.count >= MAX_HOST_KEY_MODS)
+          StrikeError("Maximum %d overloads for host key allowed (line %d of %s)",
+                      MAX_HOST_KEY_MODS, ln, fname);
         hostKeys[hkeyadd].mods.keyMod[hostKeys[hkeyadd].mods.count] = kmod;
         hostKeys[hkeyadd].mods.actions[hostKeys[hkeyadd].mods.count] = act;
         hostKeys[hkeyadd].mods.zxKeys[hostKeys[hkeyadd].mods.count] = zxk;
@@ -178,7 +186,9 @@ void C_Keyboard::ReadKbdConfig(void)
 
       if (kmodadd)
       {
-        if (hostKeys[hkey].mods.count >= MAX_HOST_KEY_MODS) StrikeError("Maximum %d overloads for host key allowed (line %d of %s)", MAX_HOST_KEY_MODS, ln, fname);
+        if (hostKeys[hkey].mods.count >= MAX_HOST_KEY_MODS)
+          StrikeError("Maximum %d overloads for host key allowed (line %d of %s)",
+                      MAX_HOST_KEY_MODS, ln, fname);
         hostKeys[hkey].mods.keyMod[hostKeys[hkey].mods.count] = kmodadd;
         hostKeys[hkey].mods.actions[hostKeys[hkey].mods.count] = act;
         hostKeys[hkey].mods.zxKeys[hostKeys[hkey].mods.count] = zxk;
@@ -186,7 +196,9 @@ void C_Keyboard::ReadKbdConfig(void)
 
         if (hkeyadd)
         {
-          if (hostKeys[hkeyadd].mods.count >= MAX_HOST_KEY_MODS) StrikeError("Maximum %d overloads for host key allowed (line %d of %s)", MAX_HOST_KEY_MODS, ln, fname);
+          if (hostKeys[hkeyadd].mods.count >= MAX_HOST_KEY_MODS)
+            StrikeError("Maximum %d overloads for host key allowed (line %d of %s)",
+                        MAX_HOST_KEY_MODS, ln, fname);
           hostKeys[hkeyadd].mods.keyMod[hostKeys[hkeyadd].mods.count] = kmodadd;
           hostKeys[hkeyadd].mods.actions[hostKeys[hkeyadd].mods.count] = act;
           hostKeys[hkeyadd].mods.zxKeys[hostKeys[hkeyadd].mods.count] = zxk;
@@ -226,7 +238,8 @@ bool C_Keyboard::OnKeyDown(SDL_Event &event)
   key = event.key.keysym.sym;
 
   if (joyOnKeyb) {
-    if (key == SDLK_UP || key == SDLK_DOWN || key == SDLK_LEFT || key == SDLK_RIGHT || key == SDLK_RCTRL) {
+    if (key == SDLK_UP || key == SDLK_DOWN || key == SDLK_LEFT ||
+        key == SDLK_RIGHT || key == SDLK_RCTRL) {
       return false;
     }
   }
@@ -243,11 +256,13 @@ bool C_Keyboard::OnKeyDown(SDL_Event &event)
       }
 
       for (int i = 0; i < hostKeys[hostKeys[key].mods.keyMod[k]].normal.count; i++) {
-        keyboard[hostKeys[hostKeys[key].mods.keyMod[k]].normal.portnum[i]] |= hostKeys[hostKeys[key].mods.keyMod[k]].normal.bitmask[i];
+        keyboard[hostKeys[hostKeys[key].mods.keyMod[k]].normal.portnum[i]] |=
+          hostKeys[hostKeys[key].mods.keyMod[k]].normal.bitmask[i];
       }
 
       for (int i = 0; i < hostKeys[key].mods.zxKeys[k].count; i++) {
-        keyboard[hostKeys[key].mods.zxKeys[k].portnum[i]] &= ~hostKeys[key].mods.zxKeys[k].bitmask[i];
+        keyboard[hostKeys[key].mods.zxKeys[k].portnum[i]] &=
+          ~hostKeys[key].mods.zxKeys[k].bitmask[i];
       }
 
       return false;
@@ -275,7 +290,8 @@ bool C_Keyboard::OnKeyUp(SDL_Event &event)
   key = event.key.keysym.sym;
 
   if (joyOnKeyb) {
-    if (key == SDLK_UP || key == SDLK_DOWN || key == SDLK_LEFT || key == SDLK_RIGHT || key == SDLK_RCTRL) {
+    if (key == SDLK_UP || key == SDLK_DOWN || key == SDLK_LEFT ||
+        key == SDLK_RIGHT || key == SDLK_RCTRL) {
       return false;
     }
   }
@@ -295,7 +311,8 @@ bool C_Keyboard::OnKeyUp(SDL_Event &event)
 
     if (hostKeyPressed[hostKeys[key].mods.keyMod[k]]) {
       for (int i = 0; i < hostKeys[hostKeys[key].mods.keyMod[k]].normal.count; i++) {
-        keyboard[hostKeys[hostKeys[key].mods.keyMod[k]].normal.portnum[i]] &= ~hostKeys[hostKeys[key].mods.keyMod[k]].normal.bitmask[i];
+        keyboard[hostKeys[hostKeys[key].mods.keyMod[k]].normal.portnum[i]] &=
+          ~hostKeys[hostKeys[key].mods.keyMod[k]].normal.bitmask[i];
       }
     }
   }
