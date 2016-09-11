@@ -8,10 +8,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/soundcard.h>
-#include "../platform_math.h"
+#include <cmath>
 
 CSndBackendOSS::CSndBackendOSS(unsigned frag_num, unsigned frag_size) {
-  frag = (frag_num << 16) | (int)ceil(log2(frag_size));
+  frag = (frag_num << 16) | (int)ceil(std::log2(frag_size));
 }
 
 void CSndBackendOSS::Init() {
