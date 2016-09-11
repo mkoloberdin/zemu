@@ -1,3 +1,4 @@
+#include <zemu_env.h>
 #include "gsound.h"
 #include "../../exceptions.h"
 #include "../mmanager/mmanager.h"

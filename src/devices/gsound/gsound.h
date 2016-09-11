@@ -2,7 +2,7 @@
 #define _GSOUND_H_INCLUDED_
 
 #include <cstdint>
-#include <zemu_env.h>
+#include <defines.h>
 #include "../device.h"
 #include "sound/mixer.h"
 

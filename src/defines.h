@@ -8,6 +8,12 @@
 #include <cstdint>
 #include "platform.h"
 
+#ifndef Z80EX_ZAME_WRAPPER
+  #define Z80EX_CONTEXT_PARAM Z80EX_CONTEXT *cpu,
+#else
+  #define Z80EX_CONTEXT_PARAM
+#endif
+
 #define DEBUG_MESSAGE(msg) printf("%s\n",(msg))
 
 extern char hex[17];
