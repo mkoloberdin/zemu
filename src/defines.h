@@ -32,5 +32,3 @@ void StrikeMessage(const char *fmt, ...);
 char* AllocNstrcpy(const char *str);
 
 #endif // ZEMU_DEFINES_H
-
-
