@@ -2,7 +2,6 @@
 #define _KEYS_H_INCLUDED_
 
 #include <SDL.h>
-#include "../../bin.h"
 
 struct s_CfgHostKey
 {

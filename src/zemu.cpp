@@ -3,7 +3,6 @@
 #include "zemu_env.h"
 #include "zemu.h"
 #include "exceptions.h"
-#include "bin.h"
 #include "lib_wd1793/wd1793_chip.h"
 #include "dirwork.h"
 #include "font.h"

@@ -1,7 +1,6 @@
 #include "labels.h"
 #include "file.h"
 #include "exceptions.h"
-#include "bin.h"
 #include <stdio.h>
 
 std::list<s_LabelItem> labels;
