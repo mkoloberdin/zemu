@@ -22,13 +22,13 @@ void C_AyChipConfig::ReadConfig(void)
 {
   const char *str;
 
-  str = env.GetString("sound", "aychiptype", "ym").c_str();
+  str = env.getString("sound", "aychiptype", "ym").c_str();
   chipType = (!strcasecmp(str, "ay") ? TypeAy : TypeYm);
 
-  str = env.GetString("sound", "aychipvol", "ym").c_str();
+  str = env.getString("sound", "aychipvol", "ym").c_str();
   volType = (!strcasecmp(str, "ay") ? VolAy : VolYm);
 
-  str = env.GetString("sound", "aychippan", "acb").c_str();
+  str = env.getString("sound", "aychippan", "acb").c_str();
 
   if (!strcasecmp(str, "mono")) panType = PanMono;
   else if (!strcasecmp(str, "abc")) panType = PanABC;

@@ -10,35 +10,36 @@ C_VocFormat::C_VocFormat()
 
 C_VocFormat::~C_VocFormat()
 {
-  if (fl.IsOpened()) fl.Close();
+  if (IFS.is_open()) IFS.close();
 }
 
-bool C_VocFormat::Load(const char *fname)
+bool C_VocFormat::load(const fs::path& fname)
 {
-  if (fl.IsOpened()) fl.Close();
+  if(IFS.is_open())
+    IFS.close();
   active = false;
 
-  fl.Read(fname);
+  IFS.open(fname, std::ios_base::binary);
 
   char buf[21];
   buf[20] = 0;
 
-  fl.ReadBlock(buf, 20);
+  IFS.read(buf, 20);
 
   if (strcmp(buf, "Creative Voice File\032"))
   {
-    fl.Close();
+    IFS.close();
     DEBUG_MESSAGE("\"Creative Voice File\" string not found");
     return false;
   }
 
-  uint16_t dataOffset = fl.GetWORD();
-  uint16_t verNum = fl.GetWORD();
-  uint16_t verChk = fl.GetWORD();
+  uint16_t dataOffset = readU16(IFS);
+  uint16_t verNum = readU16(IFS);
+  uint16_t verChk = readU16(IFS);
 
   if ((uint16_t)((0xFFFF - verNum) + 0x1234) != verChk)
   {
-    fl.Close();
+    IFS.close();
     DEBUG_MESSAGE("Invalid voc file");
     return false;
   }
@@ -46,54 +47,56 @@ bool C_VocFormat::Load(const char *fname)
   long maxRate = 0;
   long rate;
 
-  fl.SetFilePointer(dataOffset);
+  IFS.seekg(dataOffset, std::ios_base::beg);
 
-  while (!fl.Eof())
+  while (true)
   {
-    uint8_t type = fl.GetBYTE();
+    uint8_t type = readU8(IFS);
+    if(IFS.eof())
+      break;
 
     if (type == 0) {
       break; /* Terminator */
     }
 
-    long size = (long)fl.GetBYTE() + (long)0x100 * (long)fl.GetWORD();
-    long pos = fl.GetFilePointer();
+    long size = (long)readU8(IFS) + 0x100L * (long)readU16(IFS);
+    long pos = IFS.tellg();
 
-    if (type == 1)	/* Sound data */
+    if (type == 1)  /* Sound data */
     {
-      long sr = fl.GetBYTE();
+      long sr = readU8(IFS);
       rate = 1000000 / (256 - sr);
       if (rate > maxRate) maxRate = rate;
     }
-    else if (type == 3)	/* Silence */
+    else if (type == 3) /* Silence */
     {
-      fl.GetWORD();	// skip Lenght of silence
-      long sr = fl.GetBYTE();
+      readU16(IFS); // skip Lenght of silence
+      long sr = readU8(IFS);
       rate = 1000000 / (256 - sr);
       if (rate > maxRate) maxRate = rate;
     }
-    else if (type == 8)	/* Extended */
+    else if (type == 8) /* Extended */
     {
-      long tc = fl.GetWORD();
-      fl.GetBYTE();	// skip Pack
+      long tc = readU16(IFS);
+      readU8(IFS);  // skip Pack
 
       rate = 256000000 / (65536 - tc);
-      if (fl.GetBYTE()) rate /= 2;	// Stereo
+      if (readU8(IFS)) rate /= 2; // Stereo
 
       if (rate > maxRate) maxRate = rate;
     }
     else if (type == 9)
     {
-      rate = fl.GetDWORD();
+      rate = readU32(IFS);
       if (rate > maxRate) maxRate = rate;
     }
 
-    fl.SetFilePointer(pos + size);
+    IFS.seekg(pos + size, std::ios_base::beg);
   }
 
   // dataSize = sz * rate
 
-  fl.SetFilePointer(dataOffset);
+  IFS.seekg(dataOffset, std::ios_base::beg);
 
   /*
   	dataPos = 0;
@@ -105,7 +108,7 @@ bool C_VocFormat::Load(const char *fname)
   return true;
 }
 
-bool C_VocFormat::ProcessTicks(uint64_t ticks)
+bool C_VocFormat::processTicks(uint64_t ticks)
 {
   /*	if (!active)
   	{
@@ -182,35 +185,35 @@ bool C_VocFormat::ProcessTicks(uint64_t ticks)
   return false;
 }
 
-bool C_VocFormat::GetCurrBit(void)
+bool C_VocFormat::getCurrBit(void)
 {
   return (active ? currBit : true);
 }
 
-void C_VocFormat::Stop(void)
+void C_VocFormat::stop(void)
 {
   active = false;
 }
 
-void C_VocFormat::Start(void)
+void C_VocFormat::start(void)
 {
   active = true;
 }
 
-void C_VocFormat::Rewind(void)
+void C_VocFormat::rewind(void)
 {
 //	dataPos = 0;
   allTicks = 0;
 }
 
-unsigned int C_VocFormat::GetPosPerc(void)
+unsigned int C_VocFormat::getPosPerc(void)
 {
   /*	uint32_t pos = (allTicks / divider) * sampleSz;
-  	return ((pos >= dataSize) ? 100 : (pos * 100 / dataSize)); */
+    return ((pos >= dataSize) ? 100 : (pos * 100 / dataSize)); */
   return 0;
 }
 
-bool C_VocFormat::IsActive(void)
+bool C_VocFormat::isActive(void)
 {
   return active;
 }

@@ -1,8 +1,7 @@
 #ifndef ZEMU_SOUND_MIXER_H
 #define ZEMU_SOUND_MIXER_H
 
-#include <vector>
-#include "../file.h"
+#include <zemu_env.h>
 #include "snd_backend.h"
 #include "snd_backend_sdl.h"
 #include "snd_backend_oss.h"
@@ -40,8 +39,9 @@ private:
   std::vector<C_SndRenderer *> sources;
   uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
   bool recordWav;
-  const char *wavFileName;
-  C_File wavFile;
+  fs::path WavFileName;
+  fs::path TmpWavFileName;
+  fs::ofstream TmpOFS;
 };
 
 extern C_SoundMixer soundMixer;

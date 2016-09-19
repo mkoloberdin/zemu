@@ -117,7 +117,7 @@ public:
 
   // load disk image to drive
   // drive - from 0 to 3
-  int load_dimage (const char *filename, int drive);
+  int load_dimage(const fs::path& filename, int drive);
 
   // eject disk image from drive
   void eject_dimage (int drive);
@@ -131,9 +131,9 @@ public:
   // get wd1793 status register
   uint8_t get_status_reg ();
 
-  void set_appendboot (const char *boot_name);
+  void set_appendboot (const fs::path& boot_name);
   void set_trd_interleave (int iv);
-  int save_dimage (char *filename, int drive, enum DIMAGE_TYPE type);
+  int save_dimage (const fs::path& filename, int drive, enum DIMAGE_TYPE type);
   int is_disk_loaded (int drive);
   void set_disk_wprotected (int drive, bool wp);
   bool is_disk_wprotected (int drive);

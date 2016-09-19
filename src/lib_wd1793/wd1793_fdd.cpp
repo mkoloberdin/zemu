@@ -11,7 +11,7 @@ C_Fdd::C_Fdd()
   motor = 0;
   rawdata = nullptr;
   set_wprotected(false);
-  appendboot[0] = 0;
+  appendboot.clear();
   interleave = 1;
 }
 
@@ -35,9 +35,9 @@ void C_Fdd::set_wprotected(bool wp)
   is_wp = wp;
 }
 
-char *C_Fdd::get_appendboot(void)
+fs::path& C_Fdd::get_appendboot(void)
 {
-  return (appendboot[0] ? appendboot : nullptr);
+  return appendboot;
 }
 
 void C_Fdd::set_trd_interleave(int iv)
@@ -55,12 +55,13 @@ void C_Fdd::eject()
   free();
 }
 
-int C_Fdd::save_dimage(char *filename, enum DIMAGE_TYPE type)
+int C_Fdd::save_dimage(const fs::path& filename, enum DIMAGE_TYPE type)
 {
+  // FIXME: Use fs::ifstream
   FILE *fp;
   int ret = 0;
 
-  if ((fp = fopen(filename, "wb")) == nullptr) {
+  if ((fp = fopen(filename.c_str(), "wb")) == nullptr) {
     return 0;
   }
 
@@ -92,10 +93,12 @@ int C_Fdd::save_dimage(char *filename, enum DIMAGE_TYPE type)
   return ret;
 }
 
-void C_Fdd::set_appendboot(const char *boot_name)
+void C_Fdd::set_appendboot(const fs::path& boot_name)
 {
-  if (boot_name) strncpy(appendboot, boot_name, sizeof(appendboot) - 1);
-  else appendboot[0] = 0;
+  if (!boot_name.empty())
+    appendboot = boot_name;
+  else
+    appendboot.clear();
 }
 
 char C_Fdd::is_changed()
@@ -169,16 +172,18 @@ int C_Fdd::read(uint8_t type)
   return ok;
 }
 
-int C_Fdd::load_dimage(const char *filename)
+int C_Fdd::load_dimage(const fs::path& filename)
 {
   uint8_t type = what_is(filename);
   if (!read(type)) return 0;
 
-  if (get_appendboot()) {
+  if (!get_appendboot().empty()) {
     addboot();
   }
 
-  strcpy(name, filename);
+  // FIXME: Use fs::path
+  // FIXME: How is "name" used?
+  strcpy(name, filename.c_str());
 
   /*
    * TODO
@@ -189,8 +194,10 @@ int C_Fdd::load_dimage(const char *filename)
   return 1;
 }
 
-uint8_t C_Fdd::what_is(const char *filename)
+uint8_t C_Fdd::what_is(const fs::path& p)
 {
+  // FIXME: Use fs::ifstream
+  const char *filename = p.c_str();
   FILE *ff = fopen(filename, "rb");
   if (!ff) return snNOFILE;
 
@@ -203,17 +210,27 @@ uint8_t C_Fdd::what_is(const char *filename)
   if (snapsize < 32) return type;
 
   const char *ptr = strrchr(filename, '.');
-  unsigned ext = ((ptr && ((unsigned)((ptr - filename) + 3) < strlen(filename))) ? WORD4(ptr[1] | 0x20, ptr[2] | 0x20, ptr[3] | 0x20, ptr[4] | 0x20) : 0);
+  unsigned ext = ((ptr && ((unsigned)((ptr - filename) + 3) < strlen(filename))) ?
+                 WORD4(ptr[1] | 0x20, ptr[2] | 0x20, ptr[3] | 0x20, ptr[4] | 0x20) : 0);
 
   // [rst] я тут вставил else между if-ами, но может быть такое дело, что этого не надо было делать.
 
   if (!snbuf[13] && snbuf[14] && (int)snapsize == (snbuf[14] * 256 + 17)) type = snHOB;
-  else if (snapsize >= 8192 && !(snapsize & 0xFF) && ext == WORD4('t', 'r', 'd', ' ')) type = snTRD;
-  else if (!memcmp(snbuf, "SINCLAIR", 8) && (int)snapsize >= (9 + (0x100 + 14)*snbuf[8])) type = snSCL;
-  else if (!memcmp(snbuf, "FDI", 3) && WORD2(snbuf[4], snbuf[5]) <= (unsigned)MAX_CYLS && WORD2(snbuf[6], snbuf[7]) <= (unsigned)2) type = snFDI;
-  else if (WORD2(snbuf[0] | 0x20, snbuf[1] | 0x20) == WORD2('t', 'd') && snbuf[4] >= 10 && snbuf[4] <= 21 && snbuf[9] <= 2) type = snTD0;
+  else if (snapsize >= 8192 && !(snapsize & 0xFF) && ext == WORD4('t', 'r', 'd', ' '))
+    type = snTRD;
+  else if (!memcmp(snbuf, "SINCLAIR", 8) && (int)snapsize >= (9 + (0x100 + 14)*snbuf[8]))
+    type = snSCL;
+  else if (!memcmp(snbuf, "FDI", 3) &&
+           WORD2(snbuf[4], snbuf[5]) <= (unsigned)MAX_CYLS &&
+           WORD2(snbuf[6], snbuf[7]) <= (unsigned)2)
+    type = snFDI;
+  else if (WORD2(snbuf[0] | 0x20, snbuf[1] | 0x20) == WORD2('t', 'd') &&
+    snbuf[4] >= 10 && snbuf[4] <= 21 && snbuf[9] <= 2)
+    type = snTD0;
   else if (WORD4(snbuf[0], snbuf[1], snbuf[2], snbuf[3]) == WORD4('U', 'D', 'I', '!') &&
-           WORD4(snbuf[4], snbuf[5], snbuf[6], snbuf[7]) == (unsigned)(snapsize - 4) && snbuf[9] < MAX_CYLS && snbuf[10] < 2 && !snbuf[8]) type = snUDI;
+           WORD4(snbuf[4], snbuf[5], snbuf[6], snbuf[7]) == (unsigned)(snapsize - 4) &&
+           snbuf[9] < MAX_CYLS && snbuf[10] < 2 && !snbuf[8])
+    type = snUDI;
 
   return type;
 }

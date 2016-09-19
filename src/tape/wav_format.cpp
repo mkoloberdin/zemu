@@ -10,74 +10,78 @@ C_WavFormat::C_WavFormat()
 
 C_WavFormat::~C_WavFormat()
 {
-  if (fl.IsOpened()) fl.Close();
+  if(IFS.is_open())
+    IFS.close();
 }
 
-bool C_WavFormat::Load(const char *fname)
+bool C_WavFormat::load(const fs::path& fname)
 {
-  if (fl.IsOpened()) fl.Close();
+  if(IFS.is_open())
+    IFS.close();
   active = false;
 
-  fl.Read(fname);
+  IFS.open(fname, std::ios_base::binary);
   char chunkName[5];
   chunkName[4] = 0;
 
-  fl.ReadBlock(chunkName, 4);
+  IFS.read(chunkName, 4);
 
   if (strcmp(chunkName, "RIFF"))
   {
-    fl.Close();
+    IFS.close();
     DEBUG_MESSAGE("RIFF chunk not found");
     return false;
   }
 
-  fl.GetDWORD();	// skip chunk size
+  readU32(IFS); // skip chunk size
 
-  fl.ReadBlock(chunkName, 4);
+  IFS.read(chunkName, 4);
 
   if (strcmp(chunkName, "WAVE"))
   {
-    fl.Close();
+    IFS.close();
     DEBUG_MESSAGE("Invalid RIFF type (must be WAVE)");
     return false;
   }
 
   bool fmtFound = false;
 
-  while (!fl.Eof() && !fmtFound)
+  while (!fmtFound)
   {
-    fl.ReadBlock(chunkName, 4);
-    if (fl.Eof()) break;
+    IFS.read(chunkName, 4);
+    if (IFS.eof())
+      break;
 
-    uint32_t size = fl.GetDWORD();
-    if (fl.Eof()) break;
+    uint32_t size = readU32(IFS);
+    if (IFS.eof())
+      break;
 
     if (strcmp(chunkName, "fmt "))
     {
-      fl.SetFilePointer(fl.GetFilePointer() + size);
+      IFS.seekg(size, std::ios_base::cur);
       continue;
     }
 
-    compression = fl.GetWORD();
+    compression = readU16(IFS);
 
     if (compression != 1)
     {
-      fl.Close();
+      IFS.close();
       DEBUG_MESSAGE("Only uncompressed PCM supported");
       return false;
     }
 
-    channels = fl.GetWORD();
-    rate = fl.GetDWORD();
+    channels = readU16(IFS);
+    rate = readU32(IFS);
 
-    fl.GetDWORD();	// skip byte rate
-    fl.GetWORD();	// skip block align
+    readU32(IFS); // skip byte rate
+    readU16(IFS); // skip block align
 
-    bits = fl.GetWORD();
+    bits = readU16(IFS);
 
     if (bits != 8 && bits != 16 && bits != 32)
     {
-      fl.Close();
+      IFS.close();
       DEBUG_MESSAGE("Unsupported bits per sample. 8, 16 or 32 supported");
       return false;
     }
@@ -87,35 +91,36 @@ bool C_WavFormat::Load(const char *fname)
 
   if (!fmtFound)
   {
-    fl.Close();
+    IFS.close();
     DEBUG_MESSAGE("fmt subchunk not found");
     return false;
   }
 
   bool dataFound = false;
-  fl.SetFilePointer(12);
+  IFS.seekg(12, std::ios_base::beg);
 
-  while (!fl.Eof() && !dataFound)
+  while (!dataFound)
   {
-    fl.ReadBlock(chunkName, 4);
-    if (fl.Eof()) break;
+    IFS.read(chunkName, 4);
+    if (IFS.eof())
+      break;
 
-    dataSize = fl.GetDWORD();
-    if (fl.Eof()) break;
+    dataSize = readU32(IFS);
+    if (IFS.eof()) break;
 
     if (strcmp(chunkName, "data"))
     {
-      fl.SetFilePointer(fl.GetFilePointer() + dataSize);
+      IFS.seekg(dataSize, std::ios_base::cur);
       continue;
     }
 
-    dataFp = fl.GetFilePointer();
+    dataFp = IFS.tellg();
     dataFound = true;
   }
 
   if (!dataFound)
   {
-    fl.Close();
+    IFS.close();
     DEBUG_MESSAGE("data chunk not found");
     return false;
   }
@@ -129,7 +134,7 @@ bool C_WavFormat::Load(const char *fname)
   return true;
 }
 
-bool C_WavFormat::ProcessTicks(uint64_t ticks)
+bool C_WavFormat::processTicks(uint64_t ticks)
 {
   if (!active)
   {
@@ -169,18 +174,18 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks)
     switch (bits)
     {
     case 8:
-      for (int i = 0; i < channels; i++) res += fl.GetBYTE();
+      for (int i = 0; i < channels; i++) res += readU8(IFS);
       dataPos += channels;
       break;
 
     case 16:
-      for (int i = 0; i < channels; i++) res += (short)fl.GetWORD();
+      for (int i = 0; i < channels; i++) res += (short)readU16(IFS);
       dataPos += channels * 2;
       res /= 0x100;
       break;
 
     case 32:
-      for (int i = 0; i < channels; i++) res += (long)fl.GetDWORD();
+      for (int i = 0; i < channels; i++) res += (long)readU32(IFS);
       dataPos += channels * 4;
       res /= 0x10000;
       break;
@@ -203,35 +208,36 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks)
   return true;
 }
 
-bool C_WavFormat::GetCurrBit(void)
+bool C_WavFormat::getCurrBit(void)
 {
   return (active ? currBit : true);
 }
 
-void C_WavFormat::Stop(void)
+void C_WavFormat::stop(void)
 {
   active = false;
 }
 
-void C_WavFormat::Start(void)
+void C_WavFormat::start(void)
 {
   active = true;
 }
 
-void C_WavFormat::Rewind(void)
+void C_WavFormat::rewind(void)
 {
   dataPos = 0;
   allTicks = 0;
-  if (fl.IsOpened()) fl.SetFilePointer(0);
+  if (IFS.is_open())
+    IFS.seekg(0, std::ios_base::beg);
 }
 
-unsigned int C_WavFormat::GetPosPerc(void)
+unsigned int C_WavFormat::getPosPerc(void)
 {
   uint32_t pos = (allTicks / divider) * sampleSz;
   return ((pos >= dataSize) ? 100 : (pos * 100 / dataSize));
 }
 
-bool C_WavFormat::IsActive(void)
+bool C_WavFormat::isActive(void)
 {
   return active;
 }

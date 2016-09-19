@@ -6,12 +6,11 @@
 
 class C_TapFormat : public C_TapeFormat
 {
-public:
-
+private:
   int state;
   int tapeBit;
   int counter;
-  uint8_t *data;
+  uint8_t *Data;
   long size;
 
   long blockPos;
@@ -20,19 +19,20 @@ public:
   uint8_t currentByte;
   int delay;
 
+public:
   C_TapFormat();
   virtual ~C_TapFormat();
 
-  bool Load(const char *fname);
-  bool ProcessTicks(uint64_t ticks);
-  bool GetCurrBit(void);
-  void Stop(void);
-  void Start(void);
-  void Rewind(void);
-  unsigned int GetPosPerc(void);
-  bool IsActive(void);
+  virtual bool load(const fs::path& fname);
+  virtual bool processTicks(uint64_t ticks);
+  virtual bool getCurrBit(void);
+  virtual void stop(void);
+  virtual void start(void);
+  virtual void rewind(void);
+  virtual unsigned int getPosPerc(void);
+  virtual bool isActive(void);
 
-  uint8_t Data(long pos);
+  uint8_t data(long pos);
 };
 
 #endif /* _TAP_FORMAT_H_ */

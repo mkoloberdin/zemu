@@ -3,7 +3,6 @@
 #include <zemu_env.h>
 #include "keys.h"
 #include "keyboard.h"
-#include "../../file.h"
 #include "../../exceptions.h"
 #include "../../tape/tape.h"
 
@@ -14,11 +13,9 @@ int C_Keyboard::keyboard[8];
 void C_Keyboard::ReadKbdConfig(void)
 {
   int i, hkey, ln, kmod, hkeyadd, kmodadd = 0;
-  C_File fl;
   s_HostKey hk;
   s_ZxKeys zxk;
   char buf[0x100], *s, *p;
-  const char *fname;
   void (* act)(void);
   bool canAct;
 
@@ -32,20 +29,20 @@ void C_Keyboard::ReadKbdConfig(void)
     hostKeyPressed[i] = false;
   }
 
-  string value = env.GetString("input", "keymap", "keys.config");
-  string keysConfigPath = env.FindDataFile("", value.c_str());
+  std::string FileName = env.getString("input", "keymap", "keys.config");
+  const char *fname = FileName.c_str(); // FIXME
+  fs::path KeysConfigPath = env.findConfigFile(FileName);
 
-  if (keysConfigPath.empty()) {
-    throw C_E(E_FileNotFound, value.c_str());
+  if (KeysConfigPath.empty()) {
+    throw C_E(E_FileNotFound, fname);
   }
 
   ln = 0;
-  fname = keysConfigPath.c_str();
-  fl.Read(fname);
+  fs::ifstream IFS(KeysConfigPath);
 
-  while (!fl.Eof())
+  
+  while (IFS.getline(buf, sizeof(buf)))
   {
-    fl.GetS(buf, sizeof(buf));
     ln++;
     s = buf;
 
@@ -356,7 +353,7 @@ bool C_Keyboard::OnInputByte(uint16_t port, uint8_t &retval)
     hport >>= 1;
   }
 
-  if (!C_Tape::GetCurrBit()) retval &= ~0x40;
+  if (!C_Tape::getCurrBit()) retval &= ~0x40;
 
   return true;
 }

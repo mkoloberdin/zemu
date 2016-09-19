@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <defines.h>
 #include "mixer.h"
 
 C_SoundMixer soundMixer;
@@ -46,10 +47,12 @@ void C_SoundMixer::Init(int mixerModePtr, bool recordWav, const char *wavFileNam
 
   this->mixerMode = mixerModePtr;
   this->recordWav = recordWav;
-  this->wavFileName = wavFileName;
+  this->WavFileName = env.newDataFilePath(wavFileName);
 
   if (recordWav) {
-    wavFile.Write("output.wav.tmp");
+    TmpWavFileName = env.newDataFilePath("output.wav.tmp"); // TODO: Use runtime dir instead
+    TmpOFS.open(TmpWavFileName,
+                 std::ios_base::binary | std::ios_base::trunc);
   }
 
   initialized = true;
@@ -63,8 +66,46 @@ C_SoundMixer::~C_SoundMixer()
 
   if (recordWav)
   {
-    wavFile.Close();
+    // Close temporary file
+    TmpOFS.close();
+    
+    // TODO: use appropriate library for writing wave files where available
+    size_t WavSize = fs::file_size(TmpWavFileName);
+    
+    fs::ofstream ofs(
+      WavFileName,
+      std::ios_base::binary | std::ios_base::trunc
+    );
 
+    writeU32(ofs, 0x46464952);
+    writeU32(ofs, WavSize + 0x40 - 8);
+    writeU32(ofs, 0x45564157);
+    writeU32(ofs, 0x20746D66);
+    writeU32(ofs, 0x10);
+    writeU16(ofs, 1);
+    writeU16(ofs, 2);
+    writeU32(ofs, SOUND_FREQ);
+    writeU32(ofs, SOUND_FREQ * 4);
+    writeU16(ofs, 4);
+    writeU16(ofs, 16);
+    writeU32(ofs, 0x61746164);
+    writeU32(ofs, WavSize);
+
+    fs::ofstream tmpIfs(
+      TmpWavFileName,
+      std::ios_base::binary
+    );
+    
+    ofs << tmpIfs.rdbuf();
+    
+    // copy from temporary file
+    tmpIfs.close();
+    ofs.close();
+    
+    fs::remove(TmpWavFileName);
+    
+    //wavFile.Close();
+/*
     // TODO: use appropriate library for writing wave files where available
     long wavSz = C_File::FileSize("output.wav.tmp");
 
@@ -90,8 +131,8 @@ C_SoundMixer::~C_SoundMixer()
 
     wavTmp.Close();
     wavFile.Close();
-
     unlink("output.wav.tmp");
+*/
   }
 }
 
@@ -196,8 +237,10 @@ void C_SoundMixer::FlushFrame(bool soundEnabled)
 
       for (int i = minSamples; i--;)
       {
-        wavFile.PutWORD(*(o++));
-        wavFile.PutWORD(*(o++));
+        writeU16(TmpOFS, *(o++));
+        writeU16(TmpOFS, *(o++));
+//        WavFile.PutWORD(*(o++));
+//        WavFile.PutWORD(*(o++));
       }
     }
 

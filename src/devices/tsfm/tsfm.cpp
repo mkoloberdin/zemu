@@ -32,7 +32,7 @@ void C_TsFm::Init(void)
   AttachAfterFrameRenderHandler(OnAfterFrameRender);
   AttachResetHandler(OnReset);
 
-  std::string s = env.GetString("sound", "tsfmmode", "zxm");
+  std::string s = env.getString("sound", "tsfmmode", "zxm");
   str = s.c_str();
 
   if (!strcasecmp(str, "ay")) mode = TSFM_MODE_AY;

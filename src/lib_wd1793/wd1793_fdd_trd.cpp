@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "../zemu_env.h"
 #include "../defines.h"
 #include "wd1793_fdd.h"
 
@@ -111,11 +112,10 @@ void C_Fdd::addboot()
     }
   }
 
-  FILE *f = fopen(get_appendboot(), "rb");
-  if (!f) return;
+  size_t BytesRead = env.loadDataFile(get_appendboot(), snbuf, sizeof(snbuf));
 
-  if (fread(snbuf, 1, sizeof(snbuf), f) < 0x10) DEBUG_MESSAGE("fread failed");
-  fclose(f);
+  if (BytesRead < 0x10)
+    DEBUG_MESSAGE("Loading boot failed");
 
   snbuf[13] = snbuf[14]; // copy length
   addfile(snbuf, snbuf + 0x11);

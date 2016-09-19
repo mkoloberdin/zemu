@@ -2,10 +2,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <string>
+#include <iostream>
 #include <zemu_env.h>
 #include "dialog.h"
 #include "font.h"
-#include "dirwork.h"
 #include "graphics.h"
 #include "lib_wd1793/wd1793_chip.h"
 #include <z80ex_dasm.h>
@@ -21,15 +21,9 @@
 extern C_Font font;
 extern C_Font fixed_font;
 
-char oldFileName[4][MAX_PATH] = {"", "", "" , ""};
+fs::path LastOpenFile = {""};
+std::vector<fs::path> OldFileName = {"", "", "", ""};
 int currentDrive = 0;
-
-int FileNameCmp(int f1, char *s1, int f2, char *s2)
-{
-  if (f1 == f2) return stricmp(s1, s2);
-  else if (f1) return (-1);
-  else return (1);
-}
 
 void DlgClearScreen(void)
 {
@@ -147,23 +141,34 @@ const char *DlgInputString(const char *message)
   }
 }
 
-char *SelectFile(char *oldFile)
+namespace {
+struct Entry {
+  fs::path FileName;
+  bool is_folder;
+  friend bool operator<(const Entry& L, const Entry& R) {
+    return std::tie(R.is_folder, L.FileName) < std::tie(L.is_folder, R.FileName);
+  }
+};
+}
+
+fs::path SelectFile()
 {
   int key;
   SDL_Event event;
-  C_DirWork dw;
   char buf[0x100];
-  static char path[MAX_PATH], ofl[MAX_FNAME + 1];
-  char fnames[MAX_FILES][MAX_FNAME + 1], temp[MAX_FNAME + 1];
-  int i, j, filesCnt, folders[MAX_FILES], pos, csr, mx, gl, h, x, tmp;
+  std::vector<Entry> Entries;
+  int i, j, NumEntries, pos, cursor, mx, gl, h, x, tmp;
   int scrEnd, keyx;
-  bool isRoot;
 
   scrEnd = HEIGHT - font.Height() - 8;
 
-  strcpy(ofl, C_DirWork::ExtractFileName(oldFile));
-  strcpy(path, C_DirWork::ExtractPath(oldFile));
-  strcpy(path, C_DirWork::Normalize(path));
+  auto Path = fs::path(LastOpenFile).parent_path();
+  if(Path.empty() || !fs::exists(Path)) {
+    if(!OldFileName[currentDrive].empty())
+      Path = OldFileName[currentDrive];
+    else
+      Path = env.getDataHome();
+  }
 
   h = font.Height();
   mx = scrEnd / h;
@@ -171,70 +176,62 @@ char *SelectFile(char *oldFile)
 
   do
   {
-    isRoot = !strcmp(path, "/");
-    filesCnt = 0;
-
-    if (dw.EnumFiles(path))
-    {
-      do
-      {
-        if (strcmp(dw.name, "."))
-        {
-          if (strcmp(dw.name, "..") || !isRoot)
-          {
-            strcpy(fnames[filesCnt], dw.name);
-            folders[filesCnt] = (dw.attr == DW_FOLDER);
-            filesCnt++;
-          }
-        }
-      } while (dw.EnumNext());
-
-      dw.EnumClose();
-    }
-
-    gl = ((filesCnt > 0) ? (strcmp(fnames[0], "..") ? 0 : 1) : 0);
-
-    for (i = gl; i < filesCnt - 1; i++)
-    {
-      for (j = i + 1; j < filesCnt; j++)
-      {
-        if (FileNameCmp(folders[i], fnames[i], folders[j], fnames[j]) > 0)
-        {
-          strcpy(temp, fnames[i]);
-          strcpy(fnames[i], fnames[j]);
-          strcpy(fnames[j], temp);
-
-          tmp = folders[i];
-          folders[i] = folders[j];
-          folders[j] = tmp;
-        }
+    Entries.clear();
+    bool isRoot = Path.has_root_path() && (fs::equivalent(Path.root_path(), Path));
+    
+    // Add ".." if we are not in the root directory
+    // TODO: Handle drive letters in Windows
+    if(!isRoot)
+      Entries.push_back( { "..", true } );
+    
+    // Read directory entries
+    if (fs::exists(Path)) {
+      for(fs::directory_entry e : fs::directory_iterator(Path)) {
+        Entries.push_back( { e.path().filename(),
+                             fs::is_directory(e.path()) } );
       }
     }
 
+    NumEntries = Entries.size();
+    
+    int SkipDotDot = isRoot ? 0 : 1;
+        
+    // Sort
+    if(NumEntries > 1) {
+      auto b = Entries.begin();
+      std::advance(b, SkipDotDot); // Exclude ".." from sorting if there is one
+      std::sort(b, Entries.end());
+    }
+    
     pos = 0;
-    csr = 0;
+    cursor = 0;
 
-    for (i = gl; i < filesCnt; i++)
+    for (i = SkipDotDot; i < NumEntries; i++)
     {
-      if (!strcmp(ofl, fnames[i]))
-      {
-        csr = i;
-
-        if (filesCnt > mx)
+      try {
+        if (fs::equivalent(LastOpenFile, Path / Entries[i].FileName))
         {
-          pos = csr - mx / 2;
-          if (pos < 0) pos = 0;
-        }
+          cursor = i;
 
-        break;
+          if (NumEntries > mx)
+          {
+            pos = cursor - mx / 2;
+            if (pos < 0) pos = 0;
+          }
+
+          break;
+        }
+      }
+      catch(std::exception& e) {
+        std::cout << e.what() << std::endl;
       }
     }
 
-    gl = (filesCnt > mx ? mx : filesCnt);
+    gl = (NumEntries > mx ? mx : NumEntries);
 
-    if (gl + pos - 1 >= filesCnt)
+    if (gl + pos - 1 >= NumEntries)
     {
-      pos = filesCnt - gl;
+      pos = NumEntries - gl;
       if (pos < 0) pos = 0;
     }
 
@@ -257,27 +254,34 @@ char *SelectFile(char *oldFile)
         font.PrintString(5 + 0x20 + 1, scrEnd + 5, "C");
         font.PrintString(5 + 0x30 + 1, scrEnd + 5, "D");
 
-        Bar(4 + 0x50, scrEnd + 4, 4 + 0x50 + 20, scrEnd + 4 + 12, wd1793_is_disk_wprotected(currentDrive) ? DRGB(255, 128, 32) : DRGB(0x40, 0x10, 0x10));
-        Bar(4 + 0x68, scrEnd + 4, 4 + 0x68 + 20, scrEnd + 4 + 12, wd1793_is_disk_loaded(currentDrive) ? DRGB(255, 128, 32) : DRGB(0x40, 0x10, 0x10));
-        Bar(4 + 0x80, scrEnd + 4, 4 + 0x80 + 20, scrEnd + 4 + 12, wd1793_is_disk_changed(currentDrive) ? DRGB(255, 128, 32) : DRGB(0x40, 0x10, 0x10));
+        Bar(4 + 0x50, scrEnd + 4, 4 + 0x50 + 20, scrEnd + 4 + 12,
+            wd1793_is_disk_wprotected(currentDrive) ? DRGB(255, 128, 32) : DRGB(0x40, 0x10, 0x10));
+        Bar(4 + 0x68, scrEnd + 4, 4 + 0x68 + 20, scrEnd + 4 + 12,
+            wd1793_is_disk_loaded(currentDrive) ? DRGB(255, 128, 32) : DRGB(0x40, 0x10, 0x10));
+        Bar(4 + 0x80, scrEnd + 4, 4 + 0x80 + 20, scrEnd + 4 + 12,
+            wd1793_is_disk_changed(currentDrive) ? DRGB(255, 128, 32) : DRGB(0x40, 0x10, 0x10));
 
         font.PrintString(5 + 0x50, scrEnd + 5, "WP");
         font.PrintString(5 + 0x68, scrEnd + 5, "LD");
         font.PrintString(5 + 0x80, scrEnd + 5, "CH");
 
-        Bar(4 + 0xB0, scrEnd + 4, 4 + 0xB0 + 72, scrEnd + 4 + 12, C_Tape::IsActive() ? DRGB(255, 128, 32) : DRGB(0x40, 0x10, 0x10));
+        Bar(4 + 0xB0, scrEnd + 4, 4 + 0xB0 + 72, scrEnd + 4 + 12,
+            C_Tape::isActive() ? DRGB(255, 128, 32) : DRGB(0x40, 0x10, 0x10));
 
-        if (C_Tape::IsLoaded()) sprintf(buf, "TAPE %d%%", C_Tape::GetPosPerc());
+        if (C_Tape::isLoaded()) sprintf(buf, "TAPE %d%%", C_Tape::getPosPerc());
         else sprintf(buf, "TAPE NOP");
 
         font.PrintString(5 + 0xB0, scrEnd + 5, buf);
 
         for (i = 0; i < gl; i++)
         {
-          if (csr - pos == i) Bar(0, i * h, x + font.StrLenPx(fnames[i + pos]) + x, i * h + h - 1, DRGB(0x80, 0x20, 0x20));
+          if (cursor - pos == i) Bar(
+            0, i * h, x + font.StrLenPx(Entries[i + pos].FileName.c_str()) + x,
+            i * h + h - 1, DRGB(0x80, 0x20, 0x20)
+          );
 
-          if (folders[i + pos]) font.PrintString(0, i * h, "[]");
-          font.PrintString(x, i * h, fnames[i + pos]);
+          if (Entries[i + pos].is_folder) font.PrintString(0, i * h, "[]");
+          font.PrintString(x, i * h, Entries[i + pos].FileName.c_str());
         }
 
         OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);
@@ -289,10 +293,14 @@ char *SelectFile(char *oldFile)
       {
         if (DlgConfirm("Are you sure to save disk? (Y/N)"))
         {
-          printf("Saving \"%s\" (drive %c) ... ", oldFileName[currentDrive], "ABCD"[currentDrive]);
+          std::cout << "Saving " << OldFileName[currentDrive] << " (drive " <<
+                       "ABCD"[currentDrive] << ") ... ";
+          // printf("Saving \"%s\" (drive %c) ... ", oldFileName[currentDrive], "ABCD"[currentDrive]);
 
-#ifdef _WIN32
-          char tname[MAX_PATH];
+          auto tname = OldFileName[currentDrive];
+
+#ifdef _WIN32 // FIXME
+/*          char tname[MAX_PATH];
 
           strcpy(tname, oldFileName[currentDrive]);
 
@@ -300,28 +308,27 @@ char *SelectFile(char *oldFile)
           {
             tname[0] = tname[1];
             tname[1] = ':';
-          }
+          } */
 #else
-          char *tname = oldFileName[currentDrive];
+//          char *tname = oldFileName[currentDrive];
 #endif
+          
+          fs::path rname;
 
-          char rname[MAX_PATH];
-
-          if (strcasecmp("trd", C_DirWork::ExtractExt(tname))) {
-            sprintf(rname, "%s.trd", tname);
-          } else {
-            strcpy(rname, tname);
-          }
-
+          if(lowerCaseExtension(tname) != ".trd")
+            rname = tname.parent_path() / tname.stem() / ".trd";
+          else
+            rname = tname;
+          
           if (!wd1793_save_dimage(rname, currentDrive, imgTRD))
           {
-            printf("ERROR\n");
+            std::cout << "ERROR" << std::endl;
             DlgConfirm("Save failed :(");
           }
           else
           {
-            printf("OK\n");
-            strcpy(oldFileName[currentDrive], rname);
+            std::cout << "OK" << std::endl;
+            OldFileName[currentDrive] = rname;
           }
         }
       }
@@ -331,16 +338,16 @@ char *SelectFile(char *oldFile)
       }
       else if (key == SDLK_d)
       {
-        C_Tape::Eject();
+        C_Tape::eject();
       }
       else if (key == SDLK_r)
       {
-        C_Tape::Rewind();
+        C_Tape::rewind();
       }
       else if (key == SDLK_t)
       {
-        if (C_Tape::IsActive()) C_Tape::Stop();
-        else C_Tape::Start();
+        if (C_Tape::isActive()) C_Tape::stop();
+        else C_Tape::start();
       }
       else if (key == SDLK_w)
       {
@@ -348,66 +355,66 @@ char *SelectFile(char *oldFile)
       }
       else if (key == SDLK_UP)
       {
-        csr--;
+        cursor--;
 
-        if (csr - pos < 0)
+        if (cursor - pos < 0)
         {
           if (pos > 0) pos--;
-          else csr++;
+          else cursor++;
         }
       }
       else if (key == SDLK_DOWN)
       {
-        csr++;
+        cursor++;
 
-        if (csr - pos >= gl)
+        if (cursor - pos >= gl)
         {
-          if (pos + gl < filesCnt) pos++;
-          else csr--;
+          if (pos + gl < NumEntries) pos++;
+          else cursor--;
         }
       }
       else if (key == SDLK_HOME)
       {
-        csr = 0;
+        cursor = 0;
         pos = 0;
       }
       else if (key == SDLK_END)
       {
-        csr = filesCnt - 1;
+        cursor = NumEntries - 1;
 
-        if (filesCnt > mx)
+        if (NumEntries > mx)
         {
-          pos = filesCnt - mx;
+          pos = NumEntries - mx;
         }
         else pos = 0;
       }
       else if (key == SDLK_PAGEUP)
       {
         pos -= mx;
-        csr -= mx;
+        cursor -= mx;
 
         if (pos < 0)
         {
           pos = 0;
-          csr = 0;
+          cursor = 0;
         }
       }
       else if (key == SDLK_PAGEDOWN)
       {
         pos += mx;
-        csr += mx;
+        cursor += mx;
 
-        if (pos + gl > filesCnt)
+        if (pos + gl > NumEntries)
         {
-          if (filesCnt > mx)
+          if (NumEntries > mx)
           {
-            csr = filesCnt - 1;
-            pos = filesCnt - mx;
+            cursor = NumEntries - 1;
+            pos = NumEntries - mx;
           }
           else
           {
             pos = 0;
-            csr = filesCnt - 1;
+            cursor = NumEntries - 1;
           }
         }
       }
@@ -437,62 +444,60 @@ char *SelectFile(char *oldFile)
 
     if (key == SDLK_BACKSPACE)
     {
+      // FIXME: (ofl?)
+      if (Path.has_parent_path())
+        Path = Path.parent_path();
+      /*
       strcpy(ofl, C_DirWork::LastDirName(path));
       strcpy(path, C_DirWork::LevelUp(path));
+      */
     }
     else if (key == SDLK_RETURN)
     {
-      if (folders[csr])
+      if (Entries[cursor].is_folder)
       {
-        strcpy(ofl, C_DirWork::LastDirName(path));
-
-        if (!strcmp(fnames[csr], ".."))
-        {
-          strcpy(path, C_DirWork::LevelUp(path));
+        if(Entries[cursor].FileName == "..") {
+          if(Path.has_parent_path())
+            Path = Path.parent_path();
         }
         else
-        {
-          strcpy(path, C_DirWork::ExtractPath(path));
-          strcat(path, fnames[csr]);
-          strcat(path, "/");
-        }
+          Path = Path / Entries[cursor].FileName;
       }
       else
       {
-        strcpy(path, dw.ExtractPath(path));
-        strcat(path, fnames[csr]);
-        return path;
+        fs::path P = Path / Entries[cursor].FileName;
+        std::string Ext = lowerCaseExtension(P);
+        LastOpenFile = P;
+        if(Ext == ".trd" || Ext == ".scl")
+          OldFileName[currentDrive] = P;
+        return P;
       }
     }
   } while (key != SDLK_ESCAPE);
 
-  return NULL;
+  return "";
 }
 
 void FileDialog(void)
 {
-  char *fname;
+  fs::path fname;
 
   disableSound = true;
 
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-  fname = SelectFile(oldFileName[currentDrive]);
+  fname = SelectFile();
   SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
 
-  if (fname != NULL) {
+  if (!fname.empty()) {
     TryNLoadFile(fname, currentDrive);
   }
 
   disableSound = false;
 }
 
-void FileDialogInit(void)
+void fileDialogInit(void)
 {
-  std::string str;
-
-  str = env.GetString("beta128", "diskA", "/");
-  if (!str.empty()) strcpy(oldFileName[0], str.c_str());
-  else strcpy(oldFileName[0], "/");
+  OldFileName[0] = env.getString("beta128", "diskA", env.getDataHome().string());
 }
 
 #define MAX_HEX_NUM_SZ 7

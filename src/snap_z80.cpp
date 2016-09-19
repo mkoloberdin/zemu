@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <cstdint>
+#include <boost/filesystem.hpp>
 #include "snap_z80.h"
 #include "exceptions.h"
 #include "zemu.h"
 #include "bin.h"
-#include "file.h"
+
+namespace fs = boost::filesystem;
 
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 #pragma pack(push,1)
@@ -58,7 +60,8 @@ struct Z80_snap_header
 #pragma pack(pop)
 
 // [rst] function now use C_File for file operations
-bool block_read(C_File &fl, C_MemoryManager &mmgr, uint16_t mem_offset, uint16_t len, int is_compressed)
+bool block_read(fs::ifstream &IFS, C_MemoryManager& mmgr, uint16_t mem_offset, uint16_t len,
+                int is_compressed)
 {
   uint8_t b, b_prev, rep_byte, rep_count;
   unsigned addr;
@@ -66,16 +69,19 @@ bool block_read(C_File &fl, C_MemoryManager &mmgr, uint16_t mem_offset, uint16_t
 
   for (addr = mem_offset, b = 0, b_prev = 0; addr < mem_offset + len; b_prev = b)
   {
-    if (fl.Eof()) return false;
-    b = fl.GetBYTE();
+    b = readU8(IFS);
+    if(IFS.eof())
+      return false;
 
     if (is_compressed && b == 0xED && b_prev == 0xED)
     {
-      if (fl.Eof()) return false;
-      rep_count = fl.GetBYTE();
+      rep_count = readU8(IFS);
+      if(IFS.eof())
+        return false;
 
-      if (fl.Eof()) return false;
-      rep_byte = fl.GetBYTE();
+      rep_byte = readU8(IFS);
+      if(IFS.eof())
+        return false;
 
       for (cb = 0; cb < rep_count; cb++) mmgr.OnWriteByte(addr + cb - 1, rep_byte);
       addr += rep_count - 1;
@@ -92,9 +98,10 @@ bool block_read(C_File &fl, C_MemoryManager &mmgr, uint16_t mem_offset, uint16_t
 }
 
 // [rst] function now use exceptions, C_File for file operations
-bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mmgr, C_Border &border)
+bool loadZ80Snap(const fs::path& filename, Z80EX_CONTEXT *cpu, C_MemoryManager& mmgr,
+                   C_Border& border)
 {
-  C_File fl;
+  fs::ifstream IFS;
   Z80_snap_header hdr;
   uint16_t tmp;
   uint8_t *header_add = nullptr;
@@ -106,13 +113,14 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
   int i;
 
   try {
-    fl.Read(filename);
+    IFS.open(filename, std::ios_base::binary);
   } catch (C_E &e) {
     return false;
   }
 
-  if (fl.ReadBlock(&hdr, sizeof(hdr)) != sizeof(hdr)) {
-    fl.Close();
+  IFS.read((char *)&hdr, sizeof(hdr));
+  if(IFS.gcount() != sizeof(hdr)) {
+    IFS.close();
     return false;
   }
 
@@ -146,8 +154,8 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
   if (hdr.PCh | hdr.PCl) // PC <> 0: Z80 v1
   {
     // read 48k block
-    if (!block_read(fl, mmgr, 0x4000, 0xC000, is_compressed)) {
-      fl.Close();
+    if (!block_read(IFS, mmgr, 0x4000, 0xC000, is_compressed)) {
+      IFS.close();
       return false;
     }
 
@@ -156,11 +164,11 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
   }
   else // Z80 v2 or v3
   {
-    if (fl.Eof()) {
-      fl.Close();
+    tmp = readU16(IFS); // additional block length
+    if(IFS.eof()) {
+      IFS.close();
       return false;
     }
-    tmp = fl.GetWORD();  // additional block length
 
     switch (tmp & 0xFF)  // [rst] or I can put simple "tmp" ?
     {
@@ -179,7 +187,9 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 
     try
     {
-      if (fl.ReadBlock(header_add, tmp) != tmp) throw C_E(E_SnapZ80Error);
+      IFS.read((char *)header_add, tmp);
+      if (IFS.gcount() != tmp)
+        throw C_E(E_SnapZ80Error);
       z80ex_set_reg(cpu, regPC, MAKEWORD(header_add[1], header_add[0]));
       mode = header_add[2];
 
@@ -204,25 +214,27 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 
         for (i = 0; i < pages; ++i)
         {
-          if (fl.Eof()) throw C_E(E_SnapZ80Error);
-          tmp = fl.GetWORD();
+          tmp = readU16(IFS);
+          if (IFS.eof())
+            throw C_E(E_SnapZ80Error);
           is_compressed = (tmp != 0xFFFF);
 
-          if (fl.Eof()) throw C_E(E_SnapZ80Error);
-          page_num = fl.GetBYTE();
+          page_num = readU8(IFS);
+          if (IFS.eof())
+            throw C_E(E_SnapZ80Error);
 
           switch (page_num)
           {
           case 4:
-            if (!block_read(fl, mmgr, 0x8000, 0x4000, is_compressed)) throw C_E(E_SnapZ80Error);
+            if (!block_read(IFS, mmgr, 0x8000, 0x4000, is_compressed)) throw C_E(E_SnapZ80Error);
             break;
 
           case 5:
-            if (!block_read(fl, mmgr, 0xC000, 0x4000, is_compressed)) throw C_E(E_SnapZ80Error);
+            if (!block_read(IFS, mmgr, 0xC000, 0x4000, is_compressed)) throw C_E(E_SnapZ80Error);
             break;
 
           case 8:
-            if (!block_read(fl, mmgr, 0x4000, 0x4000, is_compressed)) throw C_E(E_SnapZ80Error);
+            if (!block_read(IFS, mmgr, 0x4000, 0x4000, is_compressed)) throw C_E(E_SnapZ80Error);
             break;
 
           default: // unknown page
@@ -236,15 +248,17 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 
         for (i = 0; i < 8; i++)
         {
-          if (fl.Eof()) throw C_E(E_SnapZ80Error);
-          tmp = fl.GetWORD();
+          tmp = readU16(IFS);
+          if (IFS.eof())
+            throw C_E(E_SnapZ80Error);
           is_compressed = (tmp != 0xFFFF);
 
-          if (fl.Eof()) throw C_E(E_SnapZ80Error);
-          page_num = fl.GetBYTE();
+          page_num = readU8(IFS);
+          if (IFS.eof())
+            throw C_E(E_SnapZ80Error);
 
           mmgr.OnOutputByte(0x7ffd, page_num - 3);
-          if (!block_read(fl, mmgr, 0xC000, 0x4000, is_compressed)) throw C_E(E_SnapZ80Error);
+          if (!block_read(IFS, mmgr, 0xC000, 0x4000, is_compressed)) throw C_E(E_SnapZ80Error);
         }
 
         mmgr.OnOutputByte(0x7ffd, header_add[3]);
@@ -256,25 +270,25 @@ bool load_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
     catch (C_E &e)
     {
       delete[] header_add;
-      fl.Close();
+      IFS.close();
       return false;
     }
   }
 
   // set border color
   border.OnOutputByte(0x00FE, border_color);
-  fl.Close();
+  IFS.close();
   return true;
 }
 
-void save_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mmgr, C_Border &border)
+void saveZ80Snap(const fs::path& filename, Z80EX_CONTEXT *cpu, C_MemoryManager& mmgr, C_Border& border)
 {
-  C_File fl;
+  fs::ofstream OFS;
   Z80_snap_header hdr;
   uint8_t add_header[23];  // Z80 v3 header
   int i, j;
 
-  fl.Write(filename);
+  OFS.open(filename, std::ios_base::binary);
 
   hdr.A = z80ex_get_reg(cpu, regAF) >> 8;
   hdr.F = z80ex_get_reg(cpu, regAF) & 0xFF;
@@ -307,8 +321,8 @@ void save_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
   hdr.PCh = 0;	// Z80 v2
   hdr.PCl = 0;	// Z80 v2
 
-  fl.WriteBlock(&hdr, sizeof(hdr));
-  fl.PutWORD(sizeof(add_header));
+  OFS.write((const char *)&hdr, sizeof(hdr));
+  writeU16(OFS, sizeof(add_header));
 
   // TODO: save 48k properly
 
@@ -317,15 +331,16 @@ void save_z80_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
   add_header[2] = 9;  // Pentagon
   add_header[3] = mmgr.port7FFD;
 
-  fl.WriteBlock(add_header, sizeof(add_header));
+  OFS.write((const char *)add_header, sizeof(add_header));
 
   for (i = 0; i < 8; i++)
   {
-    fl.PutWORD(0xFFFF); // not compressed
-    fl.PutBYTE(i + 3);  // page
+    writeU16(OFS, 0xFFFF); // not compressed
+    writeU8(OFS, i + 3);  // page
 
-    for (j = i * 0x4000; j < i * 0x4000 + 0x4000; j++) fl.PutBYTE(mmgr.ram[j]);
+    for (j = i * 0x4000; j < i * 0x4000 + 0x4000; j++)
+      writeU8(OFS, mmgr.ram[j]);
   }
 
-  fl.Close();
+  OFS.close();
 }

@@ -42,6 +42,9 @@ if (WIN32 AND NOT CMAKE_COMPILER_IS_GNUCC)
   endif ()
 endif ()
 
+find_package (Boost REQUIRED COMPONENTS filesystem)
+include_directories(${Boost_INCLUDE_DIR})
+
 # message ("ENV{SDLDIR}=$ENV{SDLDIR}")
 
 find_package (SDL REQUIRED)
@@ -76,6 +79,8 @@ if (USE_Z80EX)
 else ()
   target_link_libraries (zemu z80ex_wrapper)
 endif ()
+
+target_link_libraries (zemu ${Boost_LIBRARIES})
 
 target_link_libraries (zemu ${SDL_LIBRARY})
 

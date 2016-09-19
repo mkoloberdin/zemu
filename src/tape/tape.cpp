@@ -1,5 +1,4 @@
 #include "tape.h"
-#include "../dirwork.h"
 #include "tap_format.h"
 #include "wav_format.h"
 #include "voc_format.h"
@@ -34,45 +33,45 @@ void C_Tape::OnAfterFrameRender(void)
   }
 }
 
-int C_Tape::GetCurrBit(void)
+int C_Tape::getCurrBit(void)
 {
-  return (currentFormat == nullptr ? 1 : currentFormat->GetCurrBit());
+  return (currentFormat == nullptr ? 1 : currentFormat->getCurrBit());
 }
 
-void C_Tape::Process(void)
+void C_Tape::process(void)
 {
   if (currentFormat != nullptr)
   {
     if (SOUND_ENABLED)
     {
-      unsigned val = (currentFormat->GetCurrBit() ? MAX_TAPE_VOL : 0);
+      unsigned val = (currentFormat->getCurrBit() ? MAX_TAPE_VOL : 0);
       sndRenderer.Update(devClk, val, val);
     }
   }
 
   if (currentFormat != nullptr) {
-    if (currentFormat->ProcessTicks(devClkCounter - prevDevClkCounter)) {
+    if (currentFormat->processTicks(devClkCounter - prevDevClkCounter)) {
       prevDevClkCounter = devClkCounter;
     }
   }
 }
 
-bool C_Tape::IsLoaded(void)
+bool C_Tape::isLoaded(void)
 {
   return (currentFormat != nullptr);
 }
 
-bool C_Tape::IsActive(void)
+bool C_Tape::isActive(void)
 {
-  return (currentFormat == nullptr ? false : currentFormat->IsActive());
+  return (currentFormat == nullptr ? false : currentFormat->isActive());
 }
 
-unsigned int C_Tape::GetPosPerc(void)
+unsigned int C_Tape::getPosPerc(void)
 {
-  return (currentFormat == nullptr ? 0 : currentFormat->GetPosPerc());
+  return (currentFormat == nullptr ? 0 : currentFormat->getPosPerc());
 }
 
-void C_Tape::Eject(void)
+void C_Tape::eject(void)
 {
   if (currentFormat != nullptr)
   {
@@ -81,16 +80,19 @@ void C_Tape::Eject(void)
   }
 }
 
-bool C_Tape::IsTapeFormat(const char *fname)
+bool C_Tape::isTapeFormat(const fs::path& fname)
 {
-  if (!stricmp(C_DirWork::ExtractExt(fname), "tap")) return true;
-  if (!stricmp(C_DirWork::ExtractExt(fname), "wav")) return true;
-  if (!stricmp(C_DirWork::ExtractExt(fname), "voc")) return true;
+  std::string ext = lowerCaseExtension(fname);
+  if (ext == ".tap" ||
+      ext == ".wav" ||
+      ext == ".voc") {
+    return true;
+  }
 
   return false;
 }
 
-bool C_Tape::Insert(const char *fname)
+bool C_Tape::insert(const fs::path& fname)
 {
   if (currentFormat != nullptr)
   {
@@ -98,17 +100,18 @@ bool C_Tape::Insert(const char *fname)
     currentFormat = nullptr;
   }
 
-  if (!stricmp(C_DirWork::ExtractExt(fname), "tap")) {
+  std::string ext = lowerCaseExtension(fname);
+  
+  if (ext == ".tap")
     currentFormat = new C_TapFormat();
-  } else if (!stricmp(C_DirWork::ExtractExt(fname), "wav")) {
+  else if (ext == ".wav")
     currentFormat = new C_WavFormat();
-  } else if (!stricmp(C_DirWork::ExtractExt(fname), "voc")) {
+  else if (ext == ".voc")
     currentFormat = new C_VocFormat();
-  }
 
   if (currentFormat == nullptr) return false;
 
-  if (!currentFormat->Load(fname))
+  if (!currentFormat->load(fname))
   {
     delete currentFormat;
     currentFormat = nullptr;
@@ -118,25 +121,25 @@ bool C_Tape::Insert(const char *fname)
   return true;
 }
 
-void C_Tape::Start(void)
+void C_Tape::start(void)
 {
   if (currentFormat != nullptr)
   {
     prevDevClkCounter = devClkCounter;
-    currentFormat->Start();
+    currentFormat->start();
   }
 }
 
-void C_Tape::Stop(void)
+void C_Tape::stop(void)
 {
   if (currentFormat != nullptr) {
-    currentFormat->Stop();
+    currentFormat->stop();
   }
 }
 
-void C_Tape::Rewind(void)
+void C_Tape::rewind(void)
 {
   if (currentFormat != nullptr) {
-    currentFormat->Rewind();
+    currentFormat->rewind();
   }
 }

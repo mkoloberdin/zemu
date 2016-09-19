@@ -1,30 +1,25 @@
 #include "labels.h"
-#include "file.h"
 #include "exceptions.h"
 #include <stdio.h>
 
 std::list<s_LabelItem> labels;
 
-void Labels_Load(const char *fname)
+void Labels_Load(const char *fname) // FIXME: rewrite
 {
-  C_File fl;
+  fs::ifstream IFS;
   char buf[0x100];
 
-  try
-  {
-    fl.Read(fname);
+  try {
+    IFS.open(fname);
   }
-  catch (C_E &e)
-  {
+  catch (C_E &e) {
     printf("Error loading labels from \"%s\"\n", fname);
     return;
   }
 
   printf("Load labels \"%s\"\n", fname);
 
-  while (!fl.Eof())
-  {
-    fl.GetS(buf, sizeof(buf));
+  while(IFS.getline(buf, sizeof(buf))) {
     if (strlen(buf) < 9) continue;
 
     if (ishex(buf[0]) && ishex(buf[1]) && buf[2] == ':' &&
@@ -79,5 +74,5 @@ void Labels_Load(const char *fname)
     }
   }
 
-  fl.Close();
+  IFS.close();
 }

@@ -24,15 +24,15 @@ bool C_ExtPort::enabled;
 void C_ExtPort::Init(void)
 {
   portEFF7 = 0;
-  enabled = env.GetBool("core", "enableEFF7", false);
+  enabled = env.getBool("core", "enableEFF7", false);
 
   if (enabled)
   {
     AttachZ80OutputHandler(OutputByteCheckPort, OnOutputByte);
     AttachResetHandler(OnReset);
 
-    oldEFF7Mode = env.GetBool("core", "oldEFF7mode", false);
-    useEFF7Turbo = env.GetBool("core", "useEFF7turbo", false);
+    oldEFF7Mode = env.getBool("core", "oldEFF7mode", false);
+    useEFF7Turbo = env.getBool("core", "useEFF7turbo", false);
 
     if (useEFF7Turbo) {
       // disable turbo by default

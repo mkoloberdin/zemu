@@ -1,3 +1,5 @@
+#ifndef _WD1793_CHIP_INCLUDED_
+#define _WD1793_CHIP_INCLUDED_
 /*
  * Unreal WD1793 Emulation library
  * emulation core written by SMT (http://sourceforge.net/projects/unrealspeccy)
@@ -8,9 +10,10 @@
  */
 
 #include <cstdint>
+#include <boost/filesystem.hpp>
 
-#ifndef _WD1793_CHIP_INCLUDED_
-#define _WD1793_CHIP_INCLUDED_
+namespace fs = boost::filesystem;
+
 
 enum DIMAGE_TYPE
 {
@@ -50,7 +53,7 @@ void wd1793_out (uint8_t port, uint8_t val, uint64_t time, int *err);
 /*
 wd1793_load_dimage: load disk image <filename> to <drive=0,1,2 or 3>
 */
-int wd1793_load_dimage (const char *filename, int drive);
+int wd1793_load_dimage (const fs::path& filename, int drive);
 
 /*
 wd1793_eject_dimage: eject disk image from <drive>
@@ -65,7 +68,7 @@ uint8_t wd1793_get_status_reg ();
 /*
 wd1793_set_appendboot: automatically append boot from file <boot_name> to TRDOS-disks, if there's no boot.B
 */
-void wd1793_set_appendboot (const char *boot_name);
+void wd1793_set_appendboot (const fs::path& boot_name);
 
 /*
 wd1793_set_trd_interleave: set interleave for trd disks
@@ -85,7 +88,7 @@ bool wd1793_is_disk_changed (int drive);
 /*
 wd1793_save_dimage: save disk in <drive> to <filename>, in format <type>
 */
-int wd1793_save_dimage (char *filename, int drive, enum DIMAGE_TYPE type);
+int wd1793_save_dimage (const fs::path& filename, int drive, enum DIMAGE_TYPE type);
 
 /*
 wd1793_is_disk_loaded: returns 1 if there's disk in <drive>

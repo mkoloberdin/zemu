@@ -7,7 +7,7 @@ bool C_Covox::enabled = false;
 
 void C_Covox::Init(void)
 {
-  enabled = env.GetBool("sound", "enablecovox", false);
+  enabled = env.getBool("sound", "enablecovox", false);
 
   if (enabled)
   {

@@ -36,20 +36,20 @@ void C_MemoryManager::ReadFile(void)
   string filename;
   size_t offset;
 
-  filename = env.GetString("core", "rom_48", "pentagon.rom:1");
+  filename = env.getString("core", "rom_48", "pentagon.rom:1");
   filename = split_romname(filename, &offset);
-  if (env.LoadDataFile("roms", filename.c_str(), &rom[0x4000], 0x4000, offset) != 0x4000) {
+  if (env.loadDataFile("roms", filename.c_str(), &rom[0x4000], 0x4000, offset) != 0x4000) {
     throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
   }
 
-  filename = env.GetString("core", "rom_128", "pentagon.rom:0");
+  filename = env.getString("core", "rom_128", "pentagon.rom:0");
   filename = split_romname(filename, &offset);
-  if (env.LoadDataFile("roms", filename.c_str(), rom, 0x4000, offset) != 0x4000) {
+  if (env.loadDataFile("roms", filename.c_str(), rom, 0x4000, offset) != 0x4000) {
     throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
   }
 
-  enable512 = env.GetBool("core", "enable512", false);
-  enable1024 = env.GetBool("core", "enable1024",  false);
+  enable512 = env.getBool("core", "enable512", false);
+  enable1024 = env.getBool("core", "enable1024",  false);
 
   if (!enable512) enable1024 = false;
 }

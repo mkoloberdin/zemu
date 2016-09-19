@@ -1,10 +1,13 @@
 #include <string.h>
 #include <ctype.h>
+#include <iostream>
+#include <boost/format.hpp>
+using boost::format;
+
 #include "zemu_env.h"
 #include "zemu.h"
 #include "exceptions.h"
 #include "lib_wd1793/wd1793_chip.h"
-#include "dirwork.h"
 #include "font.h"
 #include "dialog.h"
 #include "graphics.h"
@@ -24,8 +27,6 @@
 
 #include "ftbos_font.h"
 #include "font_64.h"
-
-#include "file.h"
 
 #include <cctype>
 #include <algorithm>
@@ -75,9 +76,9 @@ const char *wavFileName = "output.wav"; // TODO: make configurable + full filepa
 // long longImageHeight;
 // int longImagePos;
 
-bool isAvgImageWrited = false;
-const char *avgImageFileName = "avgimage.ppm";
-long *avgImageBuffer;
+bool AvgImageWriteEnabled = false;
+fs::path AvgImageFileName;
+long *AvgImageBuffer;
 // int avgImageFrames;
 
 #if defined(__APPLE__)
@@ -352,16 +353,15 @@ void SetMessage(const char *str)
 
 void TryFreeAvgImage(void)
 {
-  if (!isAvgImageWrited) {
+  if (!AvgImageWriteEnabled) {
     return;
   }
 
-  C_File avgImageFile;
-  avgImageFile.Write(avgImageFileName);
-  avgImageFile.PrintF("P6\n%ld %ld\n255\n", WIDTH, HEIGHT);
+  fs::ofstream OFS(AvgImageFileName, std::ios_base::binary);
+  OFS << format("P6\n%ld %ld\n255\n") % WIDTH % HEIGHT;
 
   long divider = 0;
-  long *ptr = avgImageBuffer;
+  long *ptr = AvgImageBuffer;
 
   for (int i = WIDTH * HEIGHT * 3; i--;)
   {
@@ -379,18 +379,18 @@ void TryFreeAvgImage(void)
   }
 
   // long divider = (avgImageFrames > 0 ? avgImageFrames : 1);
-  ptr = avgImageBuffer;
+  ptr = AvgImageBuffer;
 
   for (int i = WIDTH * HEIGHT * 3; i--;) {
-    avgImageFile.PutBYTE(*(ptr++) / divider);
+    writeU8(OFS, *(ptr++) / divider);
   }
 
-  avgImageFile.Close();
+  OFS.close();
 
-  delete[] avgImageBuffer;
-  avgImageBuffer = nullptr;
+  delete[] AvgImageBuffer;
+  AvgImageBuffer = nullptr;
 
-  isAvgImageWrited = false;
+  AvgImageWriteEnabled = false;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -408,23 +408,23 @@ void StrToLower(char *str)
 #define MAX_FILES 4096
 #define MAX_FNAME 256
 
-void LoadNormalFile(const char *fname, int drive, const char *arcName = nullptr)
+void loadNormalFile(const fs::path& fname, int drive, const fs::path& arcName = "")
 {
-  if (C_Tape::IsTapeFormat(fname))
+  if (C_Tape::isTapeFormat(fname))
   {
-    C_Tape::Insert(fname);
+    C_Tape::insert(fname);
   }
-  else if (!stricmp(C_DirWork::ExtractExt(fname), "z80"))
+  else if (lowerCaseExtension(fname) == ".z80")
   {
-    if (load_z80_snap(fname, cpu, dev_mman, dev_border)) {
+    if (loadZ80Snap(fname, cpu, dev_mman, dev_border)) {
       dev_tsfm.OnReset();
     } else {
       StrikeMessage("Error loading snapshot");
     }
   }
-  else if (!stricmp(C_DirWork::ExtractExt(fname), "sna"))
+  else if (lowerCaseExtension(fname) == ".sna")
   {
-    if (load_sna_snap(fname, cpu, dev_mman, dev_border)) {
+    if (loadSnaSnap(fname, cpu, dev_mman, dev_border)) {
       dev_tsfm.OnReset();
     } else {
       StrikeMessage("Error loading snapshot");
@@ -433,18 +433,20 @@ void LoadNormalFile(const char *fname, int drive, const char *arcName = nullptr)
   else
   {
     wd1793_load_dimage(fname, drive);
-    strcpy(oldFileName[drive], C_DirWork::Normalize(arcName ? arcName : fname, true));
+    OldFileName[drive] = (arcName.empty() ? fname : arcName);
+    // strcpy(oldFileName[drive], C_DirWork::Normalize(arcName ? arcName : fname, true));
   }
 }
 
-bool TryLoadArcFile(const char *arcName, int drive)
+/* FIXME
+bool TryLoadArcFile(fs::path arcName, int drive)
 {
   C_File fl;
   char res[MAX_PATH];
   char tmp[MAX_PATH], str[MAX_FNAME];
   char files[MAX_FILES][MAX_FNAME];
   int filesCount;
-  string plugin_fn;
+  fs::path plugin_fn;
 
   strcpy(tmp, C_DirWork::ExtractExt(arcName));
 
@@ -490,9 +492,11 @@ bool TryLoadArcFile(const char *arcName, int drive)
 
   return true; // "true" here means ONLY that the file is an archive
 }
+*/
 
-void TryNLoadFile(const char *fname, int drive)
+void TryNLoadFile(const fs::path& fname, int drive)
 {
+/*
   char bname[MAX_PATH];
   strcpy(bname, fname);
 
@@ -514,13 +518,15 @@ void TryNLoadFile(const char *fname, int drive)
     tname[1] = ':';
   }
 #endif
+*/
 
-  if (tname[0] != 0) {
-    printf("Trying to load \"%s\" ...\n", tname);
+  if (!fname.empty()) {
+    std::cout << "Trying to load \"" << fname << "\" ..." << endl;
 
-    if (!TryLoadArcFile(tname, drive)) {
-      LoadNormalFile(tname, drive);
-    }
+FIXME:
+//    if (!TryLoadArcFile(tname, drive)) {
+      loadNormalFile(fname, drive);
+//    }
   }
 }
 
@@ -550,13 +556,13 @@ void Action_MaxSpeed(void)
 
 void Action_QuickLoad(void)
 {
-  bool (* loadSnap)(const char *filename, Z80EX_CONTEXT * cpu, C_MemoryManager & mmgr,
-                    C_Border & border);
+  bool (* loadSnap)(const fs::path& filename, Z80EX_CONTEXT *cpu, C_MemoryManager& mmgr,
+                    C_Border& border);
 
   isPaused = false;
 
   const char *snapName = (params.snapFormat == SNAP_FORMAT_SNA ? "snap.sna" : "snap.z80");
-  loadSnap = (params.snapFormat == SNAP_FORMAT_SNA ? load_sna_snap : load_z80_snap);
+  loadSnap = (params.snapFormat == SNAP_FORMAT_SNA ? loadSnaSnap : loadZ80Snap);
 
   if (!loadSnap(snapName, cpu, dev_mman, dev_border)) SetMessage("Error loading snapshot");
   else SetMessage("Snapshot loaded");
@@ -564,13 +570,13 @@ void Action_QuickLoad(void)
 
 void Action_QuickSave(void)
 {
-  void (* saveSnap)(const char *filename, Z80EX_CONTEXT * cpu, C_MemoryManager & mmgr,
-                    C_Border & border);
+  void (* saveSnap)(const fs::path& filename, Z80EX_CONTEXT *cpu, C_MemoryManager& mmgr,
+                    C_Border& border);
 
   isPaused = false;
 
   const char *snapName = (params.snapFormat == SNAP_FORMAT_SNA ? "snap.sna" : "snap.z80");
-  saveSnap = (params.snapFormat == SNAP_FORMAT_SNA ? save_sna_snap : save_z80_snap);
+  saveSnap = (params.snapFormat == SNAP_FORMAT_SNA ? saveSnaSnap : saveZ80Snap);
 
   saveSnap(snapName, cpu, dev_mman, dev_border);
   SetMessage("Snapshot saved");
@@ -725,24 +731,24 @@ void Action_JoyOnKeyb(void)
 
 void Action_WriteAvgImage(void)
 {
-  if (isAvgImageWrited)
+  if (AvgImageWriteEnabled)
   {
     TryFreeAvgImage();
   }
   else
   {
-    isAvgImageWrited = true;
-    avgImageBuffer = new long[WIDTH * HEIGHT * 3];
+    AvgImageWriteEnabled = true;
+    AvgImageBuffer = new long[WIDTH * HEIGHT * 3];
     // avgImageFrames = 0;
 
-    long *ptr = avgImageBuffer;
+    long *ptr = AvgImageBuffer;
 
     for (int i = WIDTH * HEIGHT * 3; i--;) {
       *(ptr++) = 0;
     }
   }
 
-  SetMessage(isAvgImageWrited ? "Avg image write ON" : "Avg image write OFF");
+  SetMessage(AvgImageWriteEnabled ? "Avg image write ON" : "Avg image write OFF");
 }
 
 s_Action cfgActions[] =
@@ -974,7 +980,7 @@ void InitAll(void)
 
   InitSurfaces();
   InitFont();
-  FileDialogInit();
+  fileDialogInit();
   C_Tape::Init();
 
   for (i = 0; i < 0x10000; i++) breakpoints[i] = false;
@@ -1125,7 +1131,7 @@ inline void CpuCalcTacts(unsigned long cmdClk) {
   }
 
   devClk = cpuClk;
-  C_Tape::Process();
+  C_Tape::process();
 
   if (runDebuggerFlag || breakpoints[z80ex_get_reg(cpu, regPC)]) {
     if (SDL_MUSTLOCK(renderSurf)) {
@@ -1168,7 +1174,7 @@ inline void DebugCpuCalcTacts(unsigned long cmdClk)
   }
 
   devClk = cpuClk;
-  C_Tape::Process();
+  C_Tape::process();
 }
 
 int (* DoCpuStep)(Z80EX_CONTEXT *cpu) = z80ex_step;
@@ -1250,7 +1256,7 @@ void Render(void)
     sn = 1 - sn;
   } else renderSurf = screen;
 
-  if ((drawFrame || isAvgImageWrited /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
+  if ((drawFrame || AvgImageWriteEnabled /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
   {
     if (SDL_LockSurface(renderSurf) < 0)
     {
@@ -1276,7 +1282,7 @@ void Render(void)
     CpuInt();
   }
 
-  if (drawFrame || isAvgImageWrited /* isLongImageWrited */)
+  if (drawFrame || AvgImageWriteEnabled /* isLongImageWrited */)
   {
     while (cpuClk < MAX_FRAME_TACTS)
     {
@@ -1296,9 +1302,9 @@ void Render(void)
   cpuClk -= MAX_FRAME_TACTS;
   devClk = cpuClk;
 
-  if ((drawFrame || isAvgImageWrited /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
+  if ((drawFrame || AvgImageWriteEnabled /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
     SDL_UnlockSurface(renderSurf);
-  if (params.antiFlicker && (drawFrame || isAvgImageWrited /* isLongImageWrited */))
+  if (params.antiFlicker && (drawFrame || AvgImageWriteEnabled /* isLongImageWrited */))
     AntiFlicker(renderSurf, scrSurf[sn]);
 
   // if (isLongImageWrited)
@@ -1323,10 +1329,10 @@ void Render(void)
   //  longImagePos = (longImagePos + 1) % 192;
   // }
 
-  if (isAvgImageWrited)
+  if (AvgImageWriteEnabled)
   {
     int *src = (int *)screen->pixels;
-    long *dst = avgImageBuffer;
+    long *dst = AvgImageBuffer;
 
     for (int i = HEIGHT; i--;)
     {
@@ -1367,9 +1373,9 @@ void DrawIndicators(void)
   if (params.maxSpeed) OutputGimpImage(32, 0, (s_GimpImage *) &img_turboOn);
   else if (params.showInactiveIcons) OutputGimpImage(32, 0, (s_GimpImage *) &img_turboOff);
 
-  if (C_Tape::IsActive())
+  if (C_Tape::isActive())
   {
-    sprintf(buf, "%d%%", C_Tape::GetPosPerc());
+    sprintf(buf, "%d%%", C_Tape::getPosPerc());
 
     int wdt = font.StrLenPx(buf);
     font.PrintString(WIDTH - 4 - wdt, 4, buf);
@@ -1446,7 +1452,7 @@ void Process(void)
         }
       } else drawFrame = true;
 
-      tapePrevActive = C_Tape::IsActive();
+      tapePrevActive = C_Tape::isActive();
 
       Render();
       frames++;
@@ -1527,7 +1533,7 @@ void Process(void)
     turboMultiplier = turboMultiplierNx;
     unturbo = unturboNx;
 
-    if (!isPaused && tapePrevActive && !C_Tape::IsActive())
+    if (!isPaused && tapePrevActive && !C_Tape::isActive())
     {
       if (params.maxSpeed)
       {
@@ -1693,9 +1699,6 @@ void FreeAll(void)
 
   z80ex_destroy(cpu);
 
-  if (AppEnv::executableDir) {
-    free(AppEnv::executableDir);
-  }
 }
 
 void ParseCmdLine(int argc, char *argv[])
@@ -1793,61 +1796,57 @@ int main(int argc, char *argv[])
 {
   OutputLogo();
 
-  if (argc > 0) {		// just for case
-    AppEnv::executableDir = AllocNstrcpy(C_DirWork::ExtractPath(argv[0]));
-  } else {
-    AppEnv::executableDir = AllocNstrcpy(".");
-  }
-
-  env.Initialize("zemu");
+  env.initialize("zemu");
+  
+  // FIXME:
+  AvgImageFileName = env.newDataFilePath("avgimage.ppm");
 
   try
   {
     string str;
 
     // core
-    str = env.GetString("core", "snapformat", "sna");
+    str = env.getString("core", "snapformat", "sna");
     transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
 
     if (str == "sna") params.snapFormat = SNAP_FORMAT_SNA;
     else params.snapFormat = SNAP_FORMAT_Z80;
 
     // beta128
-    str = env.GetString("beta128", "diskA", "");
+    str = env.getString("beta128", "diskA", "");
     if (!str.empty()) wd1793_load_dimage(str.c_str(), 0);
 
-    str = env.GetString("beta128", "diskB", "");
+    str = env.getString("beta128", "diskB", "");
     if (!str.empty()) wd1793_load_dimage(str.c_str(), 1);
 
-    str = env.GetString("beta128", "diskC", "");
+    str = env.getString("beta128", "diskC", "");
     if (!str.empty()) wd1793_load_dimage(str.c_str(), 2);
 
-    str = env.GetString("beta128", "diskD", "");
+    str = env.getString("beta128", "diskD", "");
     if (!str.empty()) wd1793_load_dimage(str.c_str(), 3);
 
-    wd1793_set_nodelay(env.GetBool("beta128", "nodelay", false));
+    wd1793_set_nodelay(env.getBool("beta128", "nodelay", false));
 
-    str = env.GetString("beta128", "sclboot", "boot.$b");
-
-    str = env.FindDataFile("boot", str.c_str());
-    if (!str.empty()) wd1793_set_appendboot(str.c_str());
+    fs::path p = env.getString("beta128", "sclboot", "boot.$b");
+    p = env.findDataFile("boot", p);
+    if (!p.empty()) wd1793_set_appendboot(p);
 
     // display
-    params.fullscreen = env.GetBool("display", "fullscreen", false);
-    params.scale2x = env.GetBool("display", "scale2x", true);
-    params.scanlines = env.GetBool("display", "scanlines", false);
-    params.useFlipSurface = env.GetBool("display", "sdl_useflipsurface", false);
-    params.antiFlicker = env.GetBool("display", "antiflicker", false);
-    params.showInactiveIcons = env.GetBool("display", "showinactiveicons", false);
+    params.fullscreen = env.getBool("display", "fullscreen", false);
+    params.scale2x = env.getBool("display", "scale2x", true);
+    params.scanlines = env.getBool("display", "scanlines", false);
+    params.useFlipSurface = env.getBool("display", "sdl_useflipsurface", false);
+    params.antiFlicker = env.getBool("display", "antiflicker", false);
+    params.showInactiveIcons = env.getBool("display", "showinactiveicons", false);
 
     // input
-    params.mouseDiv = env.GetInt("input", "mousediv", 1);
+    params.mouseDiv = env.getInt("input", "mousediv", 1);
     if (params.mouseDiv <= 0) params.mouseDiv = 1;
     else if (params.mouseDiv > 8) params.mouseDiv = 8;
 
     // sound
-    params.sound = env.GetBool("sound", "enable", true);
-    params.mixerMode = env.GetInt("sound", "mixermode", 1);
+    params.sound = env.getBool("sound", "enable", true);
+    params.mixerMode = env.getInt("sound", "mixermode", 1);
 
 #ifdef _WIN32
     eSndBackend default_snd_backend = SND_BACKEND_WIN32;
@@ -1855,7 +1854,7 @@ int main(int argc, char *argv[])
     eSndBackend default_snd_backend = SND_BACKEND_SDL;
 #endif
 
-    str = env.GetString("sound", "sound_backend", "auto");
+    str = env.getString("sound", "sound_backend", "auto");
     transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
 
     if (str == "sdl") params.sndBackend = SND_BACKEND_SDL;
@@ -1866,23 +1865,23 @@ int main(int argc, char *argv[])
 #endif
     else params.sndBackend = default_snd_backend;
 
-    params.sdlBufferSize = env.GetInt("sound", "sdlbuffersize", 4);
+    params.sdlBufferSize = env.getInt("sound", "sdlbuffersize", 4);
 
 #ifdef __unix__
-    params.soundParam = env.GetInt("sound", "ossfragnum", 8);
+    params.soundParam = env.getInt("sound", "ossfragnum", 8);
 #endif
 
 #ifdef _WIN32
-    params.soundParam = config.GetInt("sound", "wqsize", 4);
+    params.soundParam = config.getInt("sound", "wqsize", 4);
 #endif
 
     // cputrace
-    params.cpuTraceEnabled = env.GetBool("cputrace", "enable", false);
-    str = env.GetString("cputrace", "format", "[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] "
+    params.cpuTraceEnabled = env.getBool("cputrace", "enable", false);
+    str = env.getString("cputrace", "format", "[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] "
       "HL=[HL] IX=[IX] IY=[IY] SP=[SP] I=[I] R=[R] AF'=[AF'] BC'=[BC'] DE'=[DE'] HL'=[HL'] "
       "IFF1=[IFF1] IFF2=[IFF2] IM=[IM] INTR=[INTR]");
     strcpy(params.cpuTraceFormat, str.c_str());
-    str = env.GetString("cputrace", "filename", "cputrace.log");
+    str = env.getString("cputrace", "filename", "cputrace.log");
     strcpy(params.cpuTraceFileName, str.c_str());
 
     int spec = SDL_INIT_VIDEO;
@@ -1954,7 +1953,7 @@ int main(int argc, char *argv[])
     InitAll();
     ResetSequence();
 
-    if (env.GetBool("core", "trdos_at_start", false))
+    if (env.getBool("core", "trdos_at_start", false))
     {
       dev_mman.OnOutputByte(0x7FFD, 0x10);
       dev_trdos.Enable();

@@ -21,6 +21,64 @@
 
 #include "defines.h"
 #include <string.h>
+#include <boost/algorithm/string.hpp>
+#include <string>
+
+using namespace boost::algorithm;
+
+// TODO: remove file operations to a more appropriate place
+
+template <typename Word>
+fs::ifstream& readWord(fs::ifstream& IFS, Word& Value) {
+  Value = 0;
+  for(unsigned Size = 0; Size < sizeof( Word ); ++Size)
+    Value |= IFS.get() << (8 * Size);
+  return IFS;
+}
+
+template <typename Word>
+fs::ofstream& writeWord(fs::ofstream& OFS, Word Value) {
+  for(unsigned Size = sizeof( Word ); Size; --Size, Value >>= 8)
+    OFS.put(static_cast<char>(Value & 0xff));
+  return OFS;
+}
+
+uint8_t readU8(fs::ifstream& IFS) {
+  uint8_t V;
+  readWord(IFS, V);
+  return V;
+}
+
+void writeU8 (fs::ofstream& OFS, const uint8_t Data) {
+  writeWord(OFS, Data);
+}
+
+uint16_t readU16(fs::ifstream& IFS) {
+  uint16_t V;
+  readWord(IFS, V);
+  return V;
+}
+
+void writeU16 (fs::ofstream& OFS, const uint16_t Data) {
+  writeWord(OFS, Data);
+}
+
+uint32_t readU32(fs::ifstream& IFS) {
+  uint32_t V;
+  readWord(IFS, V);
+  return V;
+}
+
+void writeU32 (fs::ofstream& OFS, const uint32_t Data) {
+  writeWord(OFS, Data);
+}
+
+std::string lowerCaseExtension(const fs::path& Path) {
+  std::string ext = Path.extension().string();
+  to_lower(ext);
+  return ext;
+}
+
 
 double sqq(double n)
 {

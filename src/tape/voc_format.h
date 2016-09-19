@@ -2,14 +2,12 @@
 #define _VOC_FORMAT_H_
 
 #include "../zemu.h"
-#include "../file.h"
 #include "tape_format.h"
 
 class C_VocFormat : public C_TapeFormat
 {
-public:
-
-  C_File fl;
+private:
+  fs::ifstream IFS;
   uint64_t allTicks;
   bool active;
   bool currBit;
@@ -27,17 +25,18 @@ public:
   	unsigned int divider;
   	unsigned int sampleSz;
   */
+public:
   C_VocFormat();
   virtual ~C_VocFormat();
 
-  bool Load(const char *fname);
-  bool ProcessTicks(uint64_t ticks);
-  bool GetCurrBit(void);
-  void Stop(void);
-  void Start(void);
-  void Rewind(void);
-  unsigned int GetPosPerc(void);
-  bool IsActive(void);
+  virtual bool load(const fs::path& fname);
+  virtual bool processTicks(uint64_t ticks);
+  virtual bool getCurrBit(void);
+  virtual void stop(void);
+  virtual void start(void);
+  virtual void rewind(void);
+  virtual unsigned int getPosPerc(void);
+  virtual bool isActive(void);
 };
 
 #endif /* _VOC_FORMAT_H_ */

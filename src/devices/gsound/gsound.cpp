@@ -25,7 +25,7 @@ uint8_t *C_GSound::writeMap[4];
 
 void C_GSound::Init(void)
 {
-  enabled = env.GetBool("sound", "enablegs", false);
+  enabled = env.getBool("sound", "enablegs", false);
 
   if (enabled)
   {
@@ -40,10 +40,10 @@ void C_GSound::Init(void)
     string filename;
     size_t offset;
 
-    filename = env.GetString("sound", "gsrom", "gs105a.rom");
+    filename = env.getString("sound", "gsrom", "gs105a.rom");
     filename = split_romname(filename, &offset);
 
-    if (env.LoadDataFile("roms", filename.c_str(), mem, 0x8000, offset) != 0x8000) {
+    if (env.loadDataFile("roms", filename.c_str(), mem, 0x8000, offset) != 0x8000) {
       throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 

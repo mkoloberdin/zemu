@@ -16,12 +16,12 @@ C_JoystickManager *C_JoystickManager::Instance()
 // [rst]
 void C_JoystickManager::Init()
 {
-  params.kempstonEnable = env.GetBool("kempstonjoystick", "enable", false);
+  params.kempstonEnable = env.getBool("kempstonjoystick", "enable", false);
 
   if (params.kempstonEnable)
   {
-    params.kempstonOnStickNum = env.GetInt("kempstonjoystick", "sysjoysticknum", -1);
-    params.kempstonAxisTreshold = env.GetInt("kempstonjoystick", "axisthreshold", DEF_JOY_AXIS_TRESHOLD);
+    params.kempstonOnStickNum = env.getInt("kempstonjoystick", "sysjoysticknum", -1);
+    params.kempstonAxisTreshold = env.getInt("kempstonjoystick", "axisthreshold", DEF_JOY_AXIS_TRESHOLD);
 
     // если номер джойстика < 0, то кемпстоном можно будет управлять только с клавиатуры
     if (params.kempstonOnStickNum >= 0)

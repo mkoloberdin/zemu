@@ -3,11 +3,11 @@
 #include "snap_sna.h"
 #include "exceptions.h"
 #include "zemu.h"
-#include "file.h"
 
-bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mmgr, C_Border &border)
+bool loadSnaSnap(const fs::path& filename, Z80EX_CONTEXT *cpu, C_MemoryManager& mmgr,
+                 C_Border& border)
 {
-  C_File fl;
+  fs::ifstream IFS;
   uint8_t border_color;
   bool banks[8];
   uint8_t buffer[16384];
@@ -16,48 +16,51 @@ bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
   uint8_t is_trdos;
 
   try {
-    fl.Read(filename);
+    IFS.open(filename, std::ios_base::binary);
   } catch (C_E &e) {
     return false;
   }
 
-  z80ex_set_reg(cpu, regI, fl.GetBYTE());
-  z80ex_set_reg(cpu, regHL_, fl.GetWORD());
-  z80ex_set_reg(cpu, regDE_, fl.GetWORD());
-  z80ex_set_reg(cpu, regBC_, fl.GetWORD());
-  z80ex_set_reg(cpu, regAF_, fl.GetWORD());
-  z80ex_set_reg(cpu, regHL, fl.GetWORD());
-  z80ex_set_reg(cpu, regDE, fl.GetWORD());
-  z80ex_set_reg(cpu, regBC, fl.GetWORD());
-  z80ex_set_reg(cpu, regIY, fl.GetWORD());
-  z80ex_set_reg(cpu, regIX, fl.GetWORD());
+  z80ex_set_reg(cpu, regI, readU8(IFS));
+  z80ex_set_reg(cpu, regHL_, readU16(IFS));
+  z80ex_set_reg(cpu, regDE_, readU16(IFS));
+  z80ex_set_reg(cpu, regBC_, readU16(IFS));
+  z80ex_set_reg(cpu, regAF_, readU16(IFS));
+  z80ex_set_reg(cpu, regHL, readU16(IFS));
+  z80ex_set_reg(cpu, regDE, readU16(IFS));
+  z80ex_set_reg(cpu, regBC, readU16(IFS));
+  z80ex_set_reg(cpu, regIY, readU16(IFS));
+  z80ex_set_reg(cpu, regIX, readU16(IFS));
 
-  uint8_t intm = fl.GetBYTE();
+  uint8_t intm = readU8(IFS);
 
   z80ex_set_reg(cpu, regIFF1, intm & 1);
   z80ex_set_reg(cpu, regIFF2, (intm >> 1) & 1);
 
-  z80ex_set_reg(cpu, regR, fl.GetBYTE());
-  z80ex_set_reg(cpu, regAF, fl.GetWORD());
-  z80ex_set_reg(cpu, regSP, fl.GetWORD());
-  z80ex_set_reg(cpu, regIM, fl.GetBYTE());
+  z80ex_set_reg(cpu, regR, readU8(IFS));
+  z80ex_set_reg(cpu, regAF, readU16(IFS));
+  z80ex_set_reg(cpu, regSP, readU16(IFS));
+  z80ex_set_reg(cpu, regIM, readU8(IFS));
 
-  border_color = fl.GetBYTE();
+  border_color = readU8(IFS);
 
   mmgr.OnReset();
   for (int i = 0; i < 8; i++) banks[i] = false;
 
-  for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 16384, fl.GetBYTE());
+  for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 16384, readU8(IFS));
   banks[5] = true;
 
-  for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 32768, fl.GetBYTE());
+  for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 32768, readU8(IFS));
   banks[2] = true;
 
-  for (int i = 0; i < 16384; i++) buffer[i] = fl.GetBYTE();
+  for (int i = 0; i < 16384; i++) buffer[i] = readU8(IFS);
 
-  if (fl.Eof())
+  // If this read op triggers EOF then it is a 48K snapshot
+  uint16_t regPC_128K = readU16(IFS);
+  
+  if (IFS.eof()) // 48K snapshot
   {
-    mmgr.OnOutputByte(0x7ffd, 0x30);	// set 48k mode
+    mmgr.OnOutputByte(0x7ffd, 0x30);  // set 48k mode
     for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 49152, buffer[i]);
 
     uint16_t sp = z80ex_get_reg(cpu, regSP);
@@ -75,12 +78,11 @@ bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
     z80ex_set_reg(cpu, regSP, sp);
     z80ex_set_reg(cpu, regPC, pc);
   }
-  else
-  {
-    z80ex_set_reg(cpu, regPC, fl.GetWORD());
+  else { // 128K snapshot
+    z80ex_set_reg(cpu, regPC, regPC_128K);
 
-    port_7ffd = fl.GetBYTE();
-    is_trdos = fl.GetBYTE();
+    port_7ffd = readU8(IFS);
+    is_trdos = readU8(IFS);
 
     mmgr.OnOutputByte(0x7ffd, port_7ffd & 7);
     for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 49152, buffer[i]);
@@ -91,7 +93,7 @@ bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
       if (banks[k]) continue;
 
       mmgr.OnOutputByte(0x7ffd, k);
-      for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 49152, fl.GetBYTE());
+      for (int i = 0; i < 16384; i++) mmgr.OnWriteByte(i + 49152, readU8(IFS));
     }
 
     C_TrDos::trdos = (is_trdos != 0);
@@ -100,29 +102,30 @@ bool load_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
 
   // set border color
   border.OnOutputByte(0x00FE, border_color);
-  fl.Close();
+  IFS.close();
   return true;
 }
 
-void save_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mmgr, C_Border &border)
+void saveSnaSnap(const fs::path& filename, Z80EX_CONTEXT *cpu, C_MemoryManager& mmgr,
+                 C_Border& border)
 {
-  C_File fl;
+  fs::ofstream OFS;
   bool banks[8];
 
-  fl.Write(filename);
+  OFS.open(filename, std::ios_base::binary);
 
-  fl.PutBYTE(z80ex_get_reg(cpu, regI));
-  fl.PutWORD(z80ex_get_reg(cpu, regHL_));
-  fl.PutWORD(z80ex_get_reg(cpu, regDE_));
-  fl.PutWORD(z80ex_get_reg(cpu, regBC_));
-  fl.PutWORD(z80ex_get_reg(cpu, regAF_));
-  fl.PutWORD(z80ex_get_reg(cpu, regHL));
-  fl.PutWORD(z80ex_get_reg(cpu, regDE));
-  fl.PutWORD(z80ex_get_reg(cpu, regBC));
-  fl.PutWORD(z80ex_get_reg(cpu, regIY));
-  fl.PutWORD(z80ex_get_reg(cpu, regIX));
+  writeU8(OFS, z80ex_get_reg(cpu, regI));
+  writeU16(OFS, z80ex_get_reg(cpu, regHL_));
+  writeU16(OFS, z80ex_get_reg(cpu, regDE_));
+  writeU16(OFS, z80ex_get_reg(cpu, regBC_));
+  writeU16(OFS, z80ex_get_reg(cpu, regAF_));
+  writeU16(OFS, z80ex_get_reg(cpu, regHL));
+  writeU16(OFS, z80ex_get_reg(cpu, regDE));
+  writeU16(OFS, z80ex_get_reg(cpu, regBC));
+  writeU16(OFS, z80ex_get_reg(cpu, regIY));
+  writeU16(OFS, z80ex_get_reg(cpu, regIX));
 
-  fl.PutBYTE((z80ex_get_reg(cpu, regIFF1) ? 1 : 0) | (z80ex_get_reg(cpu, regIFF2) ? 2 : 0));
+  writeU8(OFS, (z80ex_get_reg(cpu, regIFF1) ? 1 : 0) | (z80ex_get_reg(cpu, regIFF2) ? 2 : 0));
   uint16_t sp = z80ex_get_reg(cpu, regSP);
 
   if (mmgr.port7FFD == 0x30)
@@ -131,12 +134,12 @@ void save_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
     sp -= 2;
   }
 
-  fl.PutBYTE(z80ex_get_reg(cpu, regR));
-  fl.PutWORD(z80ex_get_reg(cpu, regAF));
-  fl.PutWORD(sp);
-  fl.PutBYTE(z80ex_get_reg(cpu, regIM));
+  writeU8(OFS, z80ex_get_reg(cpu, regR));
+  writeU16(OFS, z80ex_get_reg(cpu, regAF));
+  writeU16(OFS, sp);
+  writeU16(OFS, z80ex_get_reg(cpu, regIM));
 
-  fl.PutBYTE(border.portFB & 7);
+  writeU8(OFS, border.portFB & 7);
 
   uint8_t buffer[0xC000];
   for (int i = 0; i < 8; i++) banks[i] = false;
@@ -157,26 +160,26 @@ void save_sna_snap(const char *filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mm
     sp++;
     if (sp >= 0x4000) buffer[sp - 0x4000] = (uint8_t)(pc >> 8);
 
-    fl.WriteBlock(buffer, 0xC000);
+    OFS.write((const char *)buffer, 0xC000);
   }
   else
   {
-    fl.WriteBlock(buffer, 0x8000);
+    OFS.write((const char *)buffer, 0x8000);
 
     int bank = mmgr.port7FFD & 7;
-    fl.WriteBlock(&mmgr.ram[0x4000 * bank], 0x4000);
+    OFS.write((const char *)&mmgr.ram[0x4000 * bank], 0x4000);
     banks[bank] = true;
 
-    fl.PutWORD(pc);
-    fl.PutBYTE(mmgr.port7FFD);
-    fl.PutBYTE(C_TrDos::trdos ? 1 : 0);
+    writeU16(OFS, pc);
+    writeU8(OFS, mmgr.port7FFD);
+    writeU8(OFS, C_TrDos::trdos ? 1 : 0);
 
     for (int k = 0; k < 8; k++)
     {
       if (banks[k]) continue;
-      fl.WriteBlock(&mmgr.ram[0x4000 * k], 0x4000);
+      OFS.write((const char *)&mmgr.ram[0x4000 * k], 0x4000);
     }
   }
 
-  fl.Close();
+  OFS.close();
 }

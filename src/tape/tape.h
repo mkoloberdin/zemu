@@ -21,20 +21,20 @@ public:
   static void OnFrameStart(void);
   static void OnAfterFrameRender(void);
 
-  static int GetCurrBit(void);
-  static void Process(void);
+  static int getCurrBit(void);
+  static void process(void);
 
-  static bool IsLoaded(void);
-  static bool IsActive(void);
-  static unsigned int GetPosPerc(void);
+  static bool isLoaded(void);
+  static bool isActive(void);
+  static unsigned int getPosPerc(void);
 
-  static bool IsTapeFormat(const char *fname);
+  static bool isTapeFormat(const fs::path& fname);
 
-  static void Eject(void);
-  static bool Insert(const char *fname);
-  static void Start(void);
-  static void Stop(void);
-  static void Rewind(void);
+  static void eject(void);
+  static bool insert(const fs::path& fname);
+  static void start(void);
+  static void stop(void);
+  static void rewind(void);
 };
 
 #endif

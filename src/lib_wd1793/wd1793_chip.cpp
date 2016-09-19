@@ -13,7 +13,7 @@ void wd1793_out(uint8_t port, uint8_t val, uint64_t time, int *err)
   wd.out(port, val, time, err);
 }
 
-int wd1793_load_dimage(const char *filename, int drive)
+int wd1793_load_dimage(const fs::path& filename, int drive)
 {
   return wd.load_dimage(filename, drive);
 }
@@ -28,7 +28,7 @@ uint8_t wd1793_get_status_reg()
   return wd.get_status_reg();
 }
 
-void wd1793_set_appendboot(const char *boot_name)
+void wd1793_set_appendboot(const fs::path& boot_name)
 {
   wd.set_appendboot(boot_name);
 }
@@ -48,7 +48,7 @@ bool wd1793_is_disk_changed(int drive)
   return wd.is_disk_changed(drive);
 }
 
-int wd1793_save_dimage(char *filename, int drive, enum DIMAGE_TYPE type)
+int wd1793_save_dimage(const fs::path& filename, int drive, enum DIMAGE_TYPE type)
 {
   return wd.save_dimage(filename, drive, type);
 }

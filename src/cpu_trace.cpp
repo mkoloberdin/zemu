@@ -1,27 +1,30 @@
 #include <cstdint>
+#include <boost/format.hpp>
+#include <zemu_env.h>
 #include "cpu_trace.h"
-#include "file.h"
 #include "devs.h"
 
-static C_File traceFile;
+using boost::format;
+
+static fs::ofstream TraceOfs;
 int cpuTrace_dT = 0;
 int cpuTrace_intReq = 0;
 
 void CpuTrace_Init(void)
 {
   if (params.cpuTraceEnabled && *params.cpuTraceFormat && *params.cpuTraceFileName) {
-    traceFile.Write(params.cpuTraceFileName);
+    TraceOfs.open(env.newDataFilePath(params.cpuTraceFileName), std::ios_base::trunc);
   }
 }
 
 static void CpuTrace_PutByte(uint8_t val)
 {
-  traceFile.PrintF("%02X", val);
+  TraceOfs << format("%02X") % val;
 }
 
 static void CpuTrace_PutWord(uint16_t val)
 {
-  traceFile.PrintF("%04X", val);
+  TraceOfs << format("%04X") % val;
 }
 
 void CpuTrace_Log(void)
@@ -72,19 +75,19 @@ void CpuTrace_Log(void)
           CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 2, nullptr));
         else if (!strcmp(str, "M4"))
           CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 3, nullptr));
-        else traceFile.PrintF("[%s]", str);
+        else TraceOfs << "[" << str << "]";
       }
-      else traceFile.PrintF("[%s", str);
+      else TraceOfs << "[" << str;
     }
-    else traceFile.PutC(*(formatPtr++));
+    else TraceOfs << *(formatPtr++);
   }
 
-  traceFile.PutC('\n');
+  TraceOfs << std::endl;
 }
 
 void CpuTrace_Close(void)
 {
   if (params.cpuTraceEnabled && *params.cpuTraceFormat && *params.cpuTraceFileName) {
-    traceFile.Close();
+    TraceOfs.close();
   }
 }

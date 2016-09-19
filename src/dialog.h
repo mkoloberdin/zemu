@@ -5,9 +5,9 @@
 
 bool DlgConfirm(const char *message);
 void FileDialog(void);
-void FileDialogInit(void);
+void fileDialogInit(void);
 void RunDebugger(void);
 
-extern char oldFileName[4][MAX_PATH];
+extern std::vector<fs::path> OldFileName;
 
 #endif

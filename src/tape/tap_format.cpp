@@ -1,5 +1,4 @@
 #include "tap_format.h"
-#include "../file.h"
 
 #define TAPE_STATE_STOP 0
 #define TAPE_STATE_PLAY 1
@@ -19,7 +18,7 @@ C_TapFormat::C_TapFormat()
   state = TAPE_STATE_STOP;
   tapeBit = 1;
   counter = 0;
-  data = nullptr;
+  Data = nullptr;
   size = 0;
 
   blockPos = 0;
@@ -31,27 +30,26 @@ C_TapFormat::C_TapFormat()
 
 C_TapFormat::~C_TapFormat()
 {
-  if (data != nullptr) delete[] data;
+  if (Data != nullptr) delete[] Data;
 }
 
-uint8_t C_TapFormat::Data(long pos)
+uint8_t C_TapFormat::data(long pos)
 {
-  return ((pos >= 0 && pos < size) ? data[pos] : 0);
+  return ((pos >= 0 && pos < size) ? Data[pos] : 0);
 }
 
-bool C_TapFormat::Load(const char *fname)
+bool C_TapFormat::load(const fs::path& fname)
 {
-  if (!C_File::FileExists(fname)) return false;
-  size = C_File::FileSize(fname);
+  if(!fs::exists(fname))
+    return false;
+  size = fs::file_size(fname);
 
-  if (data != nullptr) delete[] data;
-  data = new uint8_t[size];
+  if (Data != nullptr) delete[] Data;
+  Data = new uint8_t[size];
 
-  C_File fl;
-  fl.Read(fname);
-  fl.ReadBlock(data, size);
-  fl.Close();
-
+  fs::ifstream ifs(fname, std::ios_base::binary);
+  ifs.read((char *)Data, size);
+  
   blockPos = 0;
   blockSize = 0;
   posInBlock = 0;
@@ -59,7 +57,7 @@ bool C_TapFormat::Load(const char *fname)
   return true;
 }
 
-bool C_TapFormat::ProcessTicks(uint64_t ticks)
+bool C_TapFormat::processTicks(uint64_t ticks)
 {
   for (;;)
   {
@@ -76,10 +74,10 @@ bool C_TapFormat::ProcessTicks(uint64_t ticks)
         break;
       }
 
-      blockSize = Data(blockPos) + 0x100 * Data(blockPos + 1);
+      blockSize = data(blockPos) + 0x100 * data(blockPos + 1);
       posInBlock = -1;
       state = TAPE_STATE_PILOT_TONE;
-      counter = Data(blockPos + 2) ? 1611 : 4032;
+      counter = data(blockPos + 2) ? 1611 : 4032;
       break;
 
     case TAPE_STATE_PILOT_TONE:
@@ -122,7 +120,7 @@ bool C_TapFormat::ProcessTicks(uint64_t ticks)
       }
       else
       {
-        currentByte = Data(blockPos + 2 + posInBlock);
+        currentByte = data(blockPos + 2 + posInBlock);
         counter = 8;
         state = TAPE_STATE_NEXT_BIT;
       }
@@ -168,22 +166,22 @@ bool C_TapFormat::ProcessTicks(uint64_t ticks)
   }
 }
 
-bool C_TapFormat::GetCurrBit(void)
+bool C_TapFormat::getCurrBit(void)
 {
   return tapeBit;
 }
 
-void C_TapFormat::Stop(void)
+void C_TapFormat::stop(void)
 {
   state = TAPE_STATE_STOP;
 }
 
-void C_TapFormat::Start(void)
+void C_TapFormat::start(void)
 {
-  if (data != nullptr) state = TAPE_STATE_PLAY;
+  if (Data != nullptr) state = TAPE_STATE_PLAY;
 }
 
-void C_TapFormat::Rewind(void)
+void C_TapFormat::rewind(void)
 {
   if (state != TAPE_STATE_STOP) state = TAPE_STATE_PLAY;
 
@@ -192,13 +190,13 @@ void C_TapFormat::Rewind(void)
   posInBlock = 0;
 }
 
-unsigned int C_TapFormat::GetPosPerc(void)
+unsigned int C_TapFormat::getPosPerc(void)
 {
   if (blockPos >= size) return 100;
   return (long)(blockPos + posInBlock) * 100L / size;
 }
 
-bool C_TapFormat::IsActive(void)
+bool C_TapFormat::isActive(void)
 {
   return (state != TAPE_STATE_STOP);
 }
