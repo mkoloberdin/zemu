@@ -36,14 +36,14 @@ void C_TsFm::Init(void)
   std::string S = env.getString("sound", "tsfmmode", "zxm");
   to_lower(S);
 
-  static std::map<std::string, int> TSFM_Modes = {
+  static const std::map<std::string, int> TSFM_Modes = {
       { "ay",   TSFM_MODE_AY },
       { "ts",   TSFM_MODE_TS },
       { "tsfm", TSFM_MODE_TSFM },
   };
 
   if(TSFM_Modes.count(S))
-    mode = TSFM_Modes[S];
+    mode = TSFM_Modes.at(S);
 
   ayChip[0].Init();
   soundMixer.AddSource(&ayChip[0].sndRenderer);

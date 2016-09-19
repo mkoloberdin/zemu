@@ -30,7 +30,7 @@ void C_AyChipConfig::ReadConfig(void)
   std::string S = env.getString("sound", "aychippan", "acb");
   to_lower(S);
 
-  static std::map<std::string, PanType> PanTypes = {
+  static const std::map<std::string, PanType> PanTypes = {
     { "mono", PanMono },
     { "abc",  PanABC },
     { "acb",  PanACB },
@@ -40,7 +40,7 @@ void C_AyChipConfig::ReadConfig(void)
     { "cba",  PanCBA }
   };
   if(PanTypes.count(S))
-    panType = PanTypes[S];
+    panType = PanTypes.at(S);
 }
 
 const unsigned *C_AyChipConfig::GetVolTab(void)
