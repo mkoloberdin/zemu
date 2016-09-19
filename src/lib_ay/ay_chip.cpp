@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 #include <zemu_env.h>
 #include "ay_chip.h"
 
@@ -20,23 +21,25 @@ C_AyChipConfig::C_AyChipConfig()
 
 void C_AyChipConfig::ReadConfig(void)
 {
-  const char *str;
+  using namespace boost;
 
-  str = env.getString("sound", "aychiptype", "ym").c_str();
-  chipType = (!strcasecmp(str, "ay") ? TypeAy : TypeYm);
+  chipType = (iequals(env.getString("sound", "aychiptype", "ym"), "ay") ? TypeAy : TypeYm);
 
-  str = env.getString("sound", "aychipvol", "ym").c_str();
-  volType = (!strcasecmp(str, "ay") ? VolAy : VolYm);
+  volType = (iequals(env.getString("sound", "aychipvol", "ym"), "ay") ? VolAy : VolYm);
 
-  str = env.getString("sound", "aychippan", "acb").c_str();
+  std::string S = env.getString("sound", "aychippan", "acb");
+  to_lower(S);
 
-  if (!strcasecmp(str, "mono")) panType = PanMono;
-  else if (!strcasecmp(str, "abc")) panType = PanABC;
-  else if (!strcasecmp(str, "acb")) panType = PanACB;
-  else if (!strcasecmp(str, "bac")) panType = PanBAC;
-  else if (!strcasecmp(str, "bca")) panType = PanBCA;
-  else if (!strcasecmp(str, "cab")) panType = PanCAB;
-  else if (!strcasecmp(str, "cba")) panType = PanCBA;
+  static std::map<std::string, PanType> PanTypes = {
+    { "mono", PanMono },
+    { "abc",  PanABC },
+    { "acb",  PanACB },
+    { "bac",  PanBAC },
+    { "bca",  PanBCA },
+    { "cab",  PanCAB },
+    { "cba",  PanCBA }
+  };
+  panType = PanTypes[S];
 }
 
 const unsigned *C_AyChipConfig::GetVolTab(void)
