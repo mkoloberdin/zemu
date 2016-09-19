@@ -39,7 +39,8 @@ void C_AyChipConfig::ReadConfig(void)
     { "cab",  PanCAB },
     { "cba",  PanCBA }
   };
-  panType = PanTypes[S];
+  if(PanTypes.count(S))
+    panType = PanTypes[S];
 }
 
 const unsigned *C_AyChipConfig::GetVolTab(void)
