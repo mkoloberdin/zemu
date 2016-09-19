@@ -1,4 +1,5 @@
 #include <string>
+#include <boost/algorithm/string.hpp>
 #include <zemu_env.h>
 #include <bin.h>
 #include "tsfm.h"
@@ -20,7 +21,7 @@ int C_TsFm::selectedReg;
 
 void C_TsFm::Init(void)
 {
-  const char *str;
+  using namespace boost;
 
   mode = TSFM_MODE_ZXM;
   pseudoReg = 15;
@@ -32,12 +33,17 @@ void C_TsFm::Init(void)
   AttachAfterFrameRenderHandler(OnAfterFrameRender);
   AttachResetHandler(OnReset);
 
-  std::string s = env.getString("sound", "tsfmmode", "zxm");
-  str = s.c_str();
+  std::string S = env.getString("sound", "tsfmmode", "zxm");
+  to_lower(S);
 
-  if (!strcasecmp(str, "ay")) mode = TSFM_MODE_AY;
-  else if (!strcasecmp(str, "ts")) mode = TSFM_MODE_TS;
-  else if (!strcasecmp(str, "tsfm")) mode = TSFM_MODE_TSFM;
+  static std::map<std::string, int> TSFM_Modes = {
+      { "ay",   TSFM_MODE_AY },
+      { "ts",   TSFM_MODE_TS },
+      { "tsfm", TSFM_MODE_TSFM },
+  };
+
+  if(TSFM_Modes.count(S))
+    mode = TSFM_Modes[S];
 
   ayChip[0].Init();
   soundMixer.AddSource(&ayChip[0].sndRenderer);
