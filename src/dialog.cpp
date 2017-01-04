@@ -61,10 +61,11 @@ bool DlgConfirm(const char *message)
 	DlgClearScreen();
 	Bar(x, y, x+wdt-1, y+hgt-1, DRGB(0x80, 0x20, 0x20));
 	font.PrintString(x+8, y+8, message);
-	UpdateScreen();
 
 	for (;;)
 	{
+		UpdateScreen();
+
 		for (key = 0; SDL_PollEvent(&event);)
 		{
 			if (event.type == SDL_QUIT) exit(0);
@@ -973,9 +974,7 @@ void DebugIt(void)
 		{
 			wdDebug = !wdDebug;
 			DlgConfirm(wdDebug ? "WD1793 debug enabled" : "WD1793 debug disabled");
-
 		}
-
 	} while (key != SDLK_ESCAPE);
 
 	delete[] dispBuf;

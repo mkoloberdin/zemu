@@ -1002,9 +1002,35 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 	uint8_t *s1, *s2, *sr;
 	uint8_t *s1w, *s2w, *srw;
 
-	if (SDL_MUSTLOCK(screen)) {if (SDL_LockSurface(screen) < 0) return;}
-	if (SDL_MUSTLOCK(scrSurf[0])) {if (SDL_LockSurface(scrSurf[0]) < 0) return;}
-	if (SDL_MUSTLOCK(scrSurf[1])) {if (SDL_LockSurface(scrSurf[1]) < 0) return;}
+	if (SDL_MUSTLOCK(screen)) {
+		if (SDL_LockSurface(screen) < 0) {
+			return;
+		}
+	}
+
+	if (SDL_MUSTLOCK(scrSurf[0])) {
+		if (SDL_LockSurface(scrSurf[0]) < 0) {
+			if (SDL_MUSTLOCK(screen)) {
+				SDL_UnlockSurface(screen);
+			}
+
+			return;
+		}
+	}
+
+	if (SDL_MUSTLOCK(scrSurf[1])) {
+		if (SDL_LockSurface(scrSurf[1]) < 0) {
+			if (SDL_MUSTLOCK(scrSurf[0])) {
+				SDL_UnlockSurface(scrSurf[0]);
+			}
+
+			if (SDL_MUSTLOCK(screen)) {
+				SDL_UnlockSurface(screen);
+			}
+
+			return;
+		}
+	}
 
 	if (doCopyOfSurfaces)
 	{
@@ -1060,9 +1086,17 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 		s2 += scrSurf[1]->pitch;
 	}
 
-	if (SDL_MUSTLOCK(scrSurf[1])) SDL_UnlockSurface(scrSurf[1]);
-	if (SDL_MUSTLOCK(scrSurf[0])) SDL_UnlockSurface(scrSurf[0]);
-	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
+	if (SDL_MUSTLOCK(scrSurf[1])) {
+		SDL_UnlockSurface(scrSurf[1]);
+	}
+
+	if (SDL_MUSTLOCK(scrSurf[0])) {
+		SDL_UnlockSurface(scrSurf[0]);
+	}
+
+	if (SDL_MUSTLOCK(screen)) {
+		SDL_UnlockSurface(screen);
+	}
 }
 
 uint64_t actDevClkCounter = 0;
@@ -1546,6 +1580,9 @@ int UpdateScreenThreadFunc(void * param)
 }
 #endif
 
+// Tries to update screen.
+// If screen is already updating, do nothing, therefore this function must be called in a loop,
+// to ensure that screen is really updated
 void UpdateScreen(void)
 {
 	if (!params.scale2x) {

@@ -46,6 +46,7 @@ bool C_KempstonStick::OnKeyDown(SDL_Event &event)
 			break;
 
 		case SDLK_RCTRL:
+		case SDLK_RALT:
 			joy_kbd |= 0x10;
 			break;
 
@@ -79,6 +80,7 @@ bool C_KempstonStick::OnKeyUp(SDL_Event &event)
 			break;
 
 		case SDLK_RCTRL:
+		case SDLK_RALT:
 			joy_kbd &= ~0x10;
 			break;
 
