@@ -1,3 +1,4 @@
+#include <platform/platform.h>
 #include "platform.h"
 
 #include "zemu.h"
@@ -16,8 +17,6 @@ int actualHeight;
 SDL_Surface *screen, *realScreen;
 
 int PITCH, REAL_PITCH;
-
-bool doCopyOfSurfaces = false;
 
 #if defined(__APPLE__)
     SDL_Thread *upadteScreenThread = nullptr;
@@ -153,7 +152,7 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
 
     // AntiFlicker(renderSurf, scrSurf[sn]);
     // FIXME:
-    SDL_Surface *copyFrom = this->renderSurf;
+    SDL_Surface *copyFrom = renderSurf;
     SDL_Surface *copyTo = this->scrSurf[surfNumber];
 
     int i, j;
@@ -170,7 +169,7 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
         if (SDL_LockSurface(this->scrSurf[1]) < 0) return;
     }
 
-    if (doCopyOfSurfaces) {
+    if (this->doCopyOfSurfaces) {
         s1 = (uint8_t *)copyFrom->pixels;
         s2 = (uint8_t *)copyTo->pixels;
 
@@ -187,7 +186,7 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
             s2 += copyTo->pitch;
         }
 
-        doCopyOfSurfaces = false;
+        this->doCopyOfSurfaces = false;
     }
 
     sr = (uint8_t *)screen->pixels;
@@ -344,6 +343,33 @@ int SDLPlatform :: processEvents() {
         }
     }
     return ev;
+}
+
+const PixBuf *SDLPlatform::getPixBuf() {
+    if (params.antiFlicker) {
+        renderSurf = scrSurf[renderSurfNum];
+        renderSurfNum = 1 - renderSurfNum;
+    } else renderSurf = screen;
+
+    if (renderActive && SDL_MUSTLOCK(renderSurf)) {
+        if (SDL_LockSurface(renderSurf) < 0)
+        {
+            printf("Can't lock surface\n");
+            return nullptr;
+        }
+    }
+    pixBuf.pixels = (uint8_t *)(renderSurf->pixels);
+    pixBuf.pitch = renderSurf->pitch;
+    return &pixBuf;
+}
+
+void SDLPlatform::releasePixBuf() {
+    if ((renderActive)) {
+        if(SDL_MUSTLOCK(renderSurf))
+            SDL_UnlockSurface(renderSurf);
+        if (antiFlickerActive)
+            antiFlicker(renderSurfNum); // FIXME: antiFlicker() should use this parameter directly.
+    }
 }
 
 /*

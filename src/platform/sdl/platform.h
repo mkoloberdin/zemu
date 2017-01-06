@@ -27,7 +27,9 @@ public:
 
     virtual int processEvents() override;
 
-    virtual void *getScrSurf() override { return this->scrSurf; }
+    virtual const PixBuf *getPixBuf() override;
+    virtual void releasePixBuf() override;
+    //virtual void *getScrSurf() override { return this->scrSurf; }
     //void unlockRenderSurface() = 0;
     //void lockRenderSurface() = 0;
 
@@ -35,6 +37,7 @@ public:
 
 private:
     SDL_Surface *renderSurf;
+    int renderSurfNum = 0;
     SDL_Surface *scrSurf[2];
 };
 

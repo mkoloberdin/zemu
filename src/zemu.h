@@ -109,7 +109,8 @@ uint8_t ReadByteDasm(uint16_t addr, void *userData);
 void WriteByteDasm(uint16_t addr, uint8_t value);
 void DebugStep(void);
 
-extern SDL_Surface *renderSurf;
+//extern SDL_Surface *renderSurf;
+extern PixBuf const *pixBuf;
 extern int renderPitch;
 extern unsigned long prevRenderClk;
 extern void (*renderPtr)(unsigned long);

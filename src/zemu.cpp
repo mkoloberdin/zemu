@@ -553,7 +553,10 @@ void Action_AntiFlicker(void)
 {
   isPaused = false;
   params.antiFlicker = !params.antiFlicker;
-  if (params.antiFlicker) doCopyOfSurfaces = true;
+  if (params.antiFlicker)
+      platform->antiFlickerOn();
+  else
+      platform->antiFlickerOff();
   SetMessage(params.antiFlicker ? "AntiFlicker ON" : "AntiFlicker OFF");
 }
 
@@ -983,19 +986,25 @@ inline void CpuCalcTacts(unsigned long cmdClk) {
   C_Tape::process();
 
   if (runDebuggerFlag || breakpoints[z80ex_get_reg(cpu, regPC)]) {
+/*
     if (SDL_MUSTLOCK(renderSurf)) {
       SDL_UnlockSurface(renderSurf);
     }
+*/
+      platform->releasePixBuf();
 
     runDebuggerFlag = false;
     RunDebugger();
 
+/*
     if (SDL_MUSTLOCK(renderSurf)) {
       if (SDL_LockSurface(renderSurf) < 0) {
         printf("Can't lock surface\n");
         return;
       }
     }
+*/
+      pixBuf = platform->getPixBuf();
   }
 }
 
@@ -1090,16 +1099,16 @@ void DebugStep(void)
   } while (z80ex_last_op_type(cpu) && cnt > 0);
 }
 
-SDL_Surface *renderSurf;
+//SDL_Surface *renderSurf;
+PixBuf const *pixBuf;
 int renderPitch;
 unsigned long prevRenderClk;
 void (* renderPtr)(unsigned long) = nullptr;
 
 void Render(void)
 {
-  static int sn = 0;
 
-    SDL_Surface *scrSurf = (SDL_Surface *)platform->getScrSurf();
+/*    SDL_Surface *scrSurf = (SDL_Surface *)(platform->getScrSurf());
 
   if (params.antiFlicker)
   {
@@ -1107,7 +1116,7 @@ void Render(void)
     sn = 1 - sn;
   } else renderSurf = screen;
 
-  if ((drawFrame || AvgImageWriteEnabled /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
+  if ((drawFrame || AvgImageWriteEnabled ) && SDL_MUSTLOCK(renderSurf))
   {
     if (SDL_LockSurface(renderSurf) < 0)
     {
@@ -1115,8 +1124,13 @@ void Render(void)
       return;
     }
   }
+*/
+    pixBuf = platform->getPixBuf();
+    if (pixBuf == nullptr)
+        return;
 
-  renderPitch = renderSurf->pitch / 4;
+  // FIXME: !!! This assumes that pitch is always = 4
+  renderPitch = pixBuf->pitch / 4;
 
   if (dev_extport.Is16Colors()) renderPtr = Render16c;
   else if (dev_extport.IsMulticolor()) renderPtr = RenderMulticolor;
@@ -1133,7 +1147,7 @@ void Render(void)
     CpuInt();
   }
 
-  if (drawFrame || AvgImageWriteEnabled /* isLongImageWrited */)
+  if (platform->isRenderOn())
   {
     while (cpuClk < MAX_FRAME_TACTS)
     {
@@ -1153,56 +1167,14 @@ void Render(void)
   cpuClk -= MAX_FRAME_TACTS;
   devClk = cpuClk;
 
-  if ((drawFrame || AvgImageWriteEnabled /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
+/*
+  if ((drawFrame || AvgImageWriteEnabled) && SDL_MUSTLOCK(renderSurf))
     SDL_UnlockSurface(renderSurf);
-  if (params.antiFlicker && (drawFrame || AvgImageWriteEnabled /* isLongImageWrited */))
+  if (params.antiFlicker && (drawFrame || AvgImageWriteEnabled))
     platform->antiFlicker(sn);
+*/
 
-  // if (isLongImageWrited)
-  // {
-  //  int * src = (int *)screen->pixels + (PITCH * (32 + longImagePos)) + 32;
-  //
-  //  for (int i = 256; i--;)
-  //  {
-  //    unsigned int c = *src;
-  //    int r = GETR(c);
-  //    int g = GETG(c);
-  //    int b = GETB(c);
-  //
-  //    longImageFile.PutBYTE(r);
-  //    longImageFile.PutBYTE(g);
-  //    longImageFile.PutBYTE(b);
-  //
-  //    *(src++) = DRGB(255 - r, 255 - g, 255 - b);
-  //  }
-  //
-  //  longImageHeight++;
-  //  longImagePos = (longImagePos + 1) % 192;
-  // }
-
-  if (AvgImageWriteEnabled)
-  {
-    int *src = (int *)screen->pixels;
-    long *dst = AvgImageBuffer;
-
-    for (int i = HEIGHT; i--;)
-    {
-      int *line = src;
-
-      for (int j = WIDTH; j--;)
-      {
-        unsigned int c = *(line++);
-
-        *(dst++) += (long)GETR(c);
-        *(dst++) += (long)GETG(c);
-        *(dst++) += (long)GETB(c);
-      }
-
-      src += PITCH;
-    }
-
-    // avgImageFrames++;
-  }
+    platform->releasePixBuf();
 }
 
 #include "images/floppy.h"
@@ -1294,19 +1266,20 @@ void Process(void)
       {
         if (frameSkip > 0) {
           frameSkip--;
-          drawFrame = false;
+            platform->renderOff();
         } else {
           frameSkip = MAX_SPEED_FRAME_SKIP;
-          drawFrame = true;
+            platform->renderOn();
         }
-      } else drawFrame = true;
+      } else
+          platform->renderOn();
 
       tapePrevActive = C_Tape::isActive();
 
       Render();
       frames++;
 
-      if (drawFrame)
+      if (platform->isRenderOn())
       {
         DrawIndicators();
         ShowMessage();

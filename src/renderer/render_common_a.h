@@ -1,5 +1,6 @@
 unsigned long clk, clMod;
-int *scr, line, pos, zxLine, zxScreen, cl;
+uint32_t *scr, cl;
+int line, pos, zxLine, zxScreen;
 
 if (nextClk < SCREEN_START) {
   return;
@@ -41,7 +42,7 @@ for (clk = prevRenderClk; clk < nextClk;)
       (clMod >= (164 - SCREEN_HOR_OFFSET_TACTS))
      ) {
     cl = colors[dev_border.portFB & 7];
-    scr = (int *)renderSurf->pixels + (renderPitch * line) + (clMod * SCREEN_TACTS_PER_PIXEL);
+    scr = (uint32_t *)pixBuf->pixels + (renderPitch * line) + (clMod * SCREEN_TACTS_PER_PIXEL);
     *(scr++) = cl;
     *(scr) = cl;
     clk++;
@@ -50,4 +51,4 @@ for (clk = prevRenderClk; clk < nextClk;)
   {
     pos = (clMod - (36 - SCREEN_HOR_OFFSET_TACTS)) / 4;
     zxLine = line - (64 - SCREEN_VERT_OFFSET_LINES);
-    scr = (int *)renderSurf->pixels + (renderPitch * line) + ((36 - SCREEN_HOR_OFFSET_TACTS) * SCREEN_TACTS_PER_PIXEL) + (pos * SCREEN_TACTS_PER_PIXEL * 4);
+    scr = (uint32_t *)pixBuf->pixels + (renderPitch * line) + ((36 - SCREEN_HOR_OFFSET_TACTS) * SCREEN_TACTS_PER_PIXEL) + (pos * SCREEN_TACTS_PER_PIXEL * 4);
