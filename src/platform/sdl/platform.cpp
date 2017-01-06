@@ -10,7 +10,6 @@
 #include <SDL_Mutex.h>
 #endif
 
-int videoSpec;
 int actualWidth;
 int actualHeight;
 
@@ -79,8 +78,24 @@ void windows_cleanup() {
 
 #endif // _WIN32
 
+#if defined(__APPLE__)
+int UpdateScreenThreadFunc(void *param)
+{
+    while (updateScreenThreadActive) {
+        SDL_SemWait(updateScreenThreadSem);
 
-SDLPlatform::SDLPlatform(const char *title) {
+        if (params.useFlipSurface) SDL_Flip(realScreen);
+        else SDL_UpdateRect(realScreen, 0, 0, 0, 0);
+    }
+
+    return 0;
+}
+#endif
+
+SDLPlatform::SDLPlatform(uint32_t sdl_init_flags, const char *title) {
+
+    if (SDL_Init(sdl_init_flags) < 0)
+        StrikeError("Unable to init SDL: %s\n", SDL_GetError());
 
     videoSpec = SDL_SWSURFACE;
     if (params.fullscreen) videoSpec |= SDL_FULLSCREEN;
@@ -132,7 +147,7 @@ SDLPlatform::SDLPlatform(const char *title) {
 
 #if defined(__APPLE__)
     updateScreenThreadSem = SDL_CreateSemaphore(0);
-    upadteScreenThread = SDL_CreateThread(UpdateScreenThreadFunc, nullptr);
+    updateScreenThread = SDL_CreateThread(UpdateScreenThreadFunc, nullptr);
 #endif
 
 #ifdef _WIN32

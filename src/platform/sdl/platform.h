@@ -18,7 +18,7 @@ class SDLPlatform : public IPlatform {
 
 public:
 
-    SDLPlatform(const char *title);
+    SDLPlatform(uint32_t sdl_init_flags, const char *title);
 
     virtual ~SDLPlatform();
 
@@ -34,7 +34,12 @@ public:
 
     virtual void releasePixBuf() override;
 
+    virtual unsigned int getMSTicks() override { return SDL_GetTicks(); }
+
+    virtual void delayMS(unsigned int ms) override { SDL_Delay(ms); }
+
 private:
+    int videoSpec;
     SDL_Surface *renderSurf;
     int renderSurfNum = 0;
     SDL_Surface *scrSurf[2];

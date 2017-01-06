@@ -725,8 +725,6 @@ void InitAll(void) {
     int i;
     for (i = 0; devs[i]; i++) devs[i]->Init();
 
-    platform = new SDLPlatform("ZEmu");
-
     InitDevMaps();
 
     for (i = 0; i < 0x10; i++) colors[i] = colors_base[i];
@@ -878,7 +876,6 @@ void DebugStep(void) {
     } while (z80ex_last_op_type(cpu) && cnt > 0);
 }
 
-//SDL_Surface *renderSurf;
 PixBuf const *pixBuf;
 int renderPitch;
 unsigned long prevRenderClk;
@@ -988,7 +985,7 @@ void Process(void) {
     frames = 0;
     params.maxSpeed = false;
 
-    btick = SDL_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
+    btick = platform->getMSTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
     //*/ unsigned long lastDivider = 0L;
 
     for (;;) {
@@ -1032,8 +1029,9 @@ void Process(void) {
             }
 
             if (!params.maxSpeed) {
-                SDL_Delay(1);
-                if (SDL_GetTicks() < btick) SDL_Delay(btick - SDL_GetTicks());
+                platform->delayMS(1);
+                if (platform->getMSTicks() < btick)
+                    platform->delayMS(btick - platform->getMSTicks());
             }
 
             i = cnt_afterFrameRender;
@@ -1049,7 +1047,7 @@ void Process(void) {
             soundMixer.FlushFrame(SOUND_ENABLED);
         }
 
-        btick = SDL_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
+        btick = platform->getMSTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
 
         isPaused = isPausedNx;
         bool quitMode = false;
@@ -1100,20 +1098,6 @@ void InitAudio(void) {
 
     soundMixer.Init(params.mixerMode, recordWav, wavFileName);
 }
-
-#if defined(__APPLE__)
-int UpdateScreenThreadFunc(void *param)
-{
-    while (updateScreenThreadActive) {
-        SDL_SemWait(updateScreenThreadSem);
-
-        if (params.useFlipSurface) SDL_Flip(realScreen);
-        else SDL_UpdateRect(realScreen, 0, 0, 0, 0);
-    }
-
-    return 0;
-}
-#endif
 
 void UpdateScreen(void) {
     platform->updateScreen();
@@ -1274,8 +1258,7 @@ int main(int argc, char *argv[]) {
 
         int spec = SDL_INIT_VIDEO;
         if (params.sound && params.sndBackend == SND_BACKEND_SDL) spec |= SDL_INIT_AUDIO;
-        if (SDL_Init(spec) < 0) StrikeError("Unable to init SDL: %s\n", SDL_GetError());
-
+        platform = new SDLPlatform(spec, "ZEmu");
 
 #ifdef _WIN32
         strcpy(tempFolderName, "./_temp");

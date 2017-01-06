@@ -37,6 +37,10 @@ public:
 
     virtual int processEvents() = 0;
 
+    // Milliseconds
+    virtual unsigned int getMSTicks() = 0;
+
+    virtual void delayMS(unsigned int ms) = 0;
 
 protected:
     // helper flags for anti-flicker
