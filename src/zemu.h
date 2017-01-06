@@ -2,12 +2,15 @@
 #define _ZEMU_H_INCLUDED_
 
 #include "defines.h"
-#include <SDL.h>
 #include <z80ex.h>
 #include "sound/mixer.h"
 
 #include "params.h"
 #define SOUND_ENABLED (!params.maxSpeed && params.sound)
+
+
+#include "platform/platform.h"
+extern IPlatform *platform;
 
 struct s_Action
 {
@@ -25,7 +28,7 @@ struct s_Params
   bool maxSpeed;
   bool antiFlicker;
   eSndBackend sndBackend;
-  int sdlBufferSize;
+  int sdlBufferSize; // TODO: move to SDL platform
   int mouseDiv;
   bool showInactiveIcons;
   int soundParam;
@@ -44,7 +47,6 @@ struct s_Params
 extern Z80EX_CONTEXT *cpu;
 extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;
-extern SDL_Surface *screen;
 extern int PITCH;
 extern bool drawFrame;
 extern int frames;
@@ -68,7 +70,6 @@ void AttachZ80OutputHandler(bool (*check)(uint16_t),
                             bool (*func)(uint16_t, uint8_t));
 void AttachFrameStartHandler(void (*func)(void));
 void AttachAfterFrameRenderHandler(void (*func)(void));
-void AttachSDLHandler(int eventType, bool (*func)(SDL_Event &));
 void AttachResetHandler(void (*func)(void));
 
 extern ptrOnReadByteFunc *devMapRead;

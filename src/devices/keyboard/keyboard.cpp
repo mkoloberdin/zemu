@@ -1,5 +1,8 @@
 #include <string.h>
 
+// FIXME:
+#include "platform/sdl/platform.h"
+
 #include <zemu_env.h>
 #include "keys.h"
 #include "keyboard.h"

@@ -1,3 +1,6 @@
+// FIXME:
+#include "platform/sdl/platform.h"
+
 #include "graphics.h"
 
 void OutputGimpImage(int x, int y, s_GimpImage *img)

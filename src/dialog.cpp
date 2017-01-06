@@ -1,3 +1,6 @@
+// FIXME:
+#include "platform/sdl/platform.h"
+
 #include <cstdint>
 #include <string.h>
 #include <ctype.h>

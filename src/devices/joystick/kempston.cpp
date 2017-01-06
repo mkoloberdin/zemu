@@ -1,5 +1,8 @@
 // [boo_boo]
 
+// FIXME:
+#include "platform/sdl/platform.h"
+
 #include "kempston.h"
 #include "../../joystick_manager.h"
 

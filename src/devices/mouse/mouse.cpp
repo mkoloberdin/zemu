@@ -1,3 +1,6 @@
+// FIXME:
+#include "platform/sdl/platform.h"
+
 #include "mouse.h"
 
 uint8_t C_Mouse::portFBDF;

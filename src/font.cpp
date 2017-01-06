@@ -1,3 +1,6 @@
+// FIXME:
+#include "platform/sdl/platform.h"
+
 #include "font.h"
 
 SDL_Surface *ExtractImage(uint8_t *data)

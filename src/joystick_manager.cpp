@@ -1,3 +1,6 @@
+// FIXME:
+#include "platform/sdl/platform.h"
+
 // [boo_boo]
 
 #include "joystick_manager.h"
