@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <iostream>
 #include <boost/format.hpp>
+
 using boost::format;
 
 #include "zemu_env.h"
@@ -65,37 +66,44 @@ const char *wavFileName = "output.wav"; // TODO: make configurable + full filepa
 //--------------------------------------------------------------------------------------------------
 
 ptrOnReadByteFunc *devMapRead;
-bool (** devMapWrite)(uint16_t, uint8_t);
-bool (** devMapInput)(uint16_t, uint8_t &);
-bool (** devMapOutput)(uint16_t, uint8_t);
+
+bool (**devMapWrite)(uint16_t, uint8_t);
+
+bool (**devMapInput)(uint16_t, uint8_t &);
+
+bool (**devMapOutput)(uint16_t, uint8_t);
 
 ptrOnReadByteFunc devMapRead_base[0x20000];
-bool (* devMapWrite_base[0x10000])(uint16_t, uint8_t);
-bool (* devMapInput_base[0x10000])(uint16_t, uint8_t &);
-bool (* devMapOutput_base[0x10000])(uint16_t, uint8_t);
+
+bool (*devMapWrite_base[0x10000])(uint16_t, uint8_t);
+
+bool (*devMapInput_base[0x10000])(uint16_t, uint8_t &);
+
+bool (*devMapOutput_base[0x10000])(uint16_t, uint8_t);
 
 ptrOnReadByteFunc devMapRead_trdos[0x20000];
-bool (* devMapInput_trdos[0x10000])(uint16_t, uint8_t &);
-bool (* devMapOutput_trdos[0x10000])(uint16_t, uint8_t);
+
+bool (*devMapInput_trdos[0x10000])(uint16_t, uint8_t &);
+
+bool (*devMapOutput_trdos[0x10000])(uint16_t, uint8_t);
 
 //--------------------------------------------------------------------------------------------------
 
-struct s_ReadItem
-{
-    ptrOnReadByteFunc(* check)(uint16_t, bool);
+struct s_ReadItem {
+    ptrOnReadByteFunc (*check)(uint16_t, bool);
 //	bool (* func)(uint16_t, bool, uint8_t&);
 };
 
-struct s_WriteItem
-{
-    bool (* check)(uint16_t);
-    bool (* func)(uint16_t, uint8_t);
+struct s_WriteItem {
+    bool (*check)(uint16_t);
+
+    bool (*func)(uint16_t, uint8_t);
 };
 
-struct s_InputItem
-{
-    bool (* check)(uint16_t);
-    bool (* func)(uint16_t, uint8_t &);
+struct s_InputItem {
+    bool (*check)(uint16_t);
+
+    bool (*func)(uint16_t, uint8_t &);
 };
 
 typedef s_WriteItem s_OutputItem;
@@ -106,9 +114,12 @@ s_ReadItem hnd_z80read[MAX_HANDLERS];
 s_WriteItem hnd_z80write[MAX_HANDLERS];
 s_InputItem hnd_z80input[MAX_HANDLERS];
 s_OutputItem hnd_z80output[MAX_HANDLERS];
-void (* hnd_frameStart[MAX_HANDLERS])(void);
-void (* hnd_afterFrameRender[MAX_HANDLERS])(void);
-void (* hnd_reset[MAX_HANDLERS])(void);
+
+void (*hnd_frameStart[MAX_HANDLERS])(void);
+
+void (*hnd_afterFrameRender[MAX_HANDLERS])(void);
+
+void (*hnd_reset[MAX_HANDLERS])(void);
 
 int cnt_z80read = 0;
 int cnt_z80write = 0;
@@ -118,8 +129,7 @@ int cnt_frameStart = 0;
 int cnt_afterFrameRender = 0;
 int cnt_reset = 0;
 
-void AttachZ80ReadHandler(ptrOnReadByteFunc(* check)(uint16_t, bool))
-{
+void AttachZ80ReadHandler(ptrOnReadByteFunc(*check)(uint16_t, bool)) {
     if (cnt_z80read >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
     s_ReadItem item;
@@ -128,8 +138,7 @@ void AttachZ80ReadHandler(ptrOnReadByteFunc(* check)(uint16_t, bool))
     hnd_z80read[cnt_z80read++] = item;
 }
 
-void AttachZ80WriteHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t))
-{
+void AttachZ80WriteHandler(bool (*check)(uint16_t), bool (*func)(uint16_t, uint8_t)) {
     if (cnt_z80write >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
     s_WriteItem item;
@@ -139,8 +148,7 @@ void AttachZ80WriteHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uin
     hnd_z80write[cnt_z80write++] = item;
 }
 
-void AttachZ80InputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t &))
-{
+void AttachZ80InputHandler(bool (*check)(uint16_t), bool (*func)(uint16_t, uint8_t &)) {
     if (cnt_z80input >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
     s_InputItem item;
@@ -150,8 +158,7 @@ void AttachZ80InputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uin
     hnd_z80input[cnt_z80input++] = item;
 }
 
-void AttachZ80OutputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t))
-{
+void AttachZ80OutputHandler(bool (*check)(uint16_t), bool (*func)(uint16_t, uint8_t)) {
     if (cnt_z80output >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
     s_OutputItem item;
@@ -161,20 +168,17 @@ void AttachZ80OutputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, ui
     hnd_z80output[cnt_z80output++] = item;
 }
 
-void AttachFrameStartHandler(void (* func)(void))
-{
+void AttachFrameStartHandler(void (*func)(void)) {
     if (cnt_frameStart >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
     hnd_frameStart[cnt_frameStart++] = func;
 }
 
-void AttachAfterFrameRenderHandler(void (* func)(void))
-{
+void AttachAfterFrameRenderHandler(void (*func)(void)) {
     if (cnt_afterFrameRender >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
     hnd_afterFrameRender[cnt_afterFrameRender++] = func;
 }
 
-void AttachResetHandler(void (* func)(void))
-{
+void AttachResetHandler(void (*func)(void)) {
     if (cnt_reset >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
     hnd_reset[cnt_reset++] = func;
 }
@@ -193,36 +197,36 @@ C_KempstonStick dev_kempston; // [boo_boo]
 C_GSound dev_gsound;
 
 C_Device *devs[] = {
-    &dev_border,
-    &dev_extport,
-    &dev_keyboard,
-    &dev_trdos,
-    &dev_mman,
-    &dev_tsfm,
-    &dev_mouse,
-    &dev_covox,
-    &dev_kempston, // [boo_boo]
-    &dev_gsound,
-    nullptr
+        &dev_border,
+        &dev_extport,
+        &dev_keyboard,
+        &dev_trdos,
+        &dev_mman,
+        &dev_tsfm,
+        &dev_mouse,
+        &dev_covox,
+        &dev_kempston, // [boo_boo]
+        &dev_gsound,
+        nullptr
 };
 
 int colors_base[0x10] = {
-    DRGB(0,   0,   0),
-    DRGB(0,   0, 192),
-    DRGB(192,   0,   0),
-    DRGB(192,   0, 192),
-    DRGB(0, 192,   0),
-    DRGB(0, 192, 192),
-    DRGB(192, 192,   0),
-    DRGB(192, 192, 192),
-    DRGB(0,   0,   0),
-    DRGB(0,   0, 255),
-    DRGB(255,   0,   0),
-    DRGB(255,   0, 255),
-    DRGB(0, 255,   0),
-    DRGB(0, 255, 255),
-    DRGB(255, 255,   0),
-    DRGB(255, 255, 255)
+        DRGB(0, 0, 0),
+        DRGB(0, 0, 192),
+        DRGB(192, 0, 0),
+        DRGB(192, 0, 192),
+        DRGB(0, 192, 0),
+        DRGB(0, 192, 192),
+        DRGB(192, 192, 0),
+        DRGB(192, 192, 192),
+        DRGB(0, 0, 0),
+        DRGB(0, 0, 255),
+        DRGB(255, 0, 0),
+        DRGB(255, 0, 255),
+        DRGB(0, 255, 0),
+        DRGB(0, 255, 255),
+        DRGB(255, 255, 0),
+        DRGB(255, 255, 255)
 };
 
 /*
@@ -256,8 +260,7 @@ int colors[0x10];
 int messageTimeout = 0;
 char message[0x100];
 
-void OutputText(char *str)
-{
+void OutputText(char *str) {
     int x, y;
 
     x = (WIDTH - font.StrLenPx(str)) / 2;
@@ -266,15 +269,13 @@ void OutputText(char *str)
     font.PrintString(x, y, str);
 }
 
-void ShowMessage(void)
-{
+void ShowMessage(void) {
     if (messageTimeout <= 0) return;
     messageTimeout--;
     OutputText(message);
 }
 
-void SetMessage(const char *str)
-{
+void SetMessage(const char *str) {
     strcpy(message, str);
     messageTimeout = 50;
 }
@@ -283,8 +284,7 @@ void SetMessage(const char *str)
 
 void ResetSequence(void);
 
-void StrToLower(char *str)
-{
+void StrToLower(char *str) {
     while (*str) {
         *(str) = tolower(*str);
         str++;
@@ -294,30 +294,22 @@ void StrToLower(char *str)
 #define MAX_FILES 4096
 #define MAX_FNAME 256
 
-void loadNormalFile(const fs::path& fname, int drive, const fs::path& arcName = "")
-{
-    if (C_Tape::isTapeFormat(fname))
-    {
+void loadNormalFile(const fs::path &fname, int drive, const fs::path &arcName = "") {
+    if (C_Tape::isTapeFormat(fname)) {
         C_Tape::insert(fname);
-    }
-    else if (lowerCaseExtension(fname) == ".z80")
-    {
+    } else if (lowerCaseExtension(fname) == ".z80") {
         if (loadZ80Snap(fname, cpu, dev_mman, dev_border)) {
             dev_tsfm.OnReset();
         } else {
             StrikeMessage("Error loading snapshot");
         }
-    }
-    else if (lowerCaseExtension(fname) == ".sna")
-    {
+    } else if (lowerCaseExtension(fname) == ".sna") {
         if (loadSnaSnap(fname, cpu, dev_mman, dev_border)) {
             dev_tsfm.OnReset();
         } else {
             StrikeMessage("Error loading snapshot");
         }
-    }
-    else
-    {
+    } else {
         wd1793_load_dimage(fname, drive);
         OldFileName[drive] = (arcName.empty() ? fname : arcName);
         // strcpy(oldFileName[drive], C_DirWork::Normalize(arcName ? arcName : fname, true));
@@ -380,8 +372,7 @@ bool TryLoadArcFile(fs::path arcName, int drive)
 }
 */
 
-void TryNLoadFile(const fs::path& fname, int drive)
-{
+void TryNLoadFile(const fs::path &fname, int drive) {
 /*
   char bname[MAX_PATH];
   strcpy(bname, fname);
@@ -418,32 +409,28 @@ void TryNLoadFile(const fs::path& fname, int drive)
 
 //--------------------------------------------------------------------------------------------------
 
-void Action_Reset(void)
-{
+void Action_Reset(void) {
     isPaused = false;
     ResetSequence();
     dev_gsound.Reset();
 }
 
-void Action_ResetTrDos(void)
-{
+void Action_ResetTrDos(void) {
     isPaused = false;
     ResetSequence();
     dev_mman.OnOutputByte(0x7FFD, 0x10);
     dev_trdos.Enable();
 }
 
-void Action_MaxSpeed(void)
-{
+void Action_MaxSpeed(void) {
     isPaused = false;
     params.maxSpeed = !params.maxSpeed;
     SetMessage(params.maxSpeed ? "MaxSpeed ON" : "MaxSpeed OFF");
 }
 
-void Action_QuickLoad(void)
-{
-    bool (* loadSnap)(const fs::path& filename, Z80EX_CONTEXT *cpu, C_MemoryManager& mmgr,
-                      C_Border& border);
+void Action_QuickLoad(void) {
+    bool (*loadSnap)(const fs::path &filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mmgr,
+                     C_Border &border);
 
     isPaused = false;
 
@@ -454,10 +441,9 @@ void Action_QuickLoad(void)
     else SetMessage("Snapshot loaded");
 }
 
-void Action_QuickSave(void)
-{
-    void (* saveSnap)(const fs::path& filename, Z80EX_CONTEXT *cpu, C_MemoryManager& mmgr,
-                      C_Border& border);
+void Action_QuickSave(void) {
+    void (*saveSnap)(const fs::path &filename, Z80EX_CONTEXT *cpu, C_MemoryManager &mmgr,
+                     C_Border &border);
 
     isPaused = false;
 
@@ -468,8 +454,7 @@ void Action_QuickSave(void)
     SetMessage("Snapshot saved");
 }
 
-void Action_AntiFlicker(void)
-{
+void Action_AntiFlicker(void) {
     isPaused = false;
     params.antiFlicker = !params.antiFlicker;
     if (params.antiFlicker)
@@ -479,33 +464,26 @@ void Action_AntiFlicker(void)
     SetMessage(params.antiFlicker ? "AntiFlicker ON" : "AntiFlicker OFF");
 }
 
-void Action_LoadFile(void)
-{
+void Action_LoadFile(void) {
     FileDialog();
 }
 
-void Action_Fullscreen(void)
-{
+void Action_Fullscreen(void) {
     platform->toggleFullscreen();
 }
 
-void Action_Debugger(void)
-{
+void Action_Debugger(void) {
     isPaused = false;
     RunDebugger();
 }
 
-void Action_Turbo(void)
-{
+void Action_Turbo(void) {
     isPaused = false;
 
-    if (unturboNx && turboMultiplierNx > 1)
-    {
+    if (unturboNx && turboMultiplierNx > 1) {
         turboMultiplierNx /= 2;
         unturboNx = (turboMultiplierNx > 1);
-    }
-    else
-    {
+    } else {
         unturboNx = false;
         turboMultiplierNx = (turboMultiplierNx == 8 ? 1 : (turboMultiplierNx * 2));
     }
@@ -513,16 +491,12 @@ void Action_Turbo(void)
     DisplayTurboMessage();
 }
 
-void Action_UnTurbo(void)
-{
+void Action_UnTurbo(void) {
     isPaused = false;
 
-    if (!unturboNx && turboMultiplierNx > 1)
-    {
+    if (!unturboNx && turboMultiplierNx > 1) {
         turboMultiplierNx /= 2;
-    }
-    else
-    {
+    } else {
         turboMultiplierNx = (turboMultiplierNx == 256 ? 1 : (turboMultiplierNx * 2));
         unturboNx = (turboMultiplierNx > 1);
     }
@@ -530,22 +504,17 @@ void Action_UnTurbo(void)
     DisplayTurboMessage();
 }
 
-void DisplayTurboMessage(void)
-{
-    if (turboMultiplierNx < 2)
-    {
+void DisplayTurboMessage(void) {
+    if (turboMultiplierNx < 2) {
         SetMessage("Turbo OFF");
-    }
-    else
-    {
+    } else {
         char buf[0x10];
         sprintf(buf, (unturboNx ? "Slowness %dx" : "Turbo %dx"), turboMultiplierNx);
         SetMessage(buf);
     }
 }
 
-void Action_AttributesHack(void)
-{
+void Action_AttributesHack(void) {
     isPaused = false;
     attributesHack = (attributesHack + 1) % 3;
 
@@ -558,28 +527,24 @@ void Action_AttributesHack(void)
     }
 }
 
-void Action_ScreensHack(void)
-{
+void Action_ScreensHack(void) {
     isPaused = false;
     screensHack = screensHack ^ 8;
     SetMessage(screensHack ? "ScreensHack ON" : "ScreensHack OFF");
 }
 
-void Action_FlashColor(void)
-{
+void Action_FlashColor(void) {
     isPaused = false;
     flashColor = !flashColor;
     SetMessage(flashColor ? "FlashColor ON" : "FlashColor OFF");
 }
 
-void Action_Pause(void)
-{
+void Action_Pause(void) {
     isPausedNx = !isPausedNx;
     SetMessage(isPausedNx ? "Pause ON" : "Pause OFF");
 }
 
-void Action_JoyOnKeyb(void)
-{
+void Action_JoyOnKeyb(void) {
     isPaused = false;
     joyOnKeyb = !joyOnKeyb;
     dev_kempston.joy_kbd = 0;
@@ -587,23 +552,23 @@ void Action_JoyOnKeyb(void)
 }
 
 s_Action cfgActions[] = {
-    {"reset",           Action_Reset},
-    {"reset_trdos",     Action_ResetTrDos},
-    {"max_speed",       Action_MaxSpeed},
-    {"quick_load",      Action_QuickLoad},
-    {"quick_save",      Action_QuickSave},
-    {"anti_flicker",    Action_AntiFlicker},
-    {"load_file",       Action_LoadFile},
-    {"fullscreen",      Action_Fullscreen},
-    {"debugger",        Action_Debugger},
-    {"turbo",           Action_Turbo},
-    {"unturbo",         Action_UnTurbo},
-    {"attrib_hack",     Action_AttributesHack},
-    {"screens_hack",    Action_ScreensHack},
-    {"flash_color",     Action_FlashColor},
-    {"pause",           Action_Pause},
-    {"joy_on_keyb",     Action_JoyOnKeyb},
-    {"",                nullptr}
+        {"reset",        Action_Reset},
+        {"reset_trdos",  Action_ResetTrDos},
+        {"max_speed",    Action_MaxSpeed},
+        {"quick_load",   Action_QuickLoad},
+        {"quick_save",   Action_QuickSave},
+        {"anti_flicker", Action_AntiFlicker},
+        {"load_file",    Action_LoadFile},
+        {"fullscreen",   Action_Fullscreen},
+        {"debugger",     Action_Debugger},
+        {"turbo",        Action_Turbo},
+        {"unturbo",      Action_UnTurbo},
+        {"attrib_hack",  Action_AttributesHack},
+        {"screens_hack", Action_ScreensHack},
+        {"flash_color",  Action_FlashColor},
+        {"pause",        Action_Pause},
+        {"joy_on_keyb",  Action_JoyOnKeyb},
+        {"",             nullptr}
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -614,86 +579,70 @@ bool breakpoints[0x10000];
 uint16_t watches[MAX_WATCHES];
 unsigned watchesCount = 0;
 
-uint8_t ReadByteDasm(uint16_t addr, void *userData)
-{
+uint8_t ReadByteDasm(uint16_t addr, void *userData) {
     ptrOnReadByteFunc func = devMapRead[addr];
     return func(addr, false);
 }
 
-void WriteByteDasm(uint16_t addr, uint8_t value)
-{
-    for (;;)
-    {
-        bool (* func)(uint16_t, uint8_t) = devMapWrite[addr];
+void WriteByteDasm(uint16_t addr, uint8_t value) {
+    for (;;) {
+        bool (*func)(uint16_t, uint8_t) = devMapWrite[addr];
 
         if (func == nullptr) return;
         if (func(addr, value)) return;
     }
 }
 
-uint8_t ReadByte(Z80EX_CONTEXT_PARAM uint16_t addr, int m1_state, void *userData)
-{
+uint8_t ReadByte(Z80EX_CONTEXT_PARAM uint16_t addr, int m1_state, void *userData) {
     unsigned raddr = addr + (m1_state ? 0x10000 : 0);
     ptrOnReadByteFunc func = devMapRead[raddr];
     return func(addr, m1_state);
 }
 
-void WriteByte(Z80EX_CONTEXT_PARAM uint16_t addr, uint8_t value, void *userData)
-{
-    for (;;)
-    {
-        bool (* func)(uint16_t, uint8_t) = devMapWrite[addr];
+void WriteByte(Z80EX_CONTEXT_PARAM uint16_t addr, uint8_t value, void *userData) {
+    for (;;) {
+        bool (*func)(uint16_t, uint8_t) = devMapWrite[addr];
 
         if (func == nullptr) return;
         if (func(addr, value)) return;
     }
 }
 
-uint8_t InputByte(Z80EX_CONTEXT_PARAM uint16_t port, void *userData)
-{
+uint8_t InputByte(Z80EX_CONTEXT_PARAM uint16_t port, void *userData) {
     uint8_t retval;
 
-    for (;;)
-    {
-        bool (* func)(uint16_t, uint8_t &) = devMapInput[port];
+    for (;;) {
+        bool (*func)(uint16_t, uint8_t &) = devMapInput[port];
 
         if (func == nullptr) return 0xFF;
         if (func(port, retval)) return retval;
     }
 }
 
-void OutputByte(Z80EX_CONTEXT_PARAM uint16_t port, uint8_t value, void *userData)
-{
-    for (;;)
-    {
-        bool (* func)(uint16_t, uint8_t) = devMapOutput[port];
+void OutputByte(Z80EX_CONTEXT_PARAM uint16_t port, uint8_t value, void *userData) {
+    for (;;) {
+        bool (*func)(uint16_t, uint8_t) = devMapOutput[port];
 
         if (func == nullptr) return;
         if (func(port, value)) return;
     }
 }
 
-uint8_t ReadIntVec(Z80EX_CONTEXT_PARAM void *userData)
-{
+uint8_t ReadIntVec(Z80EX_CONTEXT_PARAM void *userData) {
     return 0xFF;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void InitDevMapRead(ptrOnReadByteFunc *map)
-{
+void InitDevMapRead(ptrOnReadByteFunc *map) {
     ptrOnReadByteFunc func;
 
-    for (unsigned m1_state = 0; m1_state < 2; m1_state++)
-    {
-        for (unsigned addr = 0; addr < 0x10000; addr++)
-        {
+    for (unsigned m1_state = 0; m1_state < 2; m1_state++) {
+        for (unsigned addr = 0; addr < 0x10000; addr++) {
             map[addr + (m1_state ? 0x10000 : 0)] = nullptr;
 
-            for (int i = 0; i < cnt_z80read; i++)
-            {
-                if ((func = hnd_z80read[i].check(addr, m1_state)) != nullptr)
-                {
+            for (int i = 0; i < cnt_z80read; i++) {
+                if ((func = hnd_z80read[i].check(addr, m1_state)) != nullptr) {
                     map[addr + (m1_state ? 0x10000 : 0)] = func;
                     break;
                 }
@@ -702,16 +651,12 @@ void InitDevMapRead(ptrOnReadByteFunc *map)
     }
 }
 
-void InitDevMapWrite(bool (** map)(uint16_t, uint8_t))
-{
-    for (unsigned addr = 0; addr < 0x10000; addr++)
-    {
+void InitDevMapWrite(bool (**map)(uint16_t, uint8_t)) {
+    for (unsigned addr = 0; addr < 0x10000; addr++) {
         map[addr] = nullptr;
 
-        for (int i = 0; i < cnt_z80write; i++)
-        {
-            if (hnd_z80write[i].check(addr))
-            {
+        for (int i = 0; i < cnt_z80write; i++) {
+            if (hnd_z80write[i].check(addr)) {
                 map[addr] = hnd_z80write[i].func;
                 break;
             }
@@ -719,16 +664,12 @@ void InitDevMapWrite(bool (** map)(uint16_t, uint8_t))
     }
 }
 
-void InitDevMapInput(bool (** map)(uint16_t, uint8_t &))
-{
-    for (unsigned port = 0; port < 0x10000; port++)
-    {
+void InitDevMapInput(bool (**map)(uint16_t, uint8_t &)) {
+    for (unsigned port = 0; port < 0x10000; port++) {
         map[port] = nullptr;
 
-        for (int i = 0; i < cnt_z80input; i++)
-        {
-            if (hnd_z80input[i].check(port))
-            {
+        for (int i = 0; i < cnt_z80input; i++) {
+            if (hnd_z80input[i].check(port)) {
                 map[port] = hnd_z80input[i].func;
                 break;
             }
@@ -736,16 +677,12 @@ void InitDevMapInput(bool (** map)(uint16_t, uint8_t &))
     }
 }
 
-void InitDevMapOutput(bool (** map)(uint16_t, uint8_t))
-{
-    for (unsigned port = 0; port < 0x10000; port++)
-    {
+void InitDevMapOutput(bool (**map)(uint16_t, uint8_t)) {
+    for (unsigned port = 0; port < 0x10000; port++) {
         map[port] = nullptr;
 
-        for (int i = 0; i < cnt_z80output; i++)
-        {
-            if (hnd_z80output[i].check(port))
-            {
+        for (int i = 0; i < cnt_z80output; i++) {
+            if (hnd_z80output[i].check(port)) {
                 map[port] = hnd_z80output[i].func;
                 break;
             }
@@ -753,8 +690,7 @@ void InitDevMapOutput(bool (** map)(uint16_t, uint8_t))
     }
 }
 
-void InitDevMaps(void)
-{
+void InitDevMaps(void) {
     C_TrDos::trdos = true;
 
     InitDevMapRead(devMapRead_trdos);
@@ -776,8 +712,7 @@ void InitDevMaps(void)
 
 //--------------------------------------------------------------------------------------------------
 
-void InitFont(void)
-{
+void InitFont(void) {
     font.Init(ftbos_font_data);
     font.CopySym('-', '_');
     font.SetSymOff('_', 0, 4);
@@ -786,8 +721,7 @@ void InitFont(void)
     fixed_font.Init(font_64_data);
 }
 
-void InitAll(void)
-{
+void InitAll(void) {
     int i;
     for (i = 0; devs[i]; i++) devs[i]->Init();
 
@@ -824,10 +758,9 @@ int screensHack = 0;
 uint64_t actDevClkCounter = 0;
 uint64_t actClk = 0;
 
-void InitActClk(void)
-{
-    actDevClkCounter = devClkCounter * (uint64_t)turboMultiplier;
-    actClk = cpuClk * (uint64_t)turboMultiplier;
+void InitActClk(void) {
+    actDevClkCounter = devClkCounter * (uint64_t) turboMultiplier;
+    actClk = cpuClk * (uint64_t) turboMultiplier;
 }
 
 // TODO:
@@ -842,19 +775,19 @@ void InitActClk(void)
 
 inline void CpuCalcTacts(unsigned long cmdClk) {
     if (turboMultiplier < 2) {
-        devClkCounter += (uint64_t)cmdClk;
-        cpuClk += (uint64_t)cmdClk;
+        devClkCounter += (uint64_t) cmdClk;
+        cpuClk += (uint64_t) cmdClk;
     } else if (unturbo) {
         cmdClk *= turboMultiplier;
-        devClkCounter += (uint64_t)cmdClk;
-        cpuClk += (uint64_t)cmdClk;
+        devClkCounter += (uint64_t) cmdClk;
+        cpuClk += (uint64_t) cmdClk;
     } else {
-        actDevClkCounter += (uint64_t)cmdClk;
-        actClk += (uint64_t)cmdClk;
+        actDevClkCounter += (uint64_t) cmdClk;
+        actClk += (uint64_t) cmdClk;
 
-        devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier - 1)) /
-                        (uint64_t)turboMultiplier;
-        cpuClk = (actClk + (uint64_t)(turboMultiplier - 1)) / (uint64_t)turboMultiplier;
+        devClkCounter = (actDevClkCounter + (uint64_t) (turboMultiplier - 1)) /
+                        (uint64_t) turboMultiplier;
+        cpuClk = (actClk + (uint64_t) (turboMultiplier - 1)) / (uint64_t) turboMultiplier;
     }
 
     devClk = cpuClk;
@@ -863,7 +796,7 @@ inline void CpuCalcTacts(unsigned long cmdClk) {
     if (runDebuggerFlag || breakpoints[z80ex_get_reg(cpu, regPC)]) {
 /*
     if (SDL_MUSTLOCK(renderSurf)) {
-      SDL_UnlockSurface(renderSurf);
+        SDL_UnlockSurface(renderSurf);
     }
 */
         platform->releasePixBuf();
@@ -873,56 +806,49 @@ inline void CpuCalcTacts(unsigned long cmdClk) {
 
 /*
     if (SDL_MUSTLOCK(renderSurf)) {
-      if (SDL_LockSurface(renderSurf) < 0) {
-        printf("Can't lock surface\n");
-        return;
-      }
+        if (SDL_LockSurface(renderSurf) < 0) {
+            printf("Can't lock surface\n");
+            return;
+        }
     }
 */
         pixBuf = platform->getPixBuf();
     }
 }
 
-inline void DebugCpuCalcTacts(unsigned long cmdClk)
-{
-    if (turboMultiplier < 2)
-    {
-        devClkCounter += (uint64_t)cmdClk;
-        cpuClk += (uint64_t)cmdClk;
-    }
-    else if (unturbo)
-    {
+inline void DebugCpuCalcTacts(unsigned long cmdClk) {
+    if (turboMultiplier < 2) {
+        devClkCounter += (uint64_t) cmdClk;
+        cpuClk += (uint64_t) cmdClk;
+    } else if (unturbo) {
         cmdClk *= turboMultiplier;
-        devClkCounter += (uint64_t)cmdClk;
-        cpuClk += (uint64_t)cmdClk;
-    }
-    else
-    {
-        actDevClkCounter += (uint64_t)cmdClk;
-        actClk += (uint64_t)cmdClk;
+        devClkCounter += (uint64_t) cmdClk;
+        cpuClk += (uint64_t) cmdClk;
+    } else {
+        actDevClkCounter += (uint64_t) cmdClk;
+        actClk += (uint64_t) cmdClk;
 
-        devClkCounter = (actDevClkCounter + (uint64_t)(turboMultiplier - 1)) /
-                        (uint64_t)turboMultiplier;
-        cpuClk = (actClk + (uint64_t)(turboMultiplier - 1)) / (uint64_t)turboMultiplier;
+        devClkCounter = (actDevClkCounter + (uint64_t) (turboMultiplier - 1)) /
+                        (uint64_t) turboMultiplier;
+        cpuClk = (actClk + (uint64_t) (turboMultiplier - 1)) / (uint64_t) turboMultiplier;
     }
 
     devClk = cpuClk;
     C_Tape::process();
 }
 
-int (* DoCpuStep)(Z80EX_CONTEXT *cpu) = z80ex_step;
-int (* DoCpuInt)(Z80EX_CONTEXT *cpu) = z80ex_int;
+int (*DoCpuStep)(Z80EX_CONTEXT *cpu) = z80ex_step;
 
-int TraceCpuStep(Z80EX_CONTEXT *cpu)
-{
+int (*DoCpuInt)(Z80EX_CONTEXT *cpu) = z80ex_int;
+
+int TraceCpuStep(Z80EX_CONTEXT *cpu) {
     CpuTrace_Log();
     cpuTrace_intReq = 0;
     cpuTrace_dT = z80ex_step(cpu);
     return cpuTrace_dT;
 }
 
-int TraceCpuInt(Z80EX_CONTEXT *cpu)
-{
+int TraceCpuInt(Z80EX_CONTEXT *cpu) {
     CpuTrace_Log();
     int dt = z80ex_int(cpu);
     cpuTrace_dT += dt;
@@ -930,39 +856,30 @@ int TraceCpuInt(Z80EX_CONTEXT *cpu)
     return dt;
 }
 
-inline void CpuStep(void)
-{
+inline void CpuStep(void) {
     CpuCalcTacts(DoCpuStep(cpu));
 }
 
-inline void CpuInt(void)
-{
+inline void CpuInt(void) {
     CpuCalcTacts(DoCpuInt(cpu));
 }
 
-inline void DebugCpuStep(void)
-{
+inline void DebugCpuStep(void) {
     DebugCpuCalcTacts(DoCpuStep(cpu));
 }
 
-inline void DebugCpuInt(void)
-{
+inline void DebugCpuInt(void) {
     DebugCpuCalcTacts(DoCpuInt(cpu));
 }
 
-void DebugStep(void)
-{
+void DebugStep(void) {
     int cnt = 4;
 
-    do
-    {
-        if (cpuClk < MAX_FRAME_TACTS)
-        {
+    do {
+        if (cpuClk < MAX_FRAME_TACTS) {
             CpuStep();
             if (cpuClk < INT_LENGTH) CpuInt();
-        }
-        else
-        {
+        } else {
             lastDevClk = devClk;
             cpuClk -= MAX_FRAME_TACTS;
             devClk = cpuClk;
@@ -978,10 +895,10 @@ void DebugStep(void)
 PixBuf const *pixBuf;
 int renderPitch;
 unsigned long prevRenderClk;
-void (* renderPtr)(unsigned long) = nullptr;
 
-void Render(void)
-{
+void (*renderPtr)(unsigned long) = nullptr;
+
+void Render(void) {
 
     pixBuf = platform->getPixBuf();
     if (pixBuf == nullptr)
@@ -999,22 +916,17 @@ void Render(void)
     InitActClk();
     prevRenderClk = 0;
 
-    while (cpuClk < INT_LENGTH)
-    {
+    while (cpuClk < INT_LENGTH) {
         CpuStep();
         CpuInt();
     }
 
-    if (platform->isRenderOn())
-    {
-        while (cpuClk < MAX_FRAME_TACTS)
-        {
+    if (platform->isRenderOn()) {
+        while (cpuClk < MAX_FRAME_TACTS) {
             CpuStep();
             renderPtr(cpuClk);
         }
-    }
-    else
-    {
+    } else {
         while (cpuClk < MAX_FRAME_TACTS) {
             CpuStep();
         }
@@ -1034,8 +946,7 @@ void Render(void)
 #include "images/turbo_off.h"
 #include "images/turbo_on.h"
 
-void DrawIndicators(void)
-{
+void DrawIndicators(void) {
     char buf[0x100];
 
     DRIVE_STATE st = dev_trdos.GetIndicatorState();
@@ -1047,16 +958,14 @@ void DrawIndicators(void)
     if (params.maxSpeed) OutputGimpImage(32, 0, (s_GimpImage *) &img_turboOn);
     else if (params.showInactiveIcons) OutputGimpImage(32, 0, (s_GimpImage *) &img_turboOff);
 
-    if (C_Tape::isActive())
-    {
+    if (C_Tape::isActive()) {
         sprintf(buf, "%d%%", C_Tape::getPosPerc());
 
         int wdt = font.StrLenPx(buf);
         font.PrintString(WIDTH - 4 - wdt, 4, buf);
     }
 
-    for (unsigned i = 0; i < watchesCount; i++)
-    {
+    for (unsigned i = 0; i < watchesCount; i++) {
         uint8_t val = ReadByteDasm(watches[i], nullptr);
         sprintf(buf, "%04X:%02X", watches[i], val);
 
@@ -1065,15 +974,13 @@ void DrawIndicators(void)
     }
 }
 
-void ResetSequence(void)
-{
+void ResetSequence(void) {
     int cnt = cnt_reset;
-    void (** ptr)(void) = hnd_reset;
+    void (**ptr)(void) = hnd_reset;
 
     z80ex_reset(cpu);
 
-    while (cnt)
-    {
+    while (cnt) {
         (*ptr)();
 
         ptr++;
@@ -1081,8 +988,7 @@ void ResetSequence(void)
     }
 }
 
-void Process(void)
-{
+void Process(void) {
     int i;
     unsigned int btick;
     int frameSkip = 0;
@@ -1098,23 +1004,19 @@ void Process(void)
     btick = SDL_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
     //*/ unsigned long lastDivider = 0L;
 
-    for (;;)
-    {
-        if (!isPaused)
-        {
+    for (;;) {
+        if (!isPaused) {
             i = cnt_frameStart;
-            void (** ptr_frameStart)(void) = hnd_frameStart;
+            void (**ptr_frameStart)(void) = hnd_frameStart;
 
-            while (i)
-            {
+            while (i) {
                 (*ptr_frameStart)();
 
                 ptr_frameStart++;
                 i--;
             }
 
-            if (params.maxSpeed)
-            {
+            if (params.maxSpeed) {
                 if (frameSkip > 0) {
                     frameSkip--;
                     platform->renderOff();
@@ -1130,8 +1032,7 @@ void Process(void)
             Render();
             frames++;
 
-            if (platform->isRenderOn())
-            {
+            if (platform->isRenderOn()) {
                 DrawIndicators();
                 ShowMessage();
 
@@ -1143,17 +1044,15 @@ void Process(void)
                 UpdateScreen();
             }
 
-            if (!params.maxSpeed)
-            {
+            if (!params.maxSpeed) {
                 SDL_Delay(1);
                 if (SDL_GetTicks() < btick) SDL_Delay(btick - SDL_GetTicks());
             }
 
             i = cnt_afterFrameRender;
-            void (** ptr_afterFrameRender)(void) = hnd_afterFrameRender;
+            void (**ptr_afterFrameRender)(void) = hnd_afterFrameRender;
 
-            while (i)
-            {
+            while (i) {
                 (*ptr_afterFrameRender)();
 
                 ptr_afterFrameRender++;
@@ -1176,8 +1075,7 @@ void Process(void)
                 quitMode = true;
         }
 
-        if (quitMode)
-        {
+        if (quitMode) {
             isPaused = false;
 
             if (DlgConfirm("Do you really want to quit?")) {
@@ -1188,20 +1086,16 @@ void Process(void)
         turboMultiplier = turboMultiplierNx;
         unturbo = unturboNx;
 
-        if (!isPaused && tapePrevActive && !C_Tape::isActive())
-        {
-            if (params.maxSpeed)
-            {
+        if (!isPaused && tapePrevActive && !C_Tape::isActive()) {
+            if (params.maxSpeed) {
                 SetMessage("Tape end : MaxSpeed OFF");
                 params.maxSpeed = false;
-            }
-            else SetMessage("Tape end");
+            } else SetMessage("Tape end");
         }
     }
 }
 
-void InitAudio(void)
-{
+void InitAudio(void) {
     if (params.sndBackend == SND_BACKEND_SDL) {
         soundMixer.InitBackendSDL(params.sdlBufferSize);
     }
@@ -1234,13 +1128,11 @@ int UpdateScreenThreadFunc(void *param)
 }
 #endif
 
-void UpdateScreen(void)
-{
+void UpdateScreen(void) {
     platform->updateScreen();
 }
 
-void FreeAll(void)
-{
+void FreeAll(void) {
     int i;
     for (i = 0; devs[i]; i++) devs[i]->Close();
 
@@ -1260,29 +1152,21 @@ void FreeAll(void)
 
 }
 
-void ParseCmdLine(int argc, char *argv[])
-{
+void ParseCmdLine(int argc, char *argv[]) {
     argv++;
     argc--;
 
-    while (argc > 0)
-    {
-        if (!strcmp(*argv, "-l"))
-        {
-            if (argc > 1)
-            {
+    while (argc > 0) {
+        if (!strcmp(*argv, "-l")) {
+            if (argc > 1) {
                 argv++;
                 argc--;
 
                 Labels_Load(*argv);
             }
-        }
-        else if (!strcmp(*argv, "-w"))
-        {
+        } else if (!strcmp(*argv, "-w")) {
             recordWav = true;
-        }
-        else
-        {
+        } else {
             TryNLoadFile(*argv);
             return;
         }
@@ -1292,8 +1176,7 @@ void ParseCmdLine(int argc, char *argv[])
     }
 }
 
-void OutputLogo(void)
-{
+void OutputLogo(void) {
     printf("                                        \n");
     printf("    $ww,.                               \n");
     printf("     `^$$$ww,.                          \n");
@@ -1351,19 +1234,17 @@ void windows_cleanup()
 
 #endif // _WIN32
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     OutputLogo();
 
     env.initialize("zemu");
 
-    try
-    {
+    try {
         string str;
 
         // core
         str = env.getString("core", "snapformat", "sna");
-        transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
+        transform(str.begin(), str.end(), str.begin(), (int (*)(int)) tolower);
 
         if (str == "sna") params.snapFormat = SNAP_FORMAT_SNA;
         else params.snapFormat = SNAP_FORMAT_Z80;
@@ -1411,7 +1292,7 @@ int main(int argc, char *argv[])
 #endif
 
         str = env.getString("sound", "sound_backend", "auto");
-        transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
+        transform(str.begin(), str.end(), str.begin(), (int (*)(int)) tolower);
 
         if (str == "sdl") params.sndBackend = SND_BACKEND_SDL;
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -1461,8 +1342,7 @@ int main(int argc, char *argv[])
 
         atexit(FreeAll);
 
-        if (params.cpuTraceEnabled)
-        {
+        if (params.cpuTraceEnabled) {
             DoCpuStep = TraceCpuStep;
             DoCpuInt = TraceCpuInt;
             CpuTrace_Init();
