@@ -46,6 +46,39 @@ void AttachSDLHandler(int eventType, bool (*func)(SDL_Event &)) {
     hnd_sdl[cnt_sdl++] = item;
 }
 
+#ifdef _WIN32
+
+HICON windows_icon;
+HWND hwnd;
+
+#include <SDL_syswm.h>
+#include "windows/resource.h"
+
+void windows_init() {
+    HINSTANCE handle = ::GetModuleHandle(nullptr);
+    windows_icon = ::LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
+
+    if (windows_icon == nullptr) {
+        StrikeError("Error: %d\n", GetLastError());
+    }
+
+    SDL_SysWMinfo wminfo;
+    SDL_VERSION(&wminfo.version);
+
+    if (int sdl_error = SDL_GetWMInfo(&wminfo) != 1) {
+        StrikeError("SDL_GetWMInfo() returned %d\n", sdl_error);
+    }
+
+    hwnd = wminfo.window;
+    ::SetClassLongPtr(hwnd, GCLP_HICON, (LONG_PTR) windows_icon);
+}
+
+void windows_cleanup() {
+    ::DestroyIcon(windows_icon);
+}
+
+#endif // _WIN32
+
 
 SDLPlatform::SDLPlatform(const char *title) {
 
@@ -102,6 +135,9 @@ SDLPlatform::SDLPlatform(const char *title) {
     upadteScreenThread = SDL_CreateThread(UpdateScreenThreadFunc, nullptr);
 #endif
 
+#ifdef _WIN32
+    windows_init();
+#endif
 }
 
 SDLPlatform::~SDLPlatform() {
@@ -129,6 +165,10 @@ SDLPlatform::~SDLPlatform() {
 
     if (params.scale2x) SDL_FreeSurface(screen);
 
+#ifdef _WIN32
+    windows_cleanup();
+#endif
+    SDL_Quit();
 }
 
 void SDLPlatform::toggleFullscreen() {
