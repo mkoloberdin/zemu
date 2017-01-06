@@ -913,7 +913,7 @@ void InitAll(void)
   int i;
   for (i = 0; devs[i]; i++) devs[i]->Init();
 
-  platform = new SDLPlatform();
+  platform = new SDLPlatform("ZEmu");
 
   InitDevMaps();
 

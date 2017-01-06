@@ -19,7 +19,7 @@ class SDLPlatform : public IPlatform {
 
 public:
 
-    SDLPlatform();
+    SDLPlatform(const char *title);
     virtual ~SDLPlatform();
     virtual void toggleFullscreen() override;
     virtual void antiFlicker(int surfNumber) override;

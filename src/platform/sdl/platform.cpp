@@ -49,7 +49,7 @@ void AttachSDLHandler(int eventType, bool (* func)(SDL_Event &))
 }
 
 
-SDLPlatform :: SDLPlatform() {
+SDLPlatform :: SDLPlatform(const char *title) {
 
     videoSpec = SDL_SWSURFACE;
     if (params.fullscreen) videoSpec |= SDL_FULLSCREEN;
@@ -87,7 +87,7 @@ SDLPlatform :: SDLPlatform() {
         PITCH = REAL_PITCH;
     }
 
-    SDL_WM_SetCaption("ZEmu", "ZEmu");
+    SDL_WM_SetCaption(title, title);
     SDL_ShowCursor(SDL_DISABLE);
 
 
