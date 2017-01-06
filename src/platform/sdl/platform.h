@@ -20,14 +20,19 @@ class SDLPlatform : public IPlatform {
 public:
 
     SDLPlatform(const char *title);
+
     virtual ~SDLPlatform();
+
     virtual void toggleFullscreen() override;
+
     virtual void antiFlicker(int surfNumber) override;
+
     virtual void updateScreen() override;
 
     virtual int processEvents() override;
 
     virtual const PixBuf *getPixBuf() override;
+
     virtual void releasePixBuf() override;
     //virtual void *getScrSurf() override { return this->scrSurf; }
     //void unlockRenderSurface() = 0;

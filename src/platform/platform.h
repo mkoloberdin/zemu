@@ -15,14 +15,22 @@ public:
     virtual void toggleFullscreen() = 0;
 
     virtual void antiFlicker(int surfNumber) = 0;
-    void antiFlickerOn()  { this->antiFlickerActive = true; this->doCopyOfSurfaces = true; }
+
+    void antiFlickerOn() {
+        this->antiFlickerActive = true;
+        this->doCopyOfSurfaces = true;
+    }
+
     void antiFlickerOff() { this->antiFlickerActive = false; }
 
     void renderOn() { this->renderActive = true; }
+
     void renderOff() { this->renderActive = false; }
+
     bool isRenderOn() { return this->renderActive; }
 
     virtual const PixBuf *getPixBuf() = 0;
+
     virtual void releasePixBuf() = 0;
 
     virtual void updateScreen() = 0;

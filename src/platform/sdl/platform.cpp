@@ -6,8 +6,8 @@
 // TODO: Get rid of "params"
 
 #if defined(__APPLE__)
-    #include <SDL_Thread.h>
-    #include <SDL_Mutex.h>
+#include <SDL_Thread.h>
+#include <SDL_Mutex.h>
 #endif
 
 int videoSpec;
@@ -19,23 +19,24 @@ SDL_Surface *screen, *realScreen;
 int PITCH, REAL_PITCH;
 
 #if defined(__APPLE__)
-    SDL_Thread *upadteScreenThread = nullptr;
-    SDL_sem *updateScreenThreadSem;
-    volatile bool updateScreenThreadActive = true;
+SDL_Thread *upadteScreenThread = nullptr;
+SDL_sem *updateScreenThreadSem;
+volatile bool updateScreenThreadActive = true;
 
-    int UpdateScreenThreadFunc(void *param);
+int UpdateScreenThreadFunc(void *param);
 #endif
 
 struct s_SdlItem {
     int eventType;
-    bool (* func)(SDL_Event &);
+
+    bool (*func)(SDL_Event &);
 };
 
 s_SdlItem hnd_sdl[MAX_HANDLERS];
 
 int cnt_sdl = 0;
 
-void AttachSDLHandler(int eventType, bool (* func)(SDL_Event &)) {
+void AttachSDLHandler(int eventType, bool (*func)(SDL_Event &)) {
     if (cnt_sdl >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
     s_SdlItem item;
@@ -46,7 +47,7 @@ void AttachSDLHandler(int eventType, bool (* func)(SDL_Event &)) {
 }
 
 
-SDLPlatform :: SDLPlatform(const char *title) {
+SDLPlatform::SDLPlatform(const char *title) {
 
     videoSpec = SDL_SWSURFACE;
     if (params.fullscreen) videoSpec |= SDL_FULLSCREEN;
@@ -75,8 +76,7 @@ SDLPlatform :: SDLPlatform(const char *title) {
             StrikeError("Unable to create screen surface: %s\n", SDL_GetError());
 
         PITCH = screen->pitch / 4;
-    }
-    else {
+    } else {
         screen = realScreen;
         PITCH = REAL_PITCH;
     }
@@ -104,13 +104,13 @@ SDLPlatform :: SDLPlatform(const char *title) {
 
 }
 
-SDLPlatform :: ~SDLPlatform() {
+SDLPlatform::~SDLPlatform() {
 #if defined(__APPLE__)
     if (upadteScreenThread) {
-    updateScreenThreadActive = false;
-    SDL_SemPost(updateScreenThreadSem);
-    SDL_WaitThread(upadteScreenThread, nullptr);
-  }
+        updateScreenThreadActive = false;
+        SDL_SemPost(updateScreenThreadSem);
+        SDL_WaitThread(upadteScreenThread, nullptr);
+    }
 #endif
 
     //// FIXME: These two lines (first commented out) were in zemu.cpp in between ^ and v
@@ -131,7 +131,7 @@ SDLPlatform :: ~SDLPlatform() {
 
 }
 
-void SDLPlatform :: toggleFullscreen() {
+void SDLPlatform::toggleFullscreen() {
 #ifdef __unix__
     SDL_WM_ToggleFullScreen(realScreen);
 #else
@@ -148,7 +148,7 @@ void SDLPlatform :: toggleFullscreen() {
 }
 
 // FIXME: Make platform-neutral [?]
-void SDLPlatform :: antiFlicker(int surfNumber) {
+void SDLPlatform::antiFlicker(int surfNumber) {
 
     // AntiFlicker(renderSurf, scrSurf[sn]);
     // FIXME:
@@ -170,13 +170,12 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
     }
 
     if (this->doCopyOfSurfaces) {
-        s1 = (uint8_t *)copyFrom->pixels;
-        s2 = (uint8_t *)copyTo->pixels;
+        s1 = (uint8_t *) copyFrom->pixels;
+        s2 = (uint8_t *) copyTo->pixels;
 
-        for (i = HEIGHT; i--;)
-        {
-            uint32_t *s1dw = (uint32_t *)s1;
-            uint32_t *s2dw = (uint32_t *)s2;
+        for (i = HEIGHT; i--;) {
+            uint32_t *s1dw = (uint32_t *) s1;
+            uint32_t *s2dw = (uint32_t *) s2;
 
             for (j = WIDTH; j--;) {
                 *(s2dw++) = *(s1dw++);
@@ -189,9 +188,9 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
         this->doCopyOfSurfaces = false;
     }
 
-    sr = (uint8_t *)screen->pixels;
-    s1 = (uint8_t *)this->scrSurf[0]->pixels;
-    s2 = (uint8_t *)this->scrSurf[1]->pixels;
+    sr = (uint8_t *) screen->pixels;
+    s1 = (uint8_t *) this->scrSurf[0]->pixels;
+    s2 = (uint8_t *) this->scrSurf[1]->pixels;
 
     for (i = HEIGHT; i--;) {
         srw = sr;
@@ -201,21 +200,21 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
         for (j = WIDTH; j--;) {
 #if defined(ZEMU_BIG_ENDIAN) || defined(__APPLE__)
             *(srw++) = 0;
-      s1w++;
-      s2w++;
+            s1w++;
+            s2w++;
 #endif
 
-            *srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+            *srw = (uint8_t) (((unsigned int) (*s1w) + (unsigned int) (*s2w)) >> 1);
             srw++;
             s1w++;
             s2w++;
 
-            *srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+            *srw = (uint8_t) (((unsigned int) (*s1w) + (unsigned int) (*s2w)) >> 1);
             srw++;
             s1w++;
             s2w++;
 
-            *srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
+            *srw = (uint8_t) (((unsigned int) (*s1w) + (unsigned int) (*s2w)) >> 1);
             srw++;
             s1w++;
             s2w++;
@@ -237,7 +236,7 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
     if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
 }
 
-void SDLPlatform :: updateScreen() {
+void SDLPlatform::updateScreen() {
     if (!params.scale2x) {
         // do not use threading here, because realScreen == screen
 
@@ -249,8 +248,8 @@ void SDLPlatform :: updateScreen() {
 
 #if defined(__APPLE__)
     if (SDL_SemValue(updateScreenThreadSem)) {
-    return;
-  }
+        return;
+    }
 #endif
 
     if (SDL_MUSTLOCK(realScreen)) {
@@ -266,12 +265,11 @@ void SDLPlatform :: updateScreen() {
 
     if (params.scanlines) {
         for (int i = HEIGHT - 1; i >= 0; i--) {
-            int *line = (int *)screen->pixels + i * PITCH + WIDTH - 1;
-            int *lineA = (int *)realScreen->pixels + (i * 2) * REAL_PITCH + (WIDTH * 2 - 1);
-            int *lineB = (int *)realScreen->pixels + (i * 2 + 1) * REAL_PITCH + (WIDTH * 2 - 1);
+            int *line = (int *) screen->pixels + i * PITCH + WIDTH - 1;
+            int *lineA = (int *) realScreen->pixels + (i * 2) * REAL_PITCH + (WIDTH * 2 - 1);
+            int *lineB = (int *) realScreen->pixels + (i * 2 + 1) * REAL_PITCH + (WIDTH * 2 - 1);
 
-            for (int j = WIDTH; j--;)
-            {
+            for (int j = WIDTH; j--;) {
                 int c = *(line--);
                 int dc = (c & 0xFEFEFE) >> 1;
 
@@ -281,15 +279,13 @@ void SDLPlatform :: updateScreen() {
                 *(lineB--) = dc;
             }
         }
-    }
-    else {
+    } else {
         for (int i = HEIGHT - 1; i >= 0; i--) {
-            int *line = (int *)screen->pixels + i * PITCH + WIDTH - 1;
-            int *lineA = (int *)realScreen->pixels + (i * 2) * REAL_PITCH + (WIDTH * 2 - 1);
-            int *lineB = (int *)realScreen->pixels + (i * 2 + 1) * REAL_PITCH + (WIDTH * 2 - 1);
+            int *line = (int *) screen->pixels + i * PITCH + WIDTH - 1;
+            int *lineA = (int *) realScreen->pixels + (i * 2) * REAL_PITCH + (WIDTH * 2 - 1);
+            int *lineB = (int *) realScreen->pixels + (i * 2 + 1) * REAL_PITCH + (WIDTH * 2 - 1);
 
-            for (int j = WIDTH; j--;)
-            {
+            for (int j = WIDTH; j--;) {
                 int c = *(line--);
 
                 *(lineA--) = c;
@@ -311,7 +307,7 @@ void SDLPlatform :: updateScreen() {
 #endif
 }
 
-int SDLPlatform :: processEvents() {
+int SDLPlatform::processEvents() {
 
     int ev = 0; // Return event number
     int key;
@@ -321,8 +317,7 @@ int SDLPlatform :: processEvents() {
         if (event.type == SDL_QUIT)
             return 1; // Exit
 
-        if (event.type == SDL_KEYUP)
-        {
+        if (event.type == SDL_KEYUP) {
             key = event.key.keysym.sym;
             if (key == SDLK_ESCAPE)
                 ev = 2; // Raise quitMode
@@ -352,20 +347,19 @@ const PixBuf *SDLPlatform::getPixBuf() {
     } else renderSurf = screen;
 
     if (renderActive && SDL_MUSTLOCK(renderSurf)) {
-        if (SDL_LockSurface(renderSurf) < 0)
-        {
+        if (SDL_LockSurface(renderSurf) < 0) {
             printf("Can't lock surface\n");
             return nullptr;
         }
     }
-    pixBuf.pixels = (uint8_t *)(renderSurf->pixels);
+    pixBuf.pixels = (uint8_t *) (renderSurf->pixels);
     pixBuf.pitch = renderSurf->pitch;
     return &pixBuf;
 }
 
 void SDLPlatform::releasePixBuf() {
     if ((renderActive)) {
-        if(SDL_MUSTLOCK(renderSurf))
+        if (SDL_MUSTLOCK(renderSurf))
             SDL_UnlockSurface(renderSurf);
         if (antiFlickerActive)
             antiFlicker(renderSurfNum); // FIXME: antiFlicker() should use this parameter directly.
