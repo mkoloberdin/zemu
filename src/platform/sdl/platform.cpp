@@ -20,15 +20,14 @@ int PITCH, REAL_PITCH;
 bool doCopyOfSurfaces = false;
 
 #if defined(__APPLE__)
-SDL_Thread *upadteScreenThread = nullptr;
-SDL_sem *updateScreenThreadSem;
-volatile bool updateScreenThreadActive = true;
+    SDL_Thread *upadteScreenThread = nullptr;
+    SDL_sem *updateScreenThreadSem;
+    volatile bool updateScreenThreadActive = true;
 
-int UpdateScreenThreadFunc(void *param);
+    int UpdateScreenThreadFunc(void *param);
 #endif
 
-struct s_SdlItem
-{
+struct s_SdlItem {
     int eventType;
     bool (* func)(SDL_Event &);
 };
@@ -37,8 +36,7 @@ s_SdlItem hnd_sdl[MAX_HANDLERS];
 
 int cnt_sdl = 0;
 
-void AttachSDLHandler(int eventType, bool (* func)(SDL_Event &))
-{
+void AttachSDLHandler(int eventType, bool (* func)(SDL_Event &)) {
     if (cnt_sdl >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
     s_SdlItem item;
@@ -58,8 +56,7 @@ SDLPlatform :: SDLPlatform(const char *title) {
     int actualWidth = WIDTH;
     int actualHeight = HEIGHT;
 
-    if (params.scale2x)
-    {
+    if (params.scale2x) {
         actualWidth *= 2;
         actualHeight *= 2;
     }
@@ -70,8 +67,7 @@ SDLPlatform :: SDLPlatform(const char *title) {
         StrikeError("Unable to set requested video mode: %s\n", SDL_GetError());
     REAL_PITCH = realScreen->pitch / 4;
 
-    if (params.scale2x)
-    {
+    if (params.scale2x) {
         SDL_PixelFormat *fmt = realScreen->format;
 
         screen = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask,
@@ -81,8 +77,7 @@ SDLPlatform :: SDLPlatform(const char *title) {
 
         PITCH = screen->pitch / 4;
     }
-    else
-    {
+    else {
         screen = realScreen;
         PITCH = REAL_PITCH;
     }
@@ -123,8 +118,7 @@ SDLPlatform :: ~SDLPlatform() {
     // // TryFreeLongImage();
     // TryFreeAvgImage();
 
-    if (videoSpec & SDL_FULLSCREEN)
-    {
+    if (videoSpec & SDL_FULLSCREEN) {
         videoSpec ^= SDL_FULLSCREEN;
         SDL_FreeSurface(realScreen);
         realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
@@ -139,20 +133,19 @@ SDLPlatform :: ~SDLPlatform() {
 }
 
 void SDLPlatform :: toggleFullscreen() {
-    #ifdef __unix__
-            SDL_WM_ToggleFullScreen(realScreen);
-    #else
-            videoSpec ^= SDL_FULLSCREEN;
-      SDL_FreeSurface(realScreen);
-      realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
-      REAL_PITCH = realScreen->pitch / 4;
+#ifdef __unix__
+    SDL_WM_ToggleFullScreen(realScreen);
+#else
+    videoSpec ^= SDL_FULLSCREEN;
+    SDL_FreeSurface(realScreen);
+    realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
+    REAL_PITCH = realScreen->pitch / 4;
 
-      if (!params.scale2x)
-      {
+    if (!params.scale2x) {
         screen = realScreen;
         PITCH = REAL_PITCH;
-      }
-    #endif
+    }
+#endif
 }
 
 // FIXME: Make platform-neutral [?]
@@ -177,8 +170,7 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
         if (SDL_LockSurface(this->scrSurf[1]) < 0) return;
     }
 
-    if (doCopyOfSurfaces)
-    {
+    if (doCopyOfSurfaces) {
         s1 = (uint8_t *)copyFrom->pixels;
         s2 = (uint8_t *)copyTo->pixels;
 
@@ -202,14 +194,12 @@ void SDLPlatform :: antiFlicker(int surfNumber) {
     s1 = (uint8_t *)this->scrSurf[0]->pixels;
     s2 = (uint8_t *)this->scrSurf[1]->pixels;
 
-    for (i = HEIGHT; i--;)
-    {
+    for (i = HEIGHT; i--;) {
         srw = sr;
         s1w = s1;
         s2w = s2;
 
-        for (j = WIDTH; j--;)
-        {
+        for (j = WIDTH; j--;) {
 #if defined(ZEMU_BIG_ENDIAN) || defined(__APPLE__)
             *(srw++) = 0;
       s1w++;
@@ -275,10 +265,8 @@ void SDLPlatform :: updateScreen() {
         }
     }
 
-    if (params.scanlines)
-    {
-        for (int i = HEIGHT - 1; i >= 0; i--)
-        {
+    if (params.scanlines) {
+        for (int i = HEIGHT - 1; i >= 0; i--) {
             int *line = (int *)screen->pixels + i * PITCH + WIDTH - 1;
             int *lineA = (int *)realScreen->pixels + (i * 2) * REAL_PITCH + (WIDTH * 2 - 1);
             int *lineB = (int *)realScreen->pixels + (i * 2 + 1) * REAL_PITCH + (WIDTH * 2 - 1);
@@ -295,10 +283,8 @@ void SDLPlatform :: updateScreen() {
             }
         }
     }
-    else
-    {
-        for (int i = HEIGHT - 1; i >= 0; i--)
-        {
+    else {
+        for (int i = HEIGHT - 1; i >= 0; i--) {
             int *line = (int *)screen->pixels + i * PITCH + WIDTH - 1;
             int *lineA = (int *)realScreen->pixels + (i * 2) * REAL_PITCH + (WIDTH * 2 - 1);
             int *lineB = (int *)realScreen->pixels + (i * 2 + 1) * REAL_PITCH + (WIDTH * 2 - 1);
@@ -332,8 +318,7 @@ int SDLPlatform :: processEvents() {
     int key;
     SDL_Event event;
 
-    while (SDL_PollEvent(&event))
-    {
+    while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT)
             return 1; // Exit
 
@@ -347,8 +332,7 @@ int SDLPlatform :: processEvents() {
         int i = cnt_sdl;
         s_SdlItem *ptr_sdl = hnd_sdl;
 
-        while (i)
-        {
+        while (i) {
             if (ptr_sdl->eventType == event.type) {
                 if (ptr_sdl->func(event)) {
                     break;
