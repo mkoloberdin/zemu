@@ -48,7 +48,6 @@ extern Z80EX_CONTEXT *cpu;
 extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;
 extern int PITCH;
-extern bool drawFrame;
 extern int frames;
 extern bool disableSound;
 extern char tempFolderName[MAX_PATH];

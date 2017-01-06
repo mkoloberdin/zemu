@@ -53,7 +53,6 @@ bool joyOnKeyb = false;
 Z80EX_CONTEXT *cpu;
 uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 s_Params params;
-bool drawFrame;
 int frames;
 C_Font font, fixed_font;
 bool disableSound = false;
@@ -62,18 +61,6 @@ char tempFolderName[MAX_PATH];
 
 bool recordWav = false;
 const char *wavFileName = "output.wav"; // TODO: make configurable + full filepath
-
-// bool isLongImageWrited = false;
-// const char * longImageFileName = "longimage.ppm";
-// C_File longImageFile;
-// long longImageWidth;
-// long longImageHeight;
-// int longImagePos;
-
-bool AvgImageWriteEnabled = false;
-fs::path AvgImageFileName;
-long *AvgImageBuffer;
-// int avgImageFrames;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -290,73 +277,6 @@ void SetMessage(const char *str)
 {
     strcpy(message, str);
     messageTimeout = 50;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-// void TryFreeLongImage(void)
-// {
-// 	if (!isLongImageWrited) {
-// 		return;
-// 	}
-//
-// 	longImageFile.Close();
-//
-// 	longImageFile.Write(longImageFileName);
-// 	longImageFile.PrintF("P6\n%ld %ld\n255\n", longImageWidth, longImageHeight);
-//
-// 	C_File longImageTmp;
-//
-// 	longImageTmp.Read("longimage.ppm.tmp");
-// 	while (!longImageTmp.Eof()) longImageFile.PutBYTE(longImageTmp.GetBYTE());
-//
-// 	longImageTmp.Close();
-// 	longImageFile.Close();
-//
-// 	unlink("longimage.ppm.tmp");
-// 	isLongImageWrited = false;
-// }
-
-void TryFreeAvgImage(void)
-{
-    if (!AvgImageWriteEnabled) {
-        return;
-    }
-
-    fs::ofstream OFS(AvgImageFileName, std::ios_base::binary);
-    OFS << format("P6\n%ld %ld\n255\n") % WIDTH % HEIGHT;
-
-    long divider = 0;
-    long *ptr = AvgImageBuffer;
-
-    for (int i = WIDTH * HEIGHT * 3; i--;)
-    {
-        long val = *(ptr++);
-
-        if (val > divider) {
-            divider = val;
-        }
-    }
-
-    divider /= 255;
-
-    if (divider < 1) {
-        divider = 1;
-    }
-
-    // long divider = (avgImageFrames > 0 ? avgImageFrames : 1);
-    ptr = AvgImageBuffer;
-
-    for (int i = WIDTH * HEIGHT * 3; i--;) {
-        writeU8(OFS, *(ptr++) / divider);
-    }
-
-    OFS.close();
-
-    delete[] AvgImageBuffer;
-    AvgImageBuffer = nullptr;
-
-    AvgImageWriteEnabled = false;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -666,47 +586,6 @@ void Action_JoyOnKeyb(void)
     SetMessage(joyOnKeyb ? "Kempston on keyboard ON" : "Kempston on keyboard OFF");
 }
 
-// void Action_WriteLongImage(void)
-// {
-// 	if (isLongImageWrited)
-// 	{
-// 		TryFreeLongImage();
-// 	}
-// 	else
-// 	{
-// 		isLongImageWrited = true;
-// 		longImageFile.Write("longimage.ppm.tmp");
-//
-// 		longImageWidth = 256;
-// 		longImageHeight = 0;
-// 		longImagePos = 0;
-// 	}
-//
-// 	SetMessage(isLongImageWrited ? "Long image write ON" : "Long image write OFF");
-// }
-
-void Action_WriteAvgImage(void)
-{
-    if (AvgImageWriteEnabled)
-    {
-        TryFreeAvgImage();
-    }
-    else
-    {
-        AvgImageWriteEnabled = true;
-        AvgImageBuffer = new long[WIDTH * HEIGHT * 3];
-        // avgImageFrames = 0;
-
-        long *ptr = AvgImageBuffer;
-
-        for (int i = WIDTH * HEIGHT * 3; i--;) {
-            *(ptr++) = 0;
-        }
-    }
-
-    SetMessage(AvgImageWriteEnabled ? "Avg image write ON" : "Avg image write OFF");
-}
-
 s_Action cfgActions[] = {
     {"reset",           Action_Reset},
     {"reset_trdos",     Action_ResetTrDos},
@@ -724,8 +603,6 @@ s_Action cfgActions[] = {
     {"flash_color",     Action_FlashColor},
     {"pause",           Action_Pause},
     {"joy_on_keyb",     Action_JoyOnKeyb},
-    // {"write_longimage", Action_WriteLongImage},
-    {"write_longimage", Action_WriteAvgImage},
     {"",                nullptr}
 };
 
@@ -1106,23 +983,6 @@ void (* renderPtr)(unsigned long) = nullptr;
 void Render(void)
 {
 
-/*    SDL_Surface *scrSurf = (SDL_Surface *)(platform->getScrSurf());
-
-  if (params.antiFlicker)
-  {
-    renderSurf = scrSurf + sn;
-    sn = 1 - sn;
-  } else renderSurf = screen;
-
-  if ((drawFrame || AvgImageWriteEnabled ) && SDL_MUSTLOCK(renderSurf))
-  {
-    if (SDL_LockSurface(renderSurf) < 0)
-    {
-      printf("Can't lock surface\n");
-      return;
-    }
-  }
-*/
     pixBuf = platform->getPixBuf();
     if (pixBuf == nullptr)
         return;
@@ -1164,13 +1024,6 @@ void Render(void)
     lastDevClk = devClk;
     cpuClk -= MAX_FRAME_TACTS;
     devClk = cpuClk;
-
-/*
-  if ((drawFrame || AvgImageWriteEnabled) && SDL_MUSTLOCK(renderSurf))
-    SDL_UnlockSurface(renderSurf);
-  if (params.antiFlicker && (drawFrame || AvgImageWriteEnabled))
-    platform->antiFlicker(sn);
-*/
 
     platform->releasePixBuf();
 }
@@ -1393,11 +1246,6 @@ void FreeAll(void)
 
     C_Tape::Close();
 
-
-    // FIXME: See SDLPlatform destructor
-    // TryFreeLongImage();
-    TryFreeAvgImage();
-
 #ifdef __unix__
     // TODO: do in in more portable way
     char cmd[MAX_PATH];
@@ -1508,9 +1356,6 @@ int main(int argc, char *argv[])
     OutputLogo();
 
     env.initialize("zemu");
-
-    // FIXME:
-    AvgImageFileName = env.newDataFilePath("avgimage.ppm");
 
     try
     {
