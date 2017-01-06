@@ -794,24 +794,11 @@ inline void CpuCalcTacts(unsigned long cmdClk) {
     C_Tape::process();
 
     if (runDebuggerFlag || breakpoints[z80ex_get_reg(cpu, regPC)]) {
-/*
-    if (SDL_MUSTLOCK(renderSurf)) {
-        SDL_UnlockSurface(renderSurf);
-    }
-*/
         platform->releasePixBuf();
 
         runDebuggerFlag = false;
         RunDebugger();
 
-/*
-    if (SDL_MUSTLOCK(renderSurf)) {
-        if (SDL_LockSurface(renderSurf) < 0) {
-            printf("Can't lock surface\n");
-            return;
-        }
-    }
-*/
         pixBuf = platform->getPixBuf();
     }
 }
