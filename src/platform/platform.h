@@ -37,13 +37,6 @@ public:
 
     virtual int processEvents() = 0;
 
-    // FIXME:
-    //virtual void *getScrSurf() = 0;
-
-    //virtual void unlockRenderSurface() = 0;
-    //virtual void lockRenderSurface() = 0;
-
-    //virtual void render() = 0;
 
 protected:
     // helper flags for anti-flicker

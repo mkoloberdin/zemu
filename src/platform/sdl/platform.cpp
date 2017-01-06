@@ -365,20 +365,3 @@ void SDLPlatform::releasePixBuf() {
             antiFlicker(renderSurfNum); // FIXME: antiFlicker() should use this parameter directly.
     }
 }
-
-/*
-void SDLPlatform :: unlockRenderSurface() {
-    if (SDL_MUSTLOCK(renderSurf)) {
-        SDL_UnlockSurface(renderSurf);
-    }
-}
-
-void SDLPlatform ::lockRenderSurface() {
-    if (SDL_MUSTLOCK(renderSurf)) {
-        if (SDL_LockSurface(renderSurf) < 0) {
-            printf("Can't lock surface\n");
-            return;
-        }
-    }
-}
-*/

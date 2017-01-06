@@ -10,7 +10,6 @@ extern SDL_Surface *screen;
 
 extern int PITCH, REAL_PITCH;
 
-extern bool doCopyOfSurfaces;
 
 void AttachSDLHandler(int eventType, bool (*func)(SDL_Event &));
 
@@ -34,11 +33,6 @@ public:
     virtual const PixBuf *getPixBuf() override;
 
     virtual void releasePixBuf() override;
-    //virtual void *getScrSurf() override { return this->scrSurf; }
-    //void unlockRenderSurface() = 0;
-    //void lockRenderSurface() = 0;
-
-    //void render();
 
 private:
     SDL_Surface *renderSurf;
