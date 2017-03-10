@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 3.6)
 project (ZEmu)
 
+set(CMAKE_CXX_STANDARD 14)
+
 set (ZEMU_VERSION_MAJOR 0)
 set (ZEMU_VERSION_MINOR 99944)
 set (CMAKE_INSTALL_PREFIX /opt)
