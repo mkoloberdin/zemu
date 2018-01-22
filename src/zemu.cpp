@@ -1244,7 +1244,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef _WIN32
-        params.soundParam = config.getInt("sound", "wqsize", 4);
+        params.soundParam = env.getInt("sound", "wqsize", 4);
 #endif
 
         // cputrace
