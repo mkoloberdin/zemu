@@ -7,14 +7,6 @@
 #include "appenv.h"
 
 #ifdef _WIN32
-  #include <io.h> // for _access()
-#else
-  #include <unistd.h> // for access()
-#endif // _WIN32
-
-// [rst] what that FOR_INSTALL mean at all?
-
-#ifdef _WIN32
   #ifndef _WIN32_IE
     #define _WIN32_IE 0x400
   #endif
