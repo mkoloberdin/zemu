@@ -2,7 +2,7 @@
 #include "exceptions.h"
 #include <stdio.h>
 
-std::list<s_LabelItem> labels;
+std::map<uint16_t, std::string> labels;
 
 void Labels_Load(const char *fname) // FIXME: rewrite
 {
@@ -54,12 +54,7 @@ void Labels_Load(const char *fname) // FIXME: rewrite
         label[14] = 0;
       }
 
-      s_LabelItem item;
-
-      item.addr = addr;
-      item.label.assign(label);
-
-      labels.push_back(item);
+      labels[addr] = label;
 
       if (strlen(label) >= 6)
       {

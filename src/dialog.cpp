@@ -590,17 +590,13 @@ bool IsWatched(uint16_t addr)
   return false;
 }
 
-const char *GetLabel(uint16_t addr)
+const char *getLabel(uint16_t addr)
 {
-  std::list<s_LabelItem>::iterator it;
-
-  for (it = labels.begin(); it != labels.end(); it++) {
-    if (it->addr == addr) {
-      return it->label.c_str();
-    }
-  }
-
-  return NULL;
+  auto it = labels.find(addr);
+  if (it != labels.end())
+    return it->second.c_str();
+  else
+    return nullptr;
 }
 
 const char *ReplaceLabels(const char *cmd)
@@ -615,7 +611,7 @@ const char *ReplaceLabels(const char *cmd)
     if (cmd[0] == '#' && ishex(cmd[1]) && ishex(cmd[2]) && ishex(cmd[3]) && ishex(cmd[4]))
     {
       uint16_t addr = unhex(cmd[1]) * 0x1000 + unhex(cmd[2]) * 0x100 + unhex(cmd[3]) * 0x10 + unhex(cmd[4]);
-      const char *lbl = GetLabel(addr);
+      const char *lbl = getLabel(addr);
 
       if (lbl)
       {
@@ -778,7 +774,7 @@ void DebugIt(void)
           Bar(lx - 9, i * h + h / 2 - 1, lx - 8, i * h + h / 2, DRGB(0x00, 0x00, 0xFF));
         }
 
-        const char *lbl = (showLabels ? GetLabel(dispBuf[i].addr) : NULL);
+        const char *lbl = (showLabels ? getLabel(dispBuf[i].addr) : NULL);
 
         if (lbl)
         {
