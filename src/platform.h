@@ -5,18 +5,6 @@
 
 // Platform-specific includes and defines
 
-// + Fix for FreeBSD (by breeze)
-
-#ifdef __FreeBSD__
-	#define __linux__
-#endif
-
-// - Fix for FreeBSD (by breeze)
-
-#ifdef __APPLE__
-	#define __linux__
-#endif
-
 //---------------
 // SDL Predefined
 //---------------
