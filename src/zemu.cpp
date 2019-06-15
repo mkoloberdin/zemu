@@ -31,8 +31,8 @@
 #include <algorithm>
 
 #if defined(__APPLE__)
-#include <SDL_Thread.h>
-#include <SDL_Mutex.h>
+#include <SDL_thread.h>
+#include <SDL_mutex.h>
 #endif
 
 #define SNAP_FORMAT_Z80 0

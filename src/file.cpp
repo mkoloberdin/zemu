@@ -62,7 +62,7 @@
 	#define _write write
 	#define _vsnprintf vsnprintf
 
-    // there a no "special text files" in linux
+	// there a no "special text files" in linux
 	#define _O_BINARY 0
 
 	#define _O_RDONLY O_RDONLY
