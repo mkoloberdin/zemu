@@ -253,7 +253,7 @@ void SDLPlatform::antiFlicker(int surfNumber) {
         s2w = s2;
 
         for (j = WIDTH; j--;) {
-#if defined(ZEMU_BIG_ENDIAN) || defined(__APPLE__)
+#if defined(ZEMU_BIG_ENDIAN)
             *(srw++) = 0;
             s1w++;
             s2w++;
@@ -274,7 +274,7 @@ void SDLPlatform::antiFlicker(int surfNumber) {
             s1w++;
             s2w++;
 
-#if !defined(ZEMU_BIG_ENDIAN) && !defined(__APPLE__)
+#if !defined(ZEMU_BIG_ENDIAN)
             *(srw++) = 0;
             s1w++;
             s2w++;
