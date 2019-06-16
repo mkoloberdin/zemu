@@ -25,7 +25,7 @@
 
 namespace {
 
-fs::path throw_if_not_absolute(const std::string desc, const fs::path& p) {
+fs::path throw_if_not_absolute(const std::string& desc, const fs::path& p) {
   if (p.has_root_directory())
     return p;
 
