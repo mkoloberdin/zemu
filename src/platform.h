@@ -5,19 +5,6 @@
 
 // Platform-specific includes and defines
 
-//---------------
-// SDL Predefined
-//---------------
-
-// FIXME: WORD_SWAP_BYTES - unused. Remove?
-#ifdef ZEMU_BIG_ENDIAN
-  #define WORD_SWAP_BYTES(a) ((((a)&0xFF)<<8)|((a)>>8))
-#endif
-
-#ifdef __unix__
-  #include <limits.h>
-#endif
-
 #ifdef _WIN32
 //---------------
 // WIN32-specific
