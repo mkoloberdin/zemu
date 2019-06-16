@@ -1,2 +1,5 @@
 /avgimage.ppm
 /debuglog.txt
+/*.sna
+/*.tap
+/zemu
