@@ -6,8 +6,8 @@
 // TODO: Get rid of "params"
 
 #if defined(__APPLE__)
-#include <SDL_Thread.h>
-#include <SDL_Mutex.h>
+#include <SDL_thread.h>
+#include <SDL_mutex.h>
 #endif
 
 int actualWidth;
