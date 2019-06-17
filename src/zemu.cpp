@@ -1109,7 +1109,7 @@ void FreeAll(void) {
 
     C_Tape::Close();
 
-#ifdef __unix__
+#ifndef _WIN32
     // TODO: do in in more portable way
     char cmd[MAX_PATH];
     strcpy(cmd, "rm -rf ");

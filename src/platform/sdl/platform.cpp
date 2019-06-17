@@ -18,7 +18,7 @@ SDL_Surface *screen, *realScreen;
 int PITCH, REAL_PITCH;
 
 #if defined(__APPLE__)
-SDL_Thread *upadteScreenThread = nullptr;
+SDL_Thread *updateScreenThread = nullptr;
 SDL_sem *updateScreenThreadSem;
 volatile bool updateScreenThreadActive = true;
 
@@ -157,10 +157,10 @@ SDLPlatform::SDLPlatform(uint32_t sdl_init_flags, const char *title) {
 
 SDLPlatform::~SDLPlatform() {
 #if defined(__APPLE__)
-    if (upadteScreenThread) {
+    if (updateScreenThread) {
         updateScreenThreadActive = false;
         SDL_SemPost(updateScreenThreadSem);
-        SDL_WaitThread(upadteScreenThread, nullptr);
+        SDL_WaitThread(updateScreenThread, nullptr);
     }
 #endif
 
@@ -187,7 +187,7 @@ SDLPlatform::~SDLPlatform() {
 }
 
 void SDLPlatform::toggleFullscreen() {
-#ifdef __unix__
+#ifndef _WIN32
     SDL_WM_ToggleFullScreen(realScreen);
 #else
     videoSpec ^= SDL_FULLSCREEN;

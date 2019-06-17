@@ -35,7 +35,7 @@
   #define SleepX() sleep(0)
 #endif
 
-#ifdef __unix__
+#ifndef _WIN32
   #define stricmp(s1,s2) strcasecmp((s1),(s2))
   #include <unistd.h>
 #endif
