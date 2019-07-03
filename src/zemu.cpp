@@ -76,9 +76,9 @@ const char *wavFileName = "output.wav"; // TODO: make configurable + full filepa
 // long longImageHeight;
 // int longImagePos;
 
-bool isAvgImageWrited = false;
-const char * avgImageFileName = "avgimage.ppm";
-long * avgImageBuffer;
+// bool isAvgImageWrited = false;
+// const char * avgImageFileName = "avgimage.ppm";
+// long * avgImageBuffer;
 // int avgImageFrames;
 
 #if defined(__APPLE__)
@@ -351,48 +351,48 @@ void SetMessage(const char *str)
 // 	isLongImageWrited = false;
 // }
 
-void TryFreeAvgImage(void)
-{
-	if (!isAvgImageWrited) {
-		return;
-	}
-
-	C_File avgImageFile;
-	avgImageFile.Write(avgImageFileName);
-	avgImageFile.PrintF("P6\n%ld %ld\n255\n", WIDTH, HEIGHT);
-
-	long divider = 0;
-	long * ptr = avgImageBuffer;
-
-	for (int i = WIDTH * HEIGHT * 3; i--;)
-	{
-		long val = *(ptr++);
-
-		if (val > divider) {
-			divider = val;
-		}
-	}
-
-	divider /= 255;
-
-	if (divider < 1) {
-		divider = 1;
-	}
-
-	// long divider = (avgImageFrames > 0 ? avgImageFrames : 1);
-	ptr = avgImageBuffer;
-
-	for (int i = WIDTH * HEIGHT * 3; i--;) {
-		avgImageFile.PutBYTE(*(ptr++) / divider);
-	}
-
-	avgImageFile.Close();
-
-	delete[] avgImageBuffer;
-	avgImageBuffer = NULL;
-
-	isAvgImageWrited = false;
-}
+// void TryFreeAvgImage(void)
+// {
+// 	if (!isAvgImageWrited) {
+// 		return;
+// 	}
+//
+// 	C_File avgImageFile;
+// 	avgImageFile.Write(avgImageFileName);
+// 	avgImageFile.PrintF("P6\n%ld %ld\n255\n", WIDTH, HEIGHT);
+//
+// 	long divider = 0;
+// 	long * ptr = avgImageBuffer;
+//
+// 	for (int i = WIDTH * HEIGHT * 3; i--;)
+// 	{
+// 		long val = *(ptr++);
+//
+// 		if (val > divider) {
+// 			divider = val;
+// 		}
+// 	}
+//
+// 	divider /= 255;
+//
+// 	if (divider < 1) {
+// 		divider = 1;
+// 	}
+//
+// 	// long divider = (avgImageFrames > 0 ? avgImageFrames : 1);
+// 	ptr = avgImageBuffer;
+//
+// 	for (int i = WIDTH * HEIGHT * 3; i--;) {
+// 		avgImageFile.PutBYTE(*(ptr++) / divider);
+// 	}
+//
+// 	avgImageFile.Close();
+//
+// 	delete[] avgImageBuffer;
+// 	avgImageBuffer = NULL;
+//
+// 	isAvgImageWrited = false;
+// }
 
 //--------------------------------------------------------------------------------------------------------------
 
@@ -722,27 +722,27 @@ void Action_JoyOnKeyb(void)
 // 	SetMessage(isLongImageWrited ? "Long image write ON" : "Long image write OFF");
 // }
 
-void Action_WriteAvgImage(void)
-{
-	if (isAvgImageWrited)
-	{
-		TryFreeAvgImage();
-	}
-	else
-	{
-		isAvgImageWrited = true;
-		avgImageBuffer = new long[WIDTH * HEIGHT * 3];
-		// avgImageFrames = 0;
-
-		long * ptr = avgImageBuffer;
-
-		for (int i = WIDTH * HEIGHT * 3; i--;) {
-			*(ptr++) = 0;
-		}
-	}
-
-	SetMessage(isAvgImageWrited ? "Avg image write ON" : "Avg image write OFF");
-}
+// void Action_WriteAvgImage(void)
+// {
+// 	if (isAvgImageWrited)
+// 	{
+// 		TryFreeAvgImage();
+// 	}
+// 	else
+// 	{
+// 		isAvgImageWrited = true;
+// 		avgImageBuffer = new long[WIDTH * HEIGHT * 3];
+// 		// avgImageFrames = 0;
+//
+// 		long * ptr = avgImageBuffer;
+//
+// 		for (int i = WIDTH * HEIGHT * 3; i--;) {
+// 			*(ptr++) = 0;
+// 		}
+// 	}
+//
+// 	SetMessage(isAvgImageWrited ? "Avg image write ON" : "Avg image write OFF");
+// }
 
 s_Action cfgActions[] =
 {
@@ -763,7 +763,7 @@ s_Action cfgActions[] =
 	{"pause",			Action_Pause},
 	{"joy_on_keyb",		Action_JoyOnKeyb},
 	// {"write_longimage",	Action_WriteLongImage},
-	{"write_longimage",	Action_WriteAvgImage},
+	// {"write_longimage",	Action_WriteAvgImage},
 	{"",				NULL}
 };
 
@@ -1259,7 +1259,7 @@ void Render(void)
 		sn = 1 - sn;
 	} else renderSurf = screen;
 
-	if ((drawFrame || isAvgImageWrited /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
+	if ((drawFrame /* || isAvgImageWrited || isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
 	{
 		if (SDL_LockSurface(renderSurf) < 0)
 		{
@@ -1285,7 +1285,7 @@ void Render(void)
 		CpuInt();
 	}
 
-	if (drawFrame || isAvgImageWrited /* isLongImageWrited */)
+	if (drawFrame /* || isAvgImageWrited || isLongImageWrited */)
 	{
 		while (cpuClk < MAX_FRAME_TACTS)
 		{
@@ -1305,8 +1305,8 @@ void Render(void)
 	cpuClk -= MAX_FRAME_TACTS;
 	devClk = cpuClk;
 
-	if ((drawFrame || isAvgImageWrited /* isLongImageWrited */) && SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
-	if (params.antiFlicker && (drawFrame || isAvgImageWrited /* isLongImageWrited */)) AntiFlicker(renderSurf, scrSurf[sn]);
+	if ((drawFrame /* || isAvgImageWrited || isLongImageWrited */) && SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
+	if (params.antiFlicker && (drawFrame /* || isAvgImageWrited || isLongImageWrited */)) AntiFlicker(renderSurf, scrSurf[sn]);
 
 	// if (isLongImageWrited)
 	// {
@@ -1330,29 +1330,29 @@ void Render(void)
 	//	longImagePos = (longImagePos + 1) % 192;
 	// }
 
-	if (isAvgImageWrited)
-	{
-		int * src = (int *)screen->pixels;
-		long * dst = avgImageBuffer;
-
-		for (int i = HEIGHT; i--;)
-		{
-			int * line = src;
-
-			for (int j = WIDTH; j--;)
-			{
-				unsigned int c = *(line++);
-
-				*(dst++) += (long)GETR(c);
-				*(dst++) += (long)GETG(c);
-				*(dst++) += (long)GETB(c);
-			}
-
-			src += PITCH;
-		}
-
-		// avgImageFrames++;
-	}
+	// if (isAvgImageWrited)
+	// {
+	// 	int * src = (int *)screen->pixels;
+	// 	long * dst = avgImageBuffer;
+	//
+	// 	for (int i = HEIGHT; i--;)
+	// 	{
+	// 		int * line = src;
+	//
+	// 		for (int j = WIDTH; j--;)
+	// 		{
+	// 			unsigned int c = *(line++);
+	//
+	// 			*(dst++) += (long)GETR(c);
+	// 			*(dst++) += (long)GETG(c);
+	// 			*(dst++) += (long)GETB(c);
+	// 		}
+	//
+	// 		src += PITCH;
+	// 	}
+	//
+	// 	// avgImageFrames++;
+	// }
 }
 
 #include "images/floppy.h"
@@ -1676,7 +1676,7 @@ void FreeAll(void)
 	#endif
 
 	// TryFreeLongImage();
-	TryFreeAvgImage();
+	// TryFreeAvgImage();
 
 	#ifndef _WIN32
 		// TODO: do in in more portable way
