@@ -1,5 +1,5 @@
-#ifndef _TAPE_FORMAT_H_
-#define _TAPE_FORMAT_H_
+#ifndef _TAPE_FORMAT_H_INCLUDED_
+#define _TAPE_FORMAT_H_INCLUDED_
 
 class C_TapeFormat
 {
@@ -18,4 +18,4 @@ class C_TapeFormat
 	virtual bool IsActive(void) = 0;
 };
 
-#endif /* _TAPE_FORMAT_H_ */
+#endif

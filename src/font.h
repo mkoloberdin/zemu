@@ -1,5 +1,5 @@
-#ifndef _FONT_H
-#define _FONT_H_ 1
+#ifndef _FONT_H_INCLUDED_
+#define _FONT_H_INCLUDED_
 
 #include "zemu.h"
 
@@ -11,7 +11,7 @@ class C_Font
 	~C_Font();
 
 	void Init(uint8_t *data);
-	void Init(SDL_Surface *surf);
+	void Init(ZHW_Video_Surface *surf);
 
 	void PrintChar(int x, int y, char c);
 	void PrintString(int x, int y, const char *str);
@@ -25,7 +25,7 @@ class C_Font
 	private:
 
 	int spitch;
-	SDL_Surface *surf;
+	ZHW_Video_Surface *surf;
 	int off[0x100], len[0x100], xoff[0x100], yoff[0x100];
 
 	void CalcFont(void);

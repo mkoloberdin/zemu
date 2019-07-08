@@ -6,8 +6,8 @@
 #include "../../exceptions.h"
 #include "../../tape/tape.h"
 
-bool C_Keyboard::hostKeyPressed[SDLK_LAST];
-C_Keyboard::s_HostKey C_Keyboard::hostKeys[SDLK_LAST];
+bool C_Keyboard::hostKeyPressed[ZHW_KEY_LAST];
+C_Keyboard::s_HostKey C_Keyboard::hostKeys[ZHW_KEY_LAST];
 int C_Keyboard::keyboard[8];
 
 void C_Keyboard::ReadKbdConfig(void)
@@ -25,7 +25,7 @@ void C_Keyboard::ReadKbdConfig(void)
 	hk.mods.count = 0;
 	hk.action = NULL;
 
-	for (i = 0; i < SDLK_LAST; i++)
+	for (i = 0; i < ZHW_KEY_LAST; i++)
 	{
 		hostKeys[i] = hk;
 		hostKeyPressed[i] = false;
@@ -206,8 +206,8 @@ void C_Keyboard::Init(void)
 {
 	ReadKbdConfig();
 
-	AttachSDLHandler(SDL_KEYDOWN, OnKeyDown);
-	AttachSDLHandler(SDL_KEYUP, OnKeyUp);
+	AttachHwHandler(ZHW_EVENT_KEYDOWN, OnKeyDown);
+	AttachHwHandler(ZHW_EVENT_KEYUP, OnKeyUp);
 
 	AttachZ80InputHandler(InputByteCheckPort, OnInputByte);
 
@@ -218,14 +218,14 @@ void C_Keyboard::Close(void)
 {
 }
 
-bool C_Keyboard::OnKeyDown(SDL_Event &event)
+bool C_Keyboard::OnKeyDown(ZHW_Event &event)
 {
 	int k, key;
 
 	key = event.key.keysym.sym;
 
 	if (joyOnKeyb) {
-		if (key==SDLK_UP || key==SDLK_DOWN || key==SDLK_LEFT || key==SDLK_RIGHT || key==SDLK_RCTRL) {
+		if (key==ZHW_KEY_UP || key==ZHW_KEY_DOWN || key==ZHW_KEY_LEFT || key==ZHW_KEY_RIGHT || key==ZHW_KEY_RCTRL || key==ZHW_KEY_RALT) {
 			return false;
 		}
 	}
@@ -236,7 +236,7 @@ bool C_Keyboard::OnKeyDown(SDL_Event &event)
 	{
 		if (hostKeyPressed[hostKeys[key].mods.keyMod[k]])
 		{
-			if (hostKeys[key].mods.actions[k] && hostKeys[key].mods.keyMod[k]==SDLK_NUMLOCK) {
+			if (hostKeys[key].mods.actions[k] && hostKeys[key].mods.keyMod[k]==ZHW_KEY_NUMLOCK) {
 				hostKeys[key].mods.actions[k]();
 				return false;
 			}
@@ -253,7 +253,7 @@ bool C_Keyboard::OnKeyDown(SDL_Event &event)
 		}
 	}
 
-	if (hostKeys[key].action && key==SDLK_NUMLOCK) {
+	if (hostKeys[key].action && key==ZHW_KEY_NUMLOCK) {
 		hostKeys[key].action();
 		return false;
 	}
@@ -267,14 +267,14 @@ bool C_Keyboard::OnKeyDown(SDL_Event &event)
 	return false;
 }
 
-bool C_Keyboard::OnKeyUp(SDL_Event &event)
+bool C_Keyboard::OnKeyUp(ZHW_Event &event)
 {
 	int k, i, key;
 
 	key = event.key.keysym.sym;
 
 	if (joyOnKeyb) {
-		if (key==SDLK_UP || key==SDLK_DOWN || key==SDLK_LEFT || key==SDLK_RIGHT || key==SDLK_RCTRL) {
+		if (key==ZHW_KEY_UP || key==ZHW_KEY_DOWN || key==ZHW_KEY_LEFT || key==ZHW_KEY_RIGHT || key==ZHW_KEY_RCTRL || key==ZHW_KEY_RALT) {
 			return false;
 		}
 	}
@@ -300,7 +300,7 @@ bool C_Keyboard::OnKeyUp(SDL_Event &event)
 	}
 
 	if (hostKeys[key].mods.count) {
-		for (k = 0; k < SDLK_LAST; k++) {
+		for (k = 0; k < ZHW_KEY_LAST; k++) {
 			if (hostKeyPressed[k] && hostKeys[k].normal.count) {
 				for (i = 0; i < hostKeys[k].normal.count; i++) {
 					keyboard[hostKeys[k].normal.portnum[i]] &= ~hostKeys[k].normal.bitmask[i];

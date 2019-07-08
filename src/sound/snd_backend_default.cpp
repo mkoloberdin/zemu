@@ -1,45 +1,47 @@
 #include "../defines.h"
-#include <SDL.h>
-#include "snd_backend_sdl.h"
+#include "../platform_hardware.h"
+#include "snd_backend_default.h"
 
-CSndBackendSDL::CSndBackendSDL(unsigned int bufferSize)
+CSndBackendDefault::CSndBackendDefault(unsigned int bufferSize)
 {
 	Initialize(bufferSize, bufferSize - bufferSize / 3, 8);
 }
 
-CSndBackendSDL::CSndBackendSDL(unsigned int bufferSize, unsigned int preBufferSize)
+CSndBackendDefault::CSndBackendDefault(unsigned int bufferSize, unsigned int preBufferSize)
 {
 	Initialize(bufferSize, preBufferSize, 8);
 }
 
-CSndBackendSDL::~CSndBackendSDL()
+CSndBackendDefault::~CSndBackendDefault()
 {
-	SDL_CloseAudio();
+	ZHW_Audio_Close();
 	delete[] ringBuffer;
 }
 
-void CSndBackendSDL::Init(void)
+void CSndBackendDefault::Init(void)
 {
-	if (alreadyInited) StrikeError("[CSndBackendSDL::Init] Init called twice");
+	if (alreadyInited) StrikeError("[CSndBackendDefault::Init] Init called twice");
 
-	SDL_AudioSpec desired, obtained;
+	ZHW_Audio_Spec desired, obtained;
 
 	desired.freq = SOUND_FREQ;
 	desired.format = AUDIO_S16SYS;
 	desired.channels = 2;
-	desired.samples = SDLWAVE_CALLBACK_BUFFER_SIZE / desired.channels / 2 /* 16 bit */;
+	desired.samples = SND_CALLBACK_BUFFER_SIZE / desired.channels / 2 /* 16 bit */;
 	desired.callback = AudioCallback;
 	desired.userdata = this;
 
-	if (SDL_OpenAudio(&desired, &obtained) < 0) StrikeError("[CSndBackendSDL::Init] Couldn't open audio: %s\n", SDL_GetError());
-	SDL_PauseAudio(0);
+	if (ZHW_Audio_Open(&desired, &obtained) < 0) {
+		StrikeError("[CSndBackendDefault::Init] Couldn't open audio: %s\n", ZHW_Error_Get());
+	}
 
+	ZHW_Audio_Pause(0);
 	alreadyInited = true;
 }
 
-void CSndBackendSDL::Write(uint8_t* data, unsigned len)
+void CSndBackendDefault::Write(uint8_t* data, unsigned len)
 {
-	if (!alreadyInited) StrikeError("[CSndBackendSDL::Write] Call Init first");
+	if (!alreadyInited) StrikeError("[CSndBackendDefault::Write] Call Init first");
 	if (len <= 0) return;
 
 	unsigned waitCnt = 0;
@@ -50,19 +52,19 @@ void CSndBackendSDL::Write(uint8_t* data, unsigned len)
 
 		if (dist <= 4)
 		{
-			SDL_Delay(1);
+			ZHW_Timer_Delay(1);
 
 			waitCnt++;
 			if (waitCnt < 2000) continue;
 
-			SDL_LockAudio();
+			ZHW_Audio_Lock();
 
 			currentPreAgainCnt = 0;
 			audioPtr = 0;
 			dataPtr = 0;
 			firstRun = true;
 
-			SDL_UnlockAudio();
+			ZHW_Audio_Unlock();
 			break;
 		}
 
@@ -72,7 +74,7 @@ void CSndBackendSDL::Write(uint8_t* data, unsigned len)
 		if (sz > len) sz = len;
 
 		len -= sz;
-		SDL_LockAudio();
+		ZHW_Audio_Lock();
 
 		while (sz--)
 		{
@@ -80,16 +82,24 @@ void CSndBackendSDL::Write(uint8_t* data, unsigned len)
 			dataPtr = (dataPtr + 1) & mask;
 		}
 
-		SDL_UnlockAudio();
+		ZHW_Audio_Unlock();
 		if (len <= 0) break;
 	}
 }
 
-void CSndBackendSDL::Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt)
+void CSndBackendDefault::Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt)
 {
-	if (bufferSize < SDLWAVE_CALLBACK_BUFFER_SIZE*4) StrikeError("[CSndBackendSDL::Initialize] Buffer size must be >= SDLWAVE_CALLBACK_BUFFER_SIZE*4");
-	if (preBufferSize < (bufferSize / 4)) StrikeError("[CSndBackendSDL::Initialize] PreBuffer size must be >= BufferSize/4");
-	if (preBufferSize > (bufferSize - bufferSize/4)) StrikeError("[CSndBackendSDL::Initialize] PreBuffer size must be < BufferSize-BufferSize/4");
+	if (bufferSize < SND_CALLBACK_BUFFER_SIZE*4) {
+		StrikeError("[CSndBackendDefault::Initialize] Buffer size must be >= SND_CALLBACK_BUFFER_SIZE*4");
+	}
+
+	if (preBufferSize < (bufferSize / 4)) {
+		StrikeError("[CSndBackendDefault::Initialize] PreBuffer size must be >= BufferSize/4");
+	}
+
+	if (preBufferSize > (bufferSize - bufferSize/4)) {
+		StrikeError("[CSndBackendDefault::Initialize] PreBuffer size must be < BufferSize-BufferSize/4");
+	}
 
 	unsigned int tmp = bufferSize;
 	unsigned int cnt = 0;
@@ -100,7 +110,9 @@ void CSndBackendSDL::Initialize(unsigned int bufferSize, unsigned int preBufferS
 		tmp >>= 1;
 	}
 
-	if (cnt != 1) StrikeError("[CSndBackendSDL::Initialize] Buffer size must be power of two");
+	if (cnt != 1) {
+		StrikeError("[CSndBackendDefault::Initialize] Buffer size must be power of two");
+	}
 
 	this->size = bufferSize;
 	this->mask = bufferSize - 1;
@@ -116,7 +128,7 @@ void CSndBackendSDL::Initialize(unsigned int bufferSize, unsigned int preBufferS
 	currentPreAgainCnt = 0;
 }
 
-unsigned int CSndBackendSDL::CalcDist(void)
+unsigned int CSndBackendDefault::CalcDist(void)
 {
 	if (dataPtr < audioPtr) {
 		return (audioPtr - dataPtr);
@@ -125,11 +137,11 @@ unsigned int CSndBackendSDL::CalcDist(void)
 	}
 }
 
-void CSndBackendSDL::AudioCallback(void *userData, Uint8 *stream, int len)
+void CSndBackendDefault::AudioCallback(void *userData, uint8_t *stream, int len)
 {
 	if (len <= 0) return;
 
-	CSndBackendSDL* self = (CSndBackendSDL*)userData;
+	CSndBackendDefault* self = (CSndBackendDefault*)userData;
 
 	if (self->firstRun)
 	{
@@ -152,7 +164,7 @@ void CSndBackendSDL::AudioCallback(void *userData, Uint8 *stream, int len)
 
 	if (dist <= len)
 	{
-		// printf("CSndBackendSDL::AudioCallback - missing audio data\n");
+		// printf("CSndBackendDefault::AudioCallback - missing audio data\n");
 		self->currentPreAgainCnt += 2;
 
 		if (self->currentPreAgainCnt > self->preAgainCnt)

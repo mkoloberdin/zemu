@@ -1,5 +1,5 @@
-#ifndef _WAV_FORMAT_H_
-#define _WAV_FORMAT_H_
+#ifndef _WAV_FORMAT_H_INCLUDED_
+#define _WAV_FORMAT_H_INCLUDED_
 
 #include "../zemu.h"
 #include "../file.h"
@@ -36,4 +36,4 @@ class C_WavFormat : public C_TapeFormat
 	bool IsActive(void);
 };
 
-#endif /* _WAV_FORMAT_H_ */
+#endif

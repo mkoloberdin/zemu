@@ -1,5 +1,5 @@
 #ifndef _DEVS_H_INCLUDED_
-#define _DEVS_H_INCLUDED_ 1
+#define _DEVS_H_INCLUDED_
 
 #include "devices/device.h"
 #include "devices/border/border.h"

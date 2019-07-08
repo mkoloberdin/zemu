@@ -1,9 +1,8 @@
+#ifndef _JOYSTICK_MANAGER_H_
+#define _JOYSTICK_MANAGER_H_
+
 // [boo_boo]
 
-#ifndef _JOYSTICK_MANAGER_H_
-#define _JOYSTICK_MANAGER_H_ 1
-
-#include <SDL.h>
 #include "zemu.h"
 
 #define MAX_JOYSTICKS 5
@@ -38,11 +37,11 @@ class C_JoystickManager
 	// initialize joystick [joy_num] and mark it as managed, return true if joystick was added succesfully
 	bool AddJoystick(int joy_num, int axis_treshold=DEF_JOY_AXIS_TRESHOLD);
 
-	// process SDL joystick event
-	bool ProcessJoystickEvent(SDL_Event &event);
+	// process joystick event
+	bool ProcessJoystickEvent(ZHW_Event &event);
 
-	// SDL joystick event callback
-	static bool OnJoystickEvent(SDL_Event &event);
+	// joystick event callback
+	static bool OnJoystickEvent(ZHW_Event &event);
 
 	// get state of joystick [joy_num]
 	JoystickState* GetJoystickState(int joy_num);

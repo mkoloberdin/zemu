@@ -41,27 +41,26 @@ void C_JoystickManager::Init()
 
 C_JoystickManager::C_JoystickManager()
 {
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) throw C_E(E_General, "cannot initialize SDL joystick subsystem");
-
-	SDL_JoystickEventState(SDL_ENABLE);
+	if (ZHW_Joystick_Init() < 0) {
+		throw C_E(E_General, "cannot initialize joystick subsystem");
+	}
 
 	memset(jstate, 0, sizeof(JoystickState) * MAX_JOYSTICKS);
-	num_joysticks = SDL_NumJoysticks();
+	num_joysticks = ZHW_Joystick_GetNum();
 
 	if(num_joysticks > MAX_JOYSTICKS) num_joysticks = MAX_JOYSTICKS;
 	is_enabled = false;
 
-	// printf("%d joysticks available\n",num_joysticks);
-	AttachSDLHandler(SDL_JOYAXISMOTION, OnJoystickEvent);
-	AttachSDLHandler(SDL_JOYBUTTONDOWN, OnJoystickEvent);
-	AttachSDLHandler(SDL_JOYBUTTONUP, OnJoystickEvent);
+	AttachHwHandler(ZHW_EVENT_JOYAXISMOTION, OnJoystickEvent);
+	AttachHwHandler(ZHW_EVENT_JOYBUTTONDOWN, OnJoystickEvent);
+	AttachHwHandler(ZHW_EVENT_JOYBUTTONUP, OnJoystickEvent);
 }
 
 bool C_JoystickManager::AddJoystick(int joy_num, int axis_treshold)
 {
-	SDL_Joystick *joy;
+	ZHW_Joystick *joy;
 
-	if (joy_num >= num_joysticks || NULL==(joy = SDL_JoystickOpen(joy_num))) return false;
+	if (joy_num >= num_joysticks || NULL==(joy = ZHW_Joystick_Open(joy_num))) return false;
 
 	jstate[joy_num].init_ok = true;
 	jstate[joy_num].axis_treshold = axis_treshold;
@@ -69,23 +68,21 @@ bool C_JoystickManager::AddJoystick(int joy_num, int axis_treshold)
 	return true;
 }
 
-bool C_JoystickManager::OnJoystickEvent(SDL_Event &event)
+bool C_JoystickManager::OnJoystickEvent(ZHW_Event &event)
 {
 	return C_JoystickManager::Instance()->ProcessJoystickEvent(event);
 }
 
-bool C_JoystickManager::ProcessJoystickEvent(SDL_Event &event)
+bool C_JoystickManager::ProcessJoystickEvent(ZHW_Event &event)
 {
 	int axis_state,joy_num;
 	bool ev_processed = false;
 
 	if (!is_enabled) return false;
 
-	// printf("joystick event %d: ",event.type);
 	switch(event.type)
 	{
-		case SDL_JOYAXISMOTION:
-			// printf("joy %d axis %d moved by %d\n",event.jaxis.which,event.jaxis.axis,event.jaxis.value);
+		case ZHW_EVENT_JOYAXISMOTION:
 			joy_num = event.jaxis.which;
 			if (joy_num>=num_joysticks || !jstate[joy_num].init_ok) break;
 
@@ -115,15 +112,13 @@ bool C_JoystickManager::ProcessJoystickEvent(SDL_Event &event)
 			}
 			break;
 
-		case SDL_JOYBUTTONDOWN:
-			// printf("button down\n");
+		case ZHW_EVENT_JOYBUTTONDOWN:
 			joy_num = event.jbutton.which;
 			jstate[joy_num].fire = true;
 			ev_processed = true;
 			break;
 
-		case SDL_JOYBUTTONUP:
-			// printf("button up\n");
+		case ZHW_EVENT_JOYBUTTONUP:
 			joy_num = event.jbutton.which;
 			jstate[joy_num].fire = false;
 			ev_processed = true;

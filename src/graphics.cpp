@@ -5,7 +5,7 @@ void OutputGimpImage(int x, int y, s_GimpImage *img)
 	int i, j, r, g, b, a;
 	uint8_t *o;
 
-	if (SDL_MUSTLOCK(screen)) {if (SDL_LockSurface(screen) < 0) return;}
+	if (!ZHW_VIDEO_LOCKSURFACE(screen)) { return; }
 
 	o = img->data;
 
@@ -38,25 +38,25 @@ void OutputGimpImage(int x, int y, s_GimpImage *img)
 		}
 	}
 
-	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
+	ZHW_VIDEO_UNLOCKSURFACE(screen);
 }
 
 void Bar(int x1, int y1, int x2, int y2, int c)
 {
 	int sw;
-	SDL_Rect r;
+	ZHW_Video_Rect r;
 
 	if (x2 < x1) {sw = x1; x1 = x2; x2 = sw;}
 	if (y2 < y1) {sw = y1; y1 = y2; y2 = sw;}
 	if (x2<0 || y2<0 || x1>=WIDTH || y1>=HEIGHT) return;
 
-	if (SDL_MUSTLOCK(screen)) {if (SDL_LockSurface(screen) < 0) return;}
+	if (!ZHW_VIDEO_LOCKSURFACE(screen)) { return; }
 
 	r.x = x1;
 	r.y = y1;
 	r.w = x2 - x1 + 1;
 	r.h = y2 - y1 + 1;
-	SDL_FillRect(screen, &r, c);
+	ZHW_Video_FillRect(screen, &r, c);
 
-	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
+	ZHW_VIDEO_UNLOCKSURFACE(screen);
 }

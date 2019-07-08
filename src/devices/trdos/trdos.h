@@ -1,5 +1,5 @@
-#ifndef _TRDOS_INCLUDED_
-#define _TRDOS_INCLUDED_
+#ifndef _TRDOS_H_INCLUDED_
+#define _TRDOS_H_INCLUDED_
 
 #include "../../zemu.h"
 #include "../device.h"

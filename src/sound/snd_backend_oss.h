@@ -1,5 +1,5 @@
-#ifndef ZEMU_SND_BACKEND_OSS_H
-#define ZEMU_SND_BACKEND_OSS_H
+#ifndef _SND_BACKEND_OSS_H_INCLUDED_
+#define _SND_BACKEND_OSS_H_INCLUDED_
 
 #if !defined(_WIN32) && !defined(__APPLE__)
 
@@ -20,4 +20,4 @@ private:
 
 #endif // !_WIN32 && !__APPLE__
 
-#endif // ZEMU_SND_BACKEND_OSS_H
+#endif

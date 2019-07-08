@@ -1,5 +1,5 @@
-#ifndef ZEMU_DEFINES_H
-#define ZEMU_DEFINES_H
+#ifndef _DEFINES_H_INCLUDED_
+#define _DEFINES_H_INCLUDED_
 
 #include "platform.h"
 #include <stdio.h>
@@ -75,4 +75,4 @@ void StrikeMessage(const char *fmt, ...);
 
 char* AllocNstrcpy(const char *str);
 
-#endif // ZEMU_DEFINES_H
+#endif

@@ -8,8 +8,8 @@ Z80EX_BYTE C_KempstonStick::joy_kbd = 0;
 
 void C_KempstonStick::Init(void)
 {
-	AttachSDLHandler(SDL_KEYDOWN, OnKeyDown);
-	AttachSDLHandler(SDL_KEYUP, OnKeyUp);
+	AttachHwHandler(ZHW_EVENT_KEYDOWN, OnKeyDown);
+	AttachHwHandler(ZHW_EVENT_KEYUP, OnKeyUp);
 
 	AttachZ80InputHandler(InputByteCheckPort, OnInputByte);
 }
@@ -23,30 +23,30 @@ void C_KempstonStick::SetJoyNum(int num)
 	joy_num = num;
 }
 
-bool C_KempstonStick::OnKeyDown(SDL_Event &event)
+bool C_KempstonStick::OnKeyDown(ZHW_Event &event)
 {
 	if (!joyOnKeyb) return false;
 
 	switch (event.key.keysym.sym)
 	{
-		case SDLK_UP:
+		case ZHW_KEY_UP:
 			joy_kbd |= 0x08;
 			break;
 
-		case SDLK_DOWN:
+		case ZHW_KEY_DOWN:
 			joy_kbd |= 0x04;
 			break;
 
-		case SDLK_LEFT:
+		case ZHW_KEY_LEFT:
 			joy_kbd |= 0x02;
 			break;
 
-		case SDLK_RIGHT:
+		case ZHW_KEY_RIGHT:
 			joy_kbd |= 0x01;
 			break;
 
-		case SDLK_RCTRL:
-		case SDLK_RALT:
+		case ZHW_KEY_RCTRL:
+		case ZHW_KEY_RALT:
 			joy_kbd |= 0x10;
 			break;
 
@@ -57,30 +57,30 @@ bool C_KempstonStick::OnKeyDown(SDL_Event &event)
 	return false;
 }
 
-bool C_KempstonStick::OnKeyUp(SDL_Event &event)
+bool C_KempstonStick::OnKeyUp(ZHW_Event &event)
 {
 	if (!joyOnKeyb) return false;
 
 	switch (event.key.keysym.sym)
 	{
-		case SDLK_UP:
+		case ZHW_KEY_UP:
 			joy_kbd &= ~0x08;
 			break;
 
-		case SDLK_DOWN:
+		case ZHW_KEY_DOWN:
 			joy_kbd &= ~0x04;
 			break;
 
-		case SDLK_LEFT:
+		case ZHW_KEY_LEFT:
 			joy_kbd &= ~0x02;
 			break;
 
-		case SDLK_RIGHT:
+		case ZHW_KEY_RIGHT:
 			joy_kbd &= ~0x01;
 			break;
 
-		case SDLK_RCTRL:
-		case SDLK_RALT:
+		case ZHW_KEY_RCTRL:
+		case ZHW_KEY_RALT:
 			joy_kbd &= ~0x10;
 			break;
 

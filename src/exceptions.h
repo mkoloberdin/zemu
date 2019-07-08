@@ -1,5 +1,5 @@
-#ifndef ZEMU_EXCEPTION_H
-#define ZEMU_EXCEPTION_H 1
+#ifndef _EXCEPTIONS_H_INCLUDED_
+#define _EXCEPTIONS_H_INCLUDED_
 
 #include <string>
 using namespace std;
@@ -40,4 +40,4 @@ class C_E
 	string param;
 };
 
-#endif // ZEMU_EXCEPTION_H
+#endif

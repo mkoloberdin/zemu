@@ -1,5 +1,5 @@
-#ifndef _TAP_FORMAT_H_
-#define _TAP_FORMAT_H_
+#ifndef _TAP_FORMAT_H_INCLUDED_
+#define _TAP_FORMAT_H_INCLUDED_
 
 #include "../zemu.h"
 #include "tape_format.h"
@@ -35,4 +35,4 @@ class C_TapFormat : public C_TapeFormat
 	Z80EX_BYTE Data(long pos);
 };
 
-#endif /* _TAP_FORMAT_H_ */
+#endif

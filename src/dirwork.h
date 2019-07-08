@@ -1,5 +1,5 @@
-#ifndef _DIRWORK_H_
-#define _DIRWORK_H_ 1
+#ifndef _DIRWORK_H_INCLUDED_
+#define _DIRWORK_H_INCLUDED_
 
 #include "defines.h"
 #include <string>

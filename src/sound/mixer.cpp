@@ -3,7 +3,7 @@
 
 C_SoundMixer soundMixer;
 
-#define AUDIO_HW_BUFFER 1024
+#define AUDIO_NATIVE_BUFFER 1024
 #define MIXER_FULL_VOL_MASK 1
 #define MIXER_SMART_MASK 2
 
@@ -14,9 +14,9 @@ C_SoundMixer::C_SoundMixer()
 	recordWav = false;
 }
 
-void C_SoundMixer::InitBackendSDL(int sdlBufferSize)
+void C_SoundMixer::InitBackendDefault(int bufferSize)
 {
-	sndBackend = new CSndBackendSDL(SDLWAVE_CALLBACK_BUFFER_SIZE * sdlBufferSize);
+	sndBackend = new CSndBackendDefault(SND_CALLBACK_BUFFER_SIZE * bufferSize);
 	sndBackend->Init();
 }
 
@@ -24,7 +24,7 @@ void C_SoundMixer::InitBackendSDL(int sdlBufferSize)
 
 void C_SoundMixer::InitBackendOSS(int soundParam)
 {
-	sndBackend = new CSndBackendOSS(soundParam, AUDIO_HW_BUFFER);
+	sndBackend = new CSndBackendOSS(soundParam, AUDIO_NATIVE_BUFFER);
 	sndBackend->Init();
 }
 
@@ -33,7 +33,7 @@ void C_SoundMixer::InitBackendOSS(int soundParam)
 
 void C_SoundMixer::InitBackendWin32(int soundParam)
 {
-	sndBackend = new CSndBackendWIN32(soundParam, AUDIO_HW_BUFFER);
+	sndBackend = new CSndBackendWIN32(soundParam, AUDIO_NATIVE_BUFFER);
 	sndBackend->Init();
 }
 

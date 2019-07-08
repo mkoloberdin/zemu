@@ -2,7 +2,6 @@
 #define _GRAPHICS_H_INCLUDED_
 
 #include "defines.h"
-#include <SDL.h>
 #include "zemu.h"
 
 struct s_GimpImage

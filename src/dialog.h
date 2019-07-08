@@ -1,5 +1,5 @@
 #ifndef _DIALOG_H_INCLUDED_
-#define _DIALOG_H_INCLUDED_ 1
+#define _DIALOG_H_INCLUDED_
 
 #include "zemu.h"
 

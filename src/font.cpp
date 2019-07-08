@@ -2,20 +2,19 @@
 
 //------------------------------------------------------------------------------------------------------------------------------
 
-SDL_Surface *ExtractImage(uint8_t *data)
+ZHW_Video_Surface *ExtractImage(uint8_t *data)
 {
-	SDL_Surface *surf;
+	ZHW_Video_Surface *surf;
 	int hgt, wdt, i, j, r, g, b, spitch;
-	SDL_PixelFormat *fmt = screen->format;
 
 	hgt = data[0] + 0x100 * data[1];
 	wdt = data[2] + 0x100 * data[3];
 	data += 4;
 
-	surf = SDL_CreateRGBSurface(SDL_SWSURFACE, wdt, hgt, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0);
+	surf = ZHW_Video_CreateSurface(wdt,hgt, screen);
 	spitch = surf->pitch / 4;
 
-	if (SDL_MUSTLOCK(surf)) {if (SDL_LockSurface(surf) < 0) return NULL;}
+	if (!ZHW_VIDEO_LOCKSURFACE(surf)) { return NULL; }
 
 	for (i = 0; i < hgt; i++)
 	{
@@ -28,17 +27,14 @@ SDL_Surface *ExtractImage(uint8_t *data)
 		}
 	}
 
-	if (SDL_MUSTLOCK(surf)) SDL_UnlockSurface(surf);
+	ZHW_VIDEO_UNLOCKSURFACE(surf);
 	return surf;
 }
 
-SDL_Surface *CopySurfaceX(SDL_Surface *src)
+ZHW_Video_Surface *CopySurfaceX(ZHW_Video_Surface *src)
 {
-	SDL_Rect s, d;
-	SDL_PixelFormat *fmt;
-	SDL_Surface *dst;
-
-	fmt = screen->format;
+	ZHW_Video_Rect s, d;
+	ZHW_Video_Surface *dst;
 
 	s.x = 0;
 	s.y = 0;
@@ -48,8 +44,8 @@ SDL_Surface *CopySurfaceX(SDL_Surface *src)
 	d.x = 0;
 	d.y = 0;
 
-	dst = SDL_CreateRGBSurface(SDL_SWSURFACE, src->w, src->h, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0);
-	SDL_BlitSurface(src, &s, dst, &d);
+	dst = ZHW_Video_CreateSurface(src->w, src->h, screen);
+	ZHW_Video_BlitSurface(src, &s, dst, &d);
 
 	return dst;
 }
@@ -63,10 +59,10 @@ C_Font::C_Font()
 
 C_Font::~C_Font()
 {
-	if (surf) SDL_FreeSurface(surf);
+	if (surf) ZHW_Video_FreeSurface(surf);
 }
 
-void C_Font::Init(SDL_Surface *surf)
+void C_Font::Init(ZHW_Video_Surface *surf)
 {
 	this->surf = CopySurfaceX(surf);
 	CalcFont();
@@ -82,7 +78,7 @@ void C_Font::CalcFont(void)
 {
 	int x, n, h, w, t1, t2;
 
-	if (SDL_MUSTLOCK(surf)) {if (SDL_LockSurface(surf) < 0) return;}
+	if (!ZHW_VIDEO_LOCKSURFACE(surf)) { return; }
 
 	spitch = surf->pitch / 4;
 	h = surf->h;
@@ -122,14 +118,14 @@ void C_Font::CalcFont(void)
 		yoff[n] = 0;
 	}
 
-	if (SDL_MUSTLOCK(surf)) SDL_UnlockSurface(surf);
-	SDL_SetColorKey(surf, SDL_SRCCOLORKEY, t2);
+	ZHW_VIDEO_UNLOCKSURFACE(surf);
+	ZHW_Video_SetColorKey(surf, t2);
 }
 
 void C_Font::PrintChar(int x, int y, char c)
 {
 	int n = (uint8_t)c;
-	SDL_Rect s, d;
+	ZHW_Video_Rect s, d;
 
 	s.x = off[n];
 	s.y = 0;
@@ -139,7 +135,7 @@ void C_Font::PrintChar(int x, int y, char c)
 	d.x = x + xoff[n];
 	d.y = y + yoff[n];
 
-	SDL_BlitSurface(surf, &s, screen, &d);
+	ZHW_Video_BlitSurface(surf, &s, screen, &d);
 }
 
 void C_Font::PrintString(int x, int y, const char *str)

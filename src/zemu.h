@@ -2,7 +2,7 @@
 #define _ZEMU_H_INCLUDED_
 
 #include "defines.h"
-#include <SDL.h>
+#include "platform_hardware.h"
 #include <z80ex.h>
 #include "config.h"
 #include "sound/mixer.h"
@@ -32,7 +32,7 @@ struct s_Params
 	bool maxSpeed;
 	bool antiFlicker;
 	eSndBackend sndBackend;
-	int sdlBufferSize;
+	int audioBufferSize;
 	int mouseDiv;
 	bool showInactiveIcons;
 	int soundParam;
@@ -52,7 +52,7 @@ extern CConfig config;
 extern Z80EX_CONTEXT *cpu;
 extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;
-extern SDL_Surface *screen;
+extern ZHW_Video_Surface *screen;
 extern int PITCH;
 extern bool drawFrame;
 extern int frames;
@@ -73,7 +73,7 @@ void AttachZ80InputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD,
 void AttachZ80OutputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE));
 void AttachFrameStartHandler(void (* func)(void));
 void AttachAfterFrameRenderHandler(void (* func)(void));
-void AttachSDLHandler(int eventType, bool (* func)(SDL_Event&));
+void AttachHwHandler(int eventType, bool (* func)(ZHW_Event&));
 void AttachResetHandler(void (* func)(void));
 
 extern ptrOnReadByteFunc * devMapRead;
@@ -113,7 +113,7 @@ Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void *userData);
 void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value);
 void DebugStep(void);
 
-extern SDL_Surface *renderSurf;
+extern ZHW_Video_Surface *renderSurf;
 extern int renderPitch;
 extern unsigned long prevRenderClk;
 extern void (* renderPtr)(unsigned long);

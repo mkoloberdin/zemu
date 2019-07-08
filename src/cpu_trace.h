@@ -1,5 +1,5 @@
-#ifndef _TRACE_H_INCLUDED_
-#define _TRACE_H_INCLUDED_ 1
+#ifndef _CPU_TRACE_H_INCLUDED_
+#define _CPU_TRACE_H_INCLUDED_
 
 #include "zemu.h"
 

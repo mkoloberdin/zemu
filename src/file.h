@@ -35,8 +35,8 @@
         [fix] GetS
 */
 
-#ifndef _FILE_H_
-#define _FILE_H_ 1
+#ifndef _FILE_H_INCLUDED_
+#define _FILE_H_INCLUDED_
 
 #include "defines.h"
 

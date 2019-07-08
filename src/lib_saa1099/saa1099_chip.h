@@ -1,5 +1,5 @@
-#ifndef __SAA1099_CHIP_H__
-#define __SAA1099_CHIP_H__
+#ifndef _SAA1099_CHIP_H_INCLUDED_
+#define _SAA1099_CHIP_H_INCLUDED_
 
 #include "SAASound.h"
 

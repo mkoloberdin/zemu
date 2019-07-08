@@ -1,5 +1,5 @@
-#ifndef _VOC_FORMAT_H_
-#define _VOC_FORMAT_H_
+#ifndef _VOC_FORMAT_H_INCLUDED_
+#define _VOC_FORMAT_H_INCLUDED_
 
 #include "../zemu.h"
 #include "../file.h"
@@ -40,4 +40,4 @@ class C_VocFormat : public C_TapeFormat
 	bool IsActive(void);
 };
 
-#endif /* _VOC_FORMAT_H_ */
+#endif

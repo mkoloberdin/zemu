@@ -1,5 +1,5 @@
-#ifndef ZEMU_SND_BACKEND_H
-#define ZEMU_SND_BACKEND_H
+#ifndef _SND_BACKEND_H_INCLUDED_
+#define _SND_BACKEND_H_INCLUDED_
 
 #include "../params.h"
 
@@ -14,9 +14,9 @@ class CSndBackend
 
 enum eSndBackend
 {
-	SND_BACKEND_SDL,
+	SND_BACKEND_DEFAULT,
 	SND_BACKEND_OSS,
 	SND_BACKEND_WIN32
 };
 
-#endif // ZEMU_SND_BACKEND_H
+#endif

@@ -1,10 +1,10 @@
-#ifndef ZEMU_SOUND_MIXER_H
-#define ZEMU_SOUND_MIXER_H
+#ifndef _MIXER_H_INCLUDED_
+#define _MIXER_H_INCLUDED_
 
 #include <vector>
 #include "../file.h"
 #include "snd_backend.h"
-#include "snd_backend_sdl.h"
+#include "snd_backend_default.h"
 #include "snd_backend_oss.h"
 #include "snd_backend_win32.h"
 #include "snd_renderer.h"
@@ -17,7 +17,7 @@ class C_SoundMixer
 
 	C_SoundMixer();
 	~C_SoundMixer();
-	void InitBackendSDL(int sdlBufferSize);
+	void InitBackendDefault(int bufferSize);
 
 #if !defined(_WIN32) && !defined(__APPLE__)
 	void InitBackendOSS(int soundParam);
@@ -46,4 +46,4 @@ class C_SoundMixer
 
 extern C_SoundMixer soundMixer;
 
-#endif // ZEMU_SOUND_MIXER_H
+#endif

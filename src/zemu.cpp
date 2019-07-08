@@ -30,11 +30,6 @@
 #include <cctype>
 #include <algorithm>
 
-#if defined(__APPLE__)
-#include <SDL_thread.h>
-#include <SDL_mutex.h>
-#endif
-
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
 
@@ -51,7 +46,7 @@ bool joyOnKeyb = false;
 Z80EX_CONTEXT *cpu;
 uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 s_Params params;
-SDL_Surface *screen, *realScreen, *scrSurf[2];
+ZHW_Video_Surface *screen, *realScreen, *scrSurf[2];
 int PITCH, REAL_PITCH;
 bool drawFrame;
 int frames;
@@ -82,11 +77,11 @@ const char *wavFileName = "output.wav"; // TODO: make configurable + full filepa
 // int avgImageFrames;
 
 #if defined(__APPLE__)
-SDL_Thread * upadteScreenThread = NULL;
-SDL_sem * updateScreenThreadSem;
+ZHW_Thread *upadteScreenThread = NULL;
+ZHW_Mutex_Sem *updateScreenThreadSem;
 volatile bool updateScreenThreadActive = true;
 
-int UpdateScreenThreadFunc(void * param);
+int UpdateScreenThreadFunc(void *param);
 #endif
 
 //--------------------------------------------------------------------------------------------------------------
@@ -127,10 +122,10 @@ struct s_InputItem
 
 typedef s_WriteItem s_OutputItem;
 
-struct s_SdlItem
+struct s_HwItem
 {
 	int eventType;
-	bool (* func)(SDL_Event&);
+	bool (* func)(ZHW_Event&);
 };
 
 //--------------------------------------------------------------------------------------------------------------
@@ -141,7 +136,7 @@ s_InputItem hnd_z80input[MAX_HANDLERS];
 s_OutputItem hnd_z80output[MAX_HANDLERS];
 void (* hnd_frameStart[MAX_HANDLERS])(void);
 void (* hnd_afterFrameRender[MAX_HANDLERS])(void);
-s_SdlItem hnd_sdl[MAX_HANDLERS];
+s_HwItem hnd_hw[MAX_HANDLERS];
 void (* hnd_reset[MAX_HANDLERS])(void);
 
 int cnt_z80read = 0;
@@ -150,7 +145,7 @@ int cnt_z80input = 0;
 int cnt_z80output = 0;
 int cnt_frameStart = 0;
 int cnt_afterFrameRender = 0;
-int cnt_sdl = 0;
+int cnt_hw = 0;
 int cnt_reset = 0;
 
 void AttachZ80ReadHandler(ptrOnReadByteFunc (* check)(Z80EX_WORD, bool))
@@ -208,15 +203,15 @@ void AttachAfterFrameRenderHandler(void (* func)(void))
 	hnd_afterFrameRender[cnt_afterFrameRender++] = func;
 }
 
-void AttachSDLHandler(int eventType, bool (* func)(SDL_Event&))
+void AttachHwHandler(int eventType, bool (* func)(ZHW_Event&))
 {
-	if (cnt_sdl >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
+	if (cnt_hw >= MAX_HANDLERS) StrikeError("Increase MAX_HANDLERS");
 
-	s_SdlItem item;
+	s_HwItem item;
 	item.eventType = eventType;
 	item.func = func;
 
-	hnd_sdl[cnt_sdl++] = item;
+	hnd_hw[cnt_hw++] = item;
 }
 
 void AttachResetHandler(void (* func)(void))
@@ -568,7 +563,7 @@ void Action_QuickSave(void)
 
 	isPaused = false;
 
-	const char * snapName = (params.snapFormat==SNAP_FORMAT_SNA ? "snap.sna" : "snap.z80");
+	const char *snapName = (params.snapFormat==SNAP_FORMAT_SNA ? "snap.sna" : "snap.z80");
 	saveSnap = (params.snapFormat==SNAP_FORMAT_SNA ? save_sna_snap : save_z80_snap);
 
 	saveSnap(snapName, cpu, dev_mman, dev_border);
@@ -590,12 +585,7 @@ void Action_LoadFile(void)
 
 void Action_Fullscreen(void)
 {
-#ifndef _WIN32
-	SDL_WM_ToggleFullScreen(realScreen);
-#else
-	videoSpec ^= SDL_FULLSCREEN;
-	SDL_FreeSurface(realScreen);
-	realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
+	realScreen = ZHW_Video_ToggleFullScreen(realScreen, &videoSpec);
 	REAL_PITCH = realScreen->pitch / 4;
 
 	if (!params.scale2x)
@@ -603,7 +593,6 @@ void Action_Fullscreen(void)
 		screen = realScreen;
 		PITCH = REAL_PITCH;
 	}
-#endif
 }
 
 void Action_Debugger(void)
@@ -939,13 +928,11 @@ void InitDevMaps(void)
 
 void InitSurfaces(void)
 {
-	SDL_PixelFormat *fmt = screen->format;
+	scrSurf[0] = ZHW_Video_CreateSurface(WIDTH, HEIGHT, screen);
+	if (scrSurf[0] == NULL) StrikeError("Unable to create primary surface: %s\n", ZHW_Error_Get());
 
-	scrSurf[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0);
-	if (scrSurf[0] == NULL) StrikeError("Unable to create primary surface: %s\n", SDL_GetError());
-
-	scrSurf[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0);
-	if (scrSurf[1] == NULL) StrikeError("Unable to create secondary surface: %s\n", SDL_GetError());
+	scrSurf[1] = ZHW_Video_CreateSurface(WIDTH, HEIGHT, screen);
+	if (scrSurf[1] == NULL) StrikeError("Unable to create secondary surface: %s\n", ZHW_Error_Get());
 }
 
 void InitFont(void)
@@ -983,8 +970,8 @@ void InitAll(void)
 	);
 
 #if defined(__APPLE__)
-	updateScreenThreadSem = SDL_CreateSemaphore(0);
-	upadteScreenThread = SDL_CreateThread(UpdateScreenThreadFunc, NULL);
+	updateScreenThreadSem = ZHW_Mutex_CreateSemaphore(0);
+	upadteScreenThread = ZHW_Thread_Create(UpdateScreenThreadFunc, NULL);
 #endif
 }
 
@@ -996,40 +983,23 @@ int screensHack = 0;
 
 // ----------------------------------
 
-void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
+void AntiFlicker(ZHW_Video_Surface *copyFrom, ZHW_Video_Surface *copyTo)
 {
 	int i, j;
 	uint8_t *s1, *s2, *sr;
 	uint8_t *s1w, *s2w, *srw;
 
-	if (SDL_MUSTLOCK(screen)) {
-		if (SDL_LockSurface(screen) < 0) {
-			return;
-		}
+	if (!ZHW_VIDEO_LOCKSURFACE(screen)) { return; }
+
+	if (!ZHW_VIDEO_LOCKSURFACE(scrSurf[0])) {
+		ZHW_VIDEO_UNLOCKSURFACE(screen);
+		return;
 	}
 
-	if (SDL_MUSTLOCK(scrSurf[0])) {
-		if (SDL_LockSurface(scrSurf[0]) < 0) {
-			if (SDL_MUSTLOCK(screen)) {
-				SDL_UnlockSurface(screen);
-			}
-
-			return;
-		}
-	}
-
-	if (SDL_MUSTLOCK(scrSurf[1])) {
-		if (SDL_LockSurface(scrSurf[1]) < 0) {
-			if (SDL_MUSTLOCK(scrSurf[0])) {
-				SDL_UnlockSurface(scrSurf[0]);
-			}
-
-			if (SDL_MUSTLOCK(screen)) {
-				SDL_UnlockSurface(screen);
-			}
-
-			return;
-		}
+	if (!ZHW_VIDEO_LOCKSURFACE(scrSurf[1])) {
+		ZHW_VIDEO_UNLOCKSURFACE(scrSurf[0]);
+		ZHW_VIDEO_UNLOCKSURFACE(screen);
+		return;
 	}
 
 	if (doCopyOfSurfaces)
@@ -1086,17 +1056,9 @@ void AntiFlicker(SDL_Surface *copyFrom, SDL_Surface *copyTo)
 		s2 += scrSurf[1]->pitch;
 	}
 
-	if (SDL_MUSTLOCK(scrSurf[1])) {
-		SDL_UnlockSurface(scrSurf[1]);
-	}
-
-	if (SDL_MUSTLOCK(scrSurf[0])) {
-		SDL_UnlockSurface(scrSurf[0]);
-	}
-
-	if (SDL_MUSTLOCK(screen)) {
-		SDL_UnlockSurface(screen);
-	}
+	ZHW_VIDEO_UNLOCKSURFACE(scrSurf[1]);
+	ZHW_VIDEO_UNLOCKSURFACE(scrSurf[0]);
+	ZHW_VIDEO_UNLOCKSURFACE(screen);
 }
 
 uint64_t actDevClkCounter = 0;
@@ -1138,18 +1100,14 @@ inline void CpuCalcTacts(unsigned long cmdClk) {
 	C_Tape::Process();
 
 	if (runDebuggerFlag || breakpoints[z80ex_get_reg(cpu, regPC)]) {
-		if (SDL_MUSTLOCK(renderSurf)) {
-			SDL_UnlockSurface(renderSurf);
-		}
+		ZHW_VIDEO_UNLOCKSURFACE(renderSurf);
 
 		runDebuggerFlag = false;
 		RunDebugger();
 
-		if (SDL_MUSTLOCK(renderSurf)) {
-			if (SDL_LockSurface(renderSurf) < 0) {
-				printf("Can't lock surface\n");
-				return;
-			}
+		if (!ZHW_VIDEO_LOCKSURFACE(renderSurf)) {
+			printf("Can't lock surface\n");
+			return;
 		}
 	}
 }
@@ -1244,7 +1202,7 @@ void DebugStep(void)
 	} while (z80ex_last_op_type(cpu) && cnt>0);
 }
 
-SDL_Surface *renderSurf;
+ZHW_Video_Surface *renderSurf;
 int renderPitch;
 unsigned long prevRenderClk;
 void (* renderPtr)(unsigned long) = NULL;
@@ -1259,13 +1217,10 @@ void Render(void)
 		sn = 1 - sn;
 	} else renderSurf = screen;
 
-	if ((drawFrame /* || isAvgImageWrited || isLongImageWrited */) && SDL_MUSTLOCK(renderSurf))
+	if ((drawFrame /* || isAvgImageWrited || isLongImageWrited */) && !ZHW_VIDEO_LOCKSURFACE(renderSurf))
 	{
-		if (SDL_LockSurface(renderSurf) < 0)
-		{
-			printf("Can't lock surface\n");
-			return;
-		}
+		printf("Can't lock surface\n");
+		return;
 	}
 
 	renderPitch = renderSurf->pitch / 4;
@@ -1305,7 +1260,7 @@ void Render(void)
 	cpuClk -= MAX_FRAME_TACTS;
 	devClk = cpuClk;
 
-	if ((drawFrame /* || isAvgImageWrited || isLongImageWrited */) && SDL_MUSTLOCK(renderSurf)) SDL_UnlockSurface(renderSurf);
+	if (drawFrame /* || isAvgImageWrited || isLongImageWrited */) { ZHW_VIDEO_UNLOCKSURFACE(renderSurf); }
 	if (params.antiFlicker && (drawFrame /* || isAvgImageWrited || isLongImageWrited */)) AntiFlicker(renderSurf, scrSurf[sn]);
 
 	// if (isLongImageWrited)
@@ -1411,7 +1366,7 @@ void ResetSequence(void)
 void Process(void)
 {
 	int key;
-	SDL_Event event;
+	ZHW_Event event;
 	int i;
 	unsigned int btick;
 	int frameSkip = 0;
@@ -1424,7 +1379,7 @@ void Process(void)
 	frames = 0;
 	params.maxSpeed = false;
 
-	btick = SDL_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
+	btick = ZHW_Timer_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
 	//*/ unsigned long lastDivider = 0L;
 
 	for (;;)
@@ -1473,8 +1428,8 @@ void Process(void)
 
 			if (!params.maxSpeed)
 			{
-				SDL_Delay(1);
-				if (SDL_GetTicks() < btick) SDL_Delay(btick - SDL_GetTicks());
+				ZHW_Timer_Delay(1);
+				if (ZHW_Timer_GetTicks() < btick) ZHW_Timer_Delay(btick - ZHW_Timer_GetTicks());
 			}
 
 			i = cnt_afterFrameRender;
@@ -1491,33 +1446,33 @@ void Process(void)
 			soundMixer.FlushFrame(SOUND_ENABLED);
 		}
 
-		btick = SDL_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
+		btick = ZHW_Timer_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
 
 		isPaused = isPausedNx;
 		bool quitMode = false;
 
-		while (SDL_PollEvent(&event))
+		while (ZHW_Event_Poll(&event))
 		{
-			if (event.type == SDL_QUIT) exit(0);
+			if (event.type == ZHW_EVENT_QUIT) exit(0);
 
-			if (event.type == SDL_KEYUP)
+			if (event.type == ZHW_EVENT_KEYUP)
 			{
 				key = event.key.keysym.sym;
-				if (key == SDLK_ESCAPE) quitMode = true;
+				if (key == ZHW_KEY_ESCAPE) quitMode = true;
 			}
 
-			i = cnt_sdl;
-			s_SdlItem * ptr_sdl = hnd_sdl;
+			i = cnt_hw;
+			s_HwItem * ptr_hw = hnd_hw;
 
 			while (i)
 			{
-				if (ptr_sdl->eventType == event.type) {
-					if (ptr_sdl->func(event)) {
+				if (ptr_hw->eventType == event.type) {
+					if (ptr_hw->func(event)) {
 						break;
 					}
 				}
 
-				ptr_sdl++;
+				ptr_hw++;
 				i--;
 			}
 		}
@@ -1548,8 +1503,8 @@ void Process(void)
 
 void InitAudio(void)
 {
-	if (params.sndBackend == SND_BACKEND_SDL) {
-		soundMixer.InitBackendSDL(params.sdlBufferSize);
+	if (params.sndBackend == SND_BACKEND_DEFAULT) {
+		soundMixer.InitBackendDefault(params.audioBufferSize);
 	}
 #if !defined(_WIN32) && !defined(__APPLE__)
 	else if (params.sndBackend == SND_BACKEND_OSS) {
@@ -1570,10 +1525,8 @@ void InitAudio(void)
 int UpdateScreenThreadFunc(void * param)
 {
 	while (updateScreenThreadActive) {
-		SDL_SemWait(updateScreenThreadSem);
-
-		if (params.useFlipSurface) SDL_Flip(realScreen);
-		else SDL_UpdateRect(realScreen, 0, 0, 0, 0);
+		ZHW_Mutex_SemWait(updateScreenThreadSem);
+		ZHW_Video_BlitRenderSurface(realScreen, params.useFlipSurface);
 	}
 
 	return 0;
@@ -1587,26 +1540,21 @@ void UpdateScreen(void)
 {
 	if (!params.scale2x) {
 		// do not use threading here, because realScreen == screen
-
-		if (params.useFlipSurface) SDL_Flip(realScreen);
-		else SDL_UpdateRect(realScreen, 0, 0, 0, 0);
-
+		ZHW_Video_BlitRenderSurface(realScreen, params.useFlipSurface);
 		return;
 	}
 
 #if defined(__APPLE__)
-	if (SDL_SemValue(updateScreenThreadSem)) {
+	if (ZHW_Mutex_SemValue(updateScreenThreadSem)) {
 		return;
 	}
 #endif
 
-	if (SDL_MUSTLOCK(realScreen)) { if (SDL_LockSurface(realScreen) < 0) return; }
+	if (!ZHW_VIDEO_LOCKSURFACE(realScreen)) { return; }
 
-	if (SDL_MUSTLOCK(screen)) {
-		if (SDL_LockSurface(screen) < 0) {
-			if (SDL_MUSTLOCK(realScreen)) SDL_UnlockSurface(realScreen);
-			return;
-		}
+	if (!ZHW_VIDEO_LOCKSURFACE(screen)) {
+		ZHW_VIDEO_UNLOCKSURFACE(realScreen);
+		return;
 	}
 
 	if (params.scanlines)
@@ -1649,14 +1597,13 @@ void UpdateScreen(void)
 		}
 	}
 
-	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
-	if (SDL_MUSTLOCK(realScreen)) SDL_UnlockSurface(realScreen);
+	ZHW_VIDEO_UNLOCKSURFACE(screen);
+	ZHW_VIDEO_UNLOCKSURFACE(realScreen);
 
 #if defined(__APPLE__)
-	SDL_SemPost(updateScreenThreadSem);
+	ZHW_Mutex_SemPost(updateScreenThreadSem);
 #else
-	if (params.useFlipSurface) SDL_Flip(realScreen);
-	else SDL_UpdateRect(realScreen, 0, 0, 0, 0);
+	ZHW_Video_BlitRenderSurface(realScreen, params.useFlipSurface);
 #endif
 }
 
@@ -1670,8 +1617,8 @@ void FreeAll(void)
 	#if defined(__APPLE__)
 		if (upadteScreenThread) {
 			updateScreenThreadActive = false;
-			SDL_SemPost(updateScreenThreadSem);
-			SDL_WaitThread(upadteScreenThread, NULL);
+			ZHW_Mutex_SemPost(updateScreenThreadSem);
+			ZHW_Thread_Wait(upadteScreenThread, NULL);
 		}
 	#endif
 
@@ -1686,18 +1633,15 @@ void FreeAll(void)
 		if (system(cmd) == -1) DEBUG_MESSAGE("system() failed");
 	#endif
 
-	if (videoSpec & SDL_FULLSCREEN)
-	{
-		videoSpec ^= SDL_FULLSCREEN;
-		SDL_FreeSurface(realScreen);
-		realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
+	if (ZHW_VIDEO_ISFULLSCREEN(videoSpec)) {
+		realScreen = ZHW_Video_ToggleFullScreen(realScreen, &videoSpec);
 	}
 
-	SDL_FreeSurface(scrSurf[0]);
-	SDL_FreeSurface(scrSurf[1]);
-	SDL_FreeSurface(realScreen);
+	ZHW_Video_FreeSurface(scrSurf[0]);
+	ZHW_Video_FreeSurface(scrSurf[1]);
+	ZHW_Video_FreeSurface(realScreen);
 
-	if (params.scale2x) SDL_FreeSurface(screen);
+	if (params.scale2x) ZHW_Video_FreeSurface(screen);
 
 	z80ex_destroy(cpu);
 
@@ -1767,7 +1711,6 @@ void OutputLogo(void)
 HICON windows_icon;
 HWND hwnd;
 
-#include <SDL_syswm.h>
 #include "windows/resource.h"
 
 void windows_init()
@@ -1779,11 +1722,11 @@ void windows_init()
 		StrikeError("Error: %d\n", GetLastError());
 	}
 
-	SDL_SysWMinfo wminfo;
-	SDL_VERSION(&wminfo.version);
+	ZHW_SysWm_Info wminfo;
+	ZHW_VERSION_FILL(&wminfo.version);
 
-	if (int sdl_error = SDL_GetWMInfo(&wminfo) != 1) {
-		StrikeError("SDL_GetWMInfo() returned %d\n", sdl_error);
+	if (int wmerror = ZHW_SysWm_GetInfo(&wminfo) != 1) {
+		StrikeError("ZHW_SysWm_GetInfo() returned %d\n", wmerror);
 	}
 
 	hwnd = wminfo.window;
@@ -1792,7 +1735,7 @@ void windows_init()
 
 void windows_cleanup()
 {
-	SDL_Quit();
+	ZHW_Core_Quit();
 	::DestroyIcon(windows_icon);
 }
 
@@ -1861,13 +1804,13 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 		eSndBackend default_snd_backend = SND_BACKEND_WIN32;
 #else
-		eSndBackend default_snd_backend = SND_BACKEND_SDL;
+		eSndBackend default_snd_backend = SND_BACKEND_DEFAULT;
 #endif
 
 		str = config.GetString("sound", "sound_backend", "auto");
 		transform(str.begin(), str.end(), str.begin(), (int(*)(int))tolower);
 
-		if (str == "sdl") params.sndBackend = SND_BACKEND_SDL;
+		if (str == "sdl") params.sndBackend = SND_BACKEND_DEFAULT;
 		#if !defined(_WIN32) && !defined(__APPLE__)
 			else if (str == "oss") params.sndBackend = SND_BACKEND_OSS;
 		#else
@@ -1875,7 +1818,7 @@ int main(int argc, char *argv[])
 		#endif
 		else params.sndBackend = default_snd_backend;
 
-		params.sdlBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
+		params.audioBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
 
 #ifndef _WIN32
 		params.soundParam = config.GetInt("sound", "ossfragnum", 8);
@@ -1890,20 +1833,16 @@ int main(int argc, char *argv[])
 		str = config.GetString("cputrace", "filename", "cputrace.log");
 		strcpy(params.cpuTraceFileName, str.c_str());
 
-		int spec = SDL_INIT_VIDEO;
-		if (params.sound && params.sndBackend == SND_BACKEND_SDL) spec |= SDL_INIT_AUDIO;
-		if (SDL_Init(spec) < 0) StrikeError("Unable to init SDL: %s\n", SDL_GetError());
+		if (ZHW_Core_Init(params.sound && params.sndBackend == SND_BACKEND_DEFAULT) < 0) {
+			StrikeError("Unable to init: %s\n", ZHW_Error_Get());
+		}
 
 #ifdef _WIN32
 		windows_init();
 		atexit(windows_cleanup);
 #else
-		atexit(SDL_Quit);
+		atexit(ZHW_Core_Quit);
 #endif
-
-		videoSpec = SDL_SWSURFACE;
-		if (params.fullscreen) videoSpec |= SDL_FULLSCREEN;
-		if (params.useFlipSurface) videoSpec |= SDL_DOUBLEBUF;
 
 		int actualWidth = WIDTH;
 		int actualHeight = HEIGHT;
@@ -1914,16 +1853,16 @@ int main(int argc, char *argv[])
 			actualHeight *= 2;
 		}
 
-		realScreen = SDL_SetVideoMode(actualWidth, actualHeight, 32, videoSpec);
+		videoSpec = ZHW_Video_CreateSpec(params.fullscreen, params.useFlipSurface);
+		realScreen = ZHW_Video_CreateRenderSurface(actualWidth, actualHeight, videoSpec, "ZEmu");
 
-		if (realScreen == NULL) StrikeError("Unable to set requested video mode: %s\n", SDL_GetError());
+		if (realScreen == NULL) StrikeError("Unable to set requested video mode: %s\n", ZHW_Error_Get());
 		REAL_PITCH = realScreen->pitch / 4;
 
 		if (params.scale2x)
 		{
-			SDL_PixelFormat *fmt = realScreen->format;
-			screen = SDL_CreateRGBSurface(SDL_SWSURFACE, WIDTH, HEIGHT, fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0);
-			if (screen == NULL) StrikeError("Unable to create screen surface: %s\n", SDL_GetError());
+			screen = ZHW_Video_CreateSurface(WIDTH, HEIGHT, realScreen);
+			if (screen == NULL) StrikeError("Unable to create screen surface: %s\n", ZHW_Error_Get());
 
 			PITCH = screen->pitch / 4;
 		}
@@ -1932,9 +1871,6 @@ int main(int argc, char *argv[])
 			screen = realScreen;
 			PITCH = REAL_PITCH;
 		}
-
-		SDL_WM_SetCaption("ZEmu", "ZEmu");
-		SDL_ShowCursor(SDL_DISABLE);
 
 		#ifdef _WIN32
 			strcpy(tempFolderName, "./_temp");

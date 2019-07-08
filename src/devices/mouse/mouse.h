@@ -19,7 +19,7 @@ class C_Mouse : public C_Device
 	static void UpdateState(void);
 	static bool InputByteCheckPort(Z80EX_WORD port);
 	static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
-	static bool OnSdlMouseButtonDown(SDL_Event &ev);
+	static bool OnHwMouseButtonDown(ZHW_Event &ev);
 };
 
 #endif

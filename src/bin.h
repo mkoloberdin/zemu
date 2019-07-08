@@ -1,5 +1,5 @@
-#ifndef __BIN_RULEZ__
-#define __BIN_RULEZ__ 1
+#ifndef _BIN_H_INCLUDED_
+#define _BIN_H_INCLUDED_
 
 #define BIN(N) ( ((N & 0x10000000) >> 21) | ((N & 0x1000000) >> 18) | ((N & 0x100000) >> 15) | ((N & 0x10000) >> 12) | ((N & 0x1000) >> 9) | ((N & 0x100) >> 6) | ((N & 0x10) >> 3) | (N & 1) )
 

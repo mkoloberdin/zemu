@@ -1,5 +1,5 @@
-#ifndef ZEMU_SND_BACKEND_WIN32_H
-#define ZEMU_SND_BACKEND_WIN32_H
+#ifndef _SND_BACKEND_WIN32_H_INCLUDED_
+#define _SND_BACKEND_WIN32_H_INCLUDED_
 
 #ifdef _WIN32
 
@@ -26,4 +26,4 @@ private:
 
 #endif // !_WIN32
 
-#endif // ZEMU_SND_BACKEND_WIN32_H
+#endif

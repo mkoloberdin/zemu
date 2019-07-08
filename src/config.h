@@ -1,5 +1,5 @@
-#ifndef ZEMU_CONFIG_H
-#define ZEMU_CONFIG_H
+#ifndef _CONFIG_H_INCLUDED_
+#define _CONFIG_H_INCLUDED_
 
 #include "SimpleIni.h"
 #include <stdint.h>
@@ -39,4 +39,4 @@ private:
 	CConfig(const CConfig &dummy) {}
 };
 
-#endif // ZEMU_CONFIG_H
+#endif

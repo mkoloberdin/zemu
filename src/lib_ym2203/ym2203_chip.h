@@ -1,5 +1,5 @@
-#ifndef __YM2203_CHIP_H__
-#define __YM2203_CHIP_H__
+#ifndef _YM2203_CHIP_H_INCLUDED_
+#define _YM2203_CHIP_H_INCLUDED_
 
 #include "ym2203_emu.h"
 #include "../params.h"
@@ -20,7 +20,7 @@ class C_Ym2203Chip
 	void Write(unsigned char val);
 	unsigned char Read(void);
 	unsigned char ReadStatus(void);
-	
+
 	void Reset(void);
 	void Render(unsigned devClk);
 

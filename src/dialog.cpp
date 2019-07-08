@@ -34,7 +34,7 @@ void DlgClearScreen(void)
 	int i, j, cl;
 	int *s, *p;
 
-	if (SDL_MUSTLOCK(screen)) {if (SDL_LockSurface(screen) < 0) return;}
+	if (!ZHW_VIDEO_LOCKSURFACE(screen)) { return; }
 	s = (int *)screen->pixels;
 
 	for (i = 0; i < HEIGHT; i++)
@@ -45,13 +45,13 @@ void DlgClearScreen(void)
 		s += PITCH;
 	}
 
-	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
+	ZHW_VIDEO_UNLOCKSURFACE(screen);
 }
 
 bool DlgConfirm(const char *message)
 {
 	int x, y, key;
-	SDL_Event event;
+	ZHW_Event event;
 	int wdt = font.StrLenPx(message) + 0x10;
 	int hgt = font.Height() + 0x10;
 
@@ -66,16 +66,16 @@ bool DlgConfirm(const char *message)
 	{
 		UpdateScreen();
 
-		for (key = 0; SDL_PollEvent(&event);)
+		for (key = 0; ZHW_Event_Poll(&event);)
 		{
-			if (event.type == SDL_QUIT) exit(0);
-			if (event.type == SDL_KEYUP) key = event.key.keysym.sym;
+			if (event.type == ZHW_EVENT_QUIT) exit(0);
+			if (event.type == ZHW_EVENT_KEYUP) key = event.key.keysym.sym;
 		}
 
-		if (key==SDLK_y || key==SDLK_RETURN) return true;
-		if (key==SDLK_n || key==SDLK_ESCAPE) return false;
+		if (key==ZHW_KEY_y || key==ZHW_KEY_RETURN) return true;
+		if (key==ZHW_KEY_n || key==ZHW_KEY_ESCAPE) return false;
 
-		SDL_Delay(10);
+		ZHW_Timer_Delay(10);
 	}
 }
 
@@ -91,7 +91,7 @@ const char* DlgInputString(const char *message)
 
 	int wdt, hgt;
 	int x, y, key;
-	SDL_Event event;
+	ZHW_Event event;
 
 	for (;;)
 	{
@@ -110,25 +110,25 @@ const char* DlgInputString(const char *message)
 
 		do
 		{
-			for (key = 0; SDL_PollEvent(&event);)
+			for (key = 0; ZHW_Event_Poll(&event);)
 			{
-				if (event.type == SDL_QUIT) exit(0);
-				if (event.type == SDL_KEYDOWN) key = event.key.keysym.sym;
+				if (event.type == ZHW_EVENT_QUIT) exit(0);
+				if (event.type == ZHW_EVENT_KEYDOWN) key = event.key.keysym.sym;
 			}
 		} while (key == 0);
 
-		if (key == SDLK_ESCAPE)
+		if (key == ZHW_KEY_ESCAPE)
 		{
 			buffer[0] = 0;
 			return buffer;
 		}
 		else
-		if (key == SDLK_RETURN)
+		if (key == ZHW_KEY_RETURN)
 		{
 			return buffer;
 		}
 		else
-		if (key == SDLK_BACKSPACE)
+		if (key == ZHW_KEY_BACKSPACE)
 		{
 			if (bufferSz > 0) {
 				buffer[--bufferSz] = 0;
@@ -143,14 +143,14 @@ const char* DlgInputString(const char *message)
 			}
 		}
 
-		SDL_Delay(10);
+		ZHW_Timer_Delay(10);
 	}
 }
 
 char* SelectFile(char *oldFile)
 {
 	int key;
-	SDL_Event event;
+	ZHW_Event event;
 	C_DirWork dw;
 	char buf[0x100];
 	static char path[MAX_PATH], ofl[MAX_FNAME+1];
@@ -242,10 +242,10 @@ char* SelectFile(char *oldFile)
 		{
 			do
 			{
-				for (key = 0; SDL_PollEvent(&event);)
+				for (key = 0; ZHW_Event_Poll(&event);)
 				{
-					if (event.type == SDL_QUIT) exit(0);
-					if (event.type == SDL_KEYDOWN) key = event.key.keysym.sym;
+					if (event.type == ZHW_EVENT_QUIT) exit(0);
+					if (event.type == ZHW_EVENT_KEYDOWN) key = event.key.keysym.sym;
 				}
 
 				DlgClearScreen();
@@ -282,10 +282,10 @@ char* SelectFile(char *oldFile)
 
 				OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);
 				UpdateScreen();
-				SDL_Delay(10);
+				ZHW_Timer_Delay(10);
 			} while (key == 0);
 
-			if (key == SDLK_s)
+			if (key == ZHW_KEY_s)
 			{
 				if (DlgConfirm("Are you sure to save disk? (Y/N)"))
 				{
@@ -326,33 +326,33 @@ char* SelectFile(char *oldFile)
 				}
 			}
 			else
-			if (key == SDLK_e)
+			if (key == ZHW_KEY_e)
 			{
 				wd1793_eject_dimage(currentDrive);
 			}
 			else
-			if (key == SDLK_d)
+			if (key == ZHW_KEY_d)
 			{
 				C_Tape::Eject();
 			}
 			else
-			if (key == SDLK_r)
+			if (key == ZHW_KEY_r)
 			{
 				C_Tape::Rewind();
 			}
 			else
-			if (key == SDLK_t)
+			if (key == ZHW_KEY_t)
 			{
 				if (C_Tape::IsActive()) C_Tape::Stop();
 				else C_Tape::Start();
 			}
 			else
-			if (key == SDLK_w)
+			if (key == ZHW_KEY_w)
 			{
 				wd1793_set_disk_wprotected(currentDrive, !wd1793_is_disk_wprotected(currentDrive));
 			}
 			else
-			if (key == SDLK_UP)
+			if (key == ZHW_KEY_UP)
 			{
 				csr--;
 
@@ -363,7 +363,7 @@ char* SelectFile(char *oldFile)
 				}
 			}
 			else
-			if (key == SDLK_DOWN)
+			if (key == ZHW_KEY_DOWN)
 			{
 				csr++;
 
@@ -374,13 +374,13 @@ char* SelectFile(char *oldFile)
 				}
 			}
 			else
-			if (key == SDLK_HOME)
+			if (key == ZHW_KEY_HOME)
 			{
 				csr = 0;
 				pos = 0;
 			}
 			else
-			if (key == SDLK_END)
+			if (key == ZHW_KEY_END)
 			{
 				csr = filesCnt - 1;
 
@@ -391,7 +391,7 @@ char* SelectFile(char *oldFile)
 				else pos = 0;
 			}
 			else
-			if (key == SDLK_PAGEUP)
+			if (key == ZHW_KEY_PAGEUP)
 			{
 				pos -= mx;
 				csr -= mx;
@@ -403,7 +403,7 @@ char* SelectFile(char *oldFile)
 				}
 			}
 			else
-			if (key == SDLK_PAGEDOWN)
+			if (key == ZHW_KEY_PAGEDOWN)
 			{
 				pos += mx;
 				csr += mx;
@@ -423,38 +423,38 @@ char* SelectFile(char *oldFile)
 				}
 			}
 			else
-			if (key == SDLK_LEFT)
+			if (key == ZHW_KEY_LEFT)
 			{
 				currentDrive--;
 				if (currentDrive < 0) currentDrive = 0;
 			}
 			else
-			if (key == SDLK_RIGHT)
+			if (key == ZHW_KEY_RIGHT)
 			{
 				currentDrive++;
 				if (currentDrive > 3) currentDrive = 3;
 			}
 
-		} while (key!=SDLK_RETURN && key!=SDLK_ESCAPE && key!=SDLK_BACKSPACE);
+		} while (key!=ZHW_KEY_RETURN && key!=ZHW_KEY_ESCAPE && key!=ZHW_KEY_BACKSPACE);
 
 		do
 		{
-			SDL_Delay(1);
+			ZHW_Timer_Delay(1);
 
-			for (keyx = 0; SDL_PollEvent(&event);)
+			for (keyx = 0; ZHW_Event_Poll(&event);)
 			{
-				if (event.type == SDL_QUIT) exit(0);
-				if (event.type == SDL_KEYUP) keyx = event.key.keysym.sym;
+				if (event.type == ZHW_EVENT_QUIT) exit(0);
+				if (event.type == ZHW_EVENT_KEYUP) keyx = event.key.keysym.sym;
 			}
 		} while (key != keyx);
 
-		if (key == SDLK_BACKSPACE)
+		if (key == ZHW_KEY_BACKSPACE)
 		{
 			strcpy(ofl, C_DirWork::LastDirName(path));
 			strcpy(path, C_DirWork::LevelUp(path));
 		}
 		else
-		if (key == SDLK_RETURN)
+		if (key == ZHW_KEY_RETURN)
 		{
 			if (folders[csr])
 			{
@@ -478,7 +478,7 @@ char* SelectFile(char *oldFile)
 				return path;
 			}
 		}
-	} while (key != SDLK_ESCAPE);
+	} while (key != ZHW_KEY_ESCAPE);
 
 	return NULL;
 }
@@ -489,9 +489,9 @@ void FileDialog(void)
 
 	disableSound = true;
 
-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+	ZHW_Keyboard_EnableKeyRepeat();
 	fname = SelectFile(oldFileName[currentDrive]);
-	SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
+	ZHW_Keyboard_DisableKeyRepeat();
 
 	if (fname != NULL) {
 		TryNLoadFile(fname, currentDrive);
@@ -520,7 +520,7 @@ int DbgAskHexNum(const char *message)
 	int bufferSz = 0;
 
 	int key;
-	SDL_Event event;
+	ZHW_Event event;
 
 	int scrEnd = HEIGHT - fixed_font.Height() - 8;
 
@@ -534,19 +534,19 @@ int DbgAskHexNum(const char *message)
 
 		do
 		{
-			for (key = 0; SDL_PollEvent(&event);)
+			for (key = 0; ZHW_Event_Poll(&event);)
 			{
-				if (event.type == SDL_QUIT) exit(0);
-				if (event.type == SDL_KEYDOWN) key = event.key.keysym.sym;
+				if (event.type == ZHW_EVENT_QUIT) exit(0);
+				if (event.type == ZHW_EVENT_KEYDOWN) key = event.key.keysym.sym;
 			}
 		} while (key == 0);
 
-		if (key == SDLK_ESCAPE)
+		if (key == ZHW_KEY_ESCAPE)
 		{
 		    return -1;
 		}
 		else
-		if (key == SDLK_RETURN)
+		if (key == ZHW_KEY_RETURN)
 		{
 			if (!bufferSz) return -1;
 
@@ -559,7 +559,7 @@ int DbgAskHexNum(const char *message)
 			return res;
 		}
 		else
-		if (key == SDLK_BACKSPACE)
+		if (key == ZHW_KEY_BACKSPACE)
 		{
 			if (bufferSz > 0) {
 				buffer[--bufferSz] = 0;
@@ -575,7 +575,7 @@ int DbgAskHexNum(const char *message)
 			}
 		}
 
-		SDL_Delay(10);
+		ZHW_Timer_Delay(10);
 	}
 }
 
@@ -656,7 +656,7 @@ bool restoreBpVal = false;
 void DebugIt(void)
 {
 	int key, keyx;
-	SDL_Event event;
+	ZHW_Event event;
 
 	int scrEnd = HEIGHT - fixed_font.Height() - 8;
 	int h = fixed_font.Height();
@@ -748,10 +748,10 @@ void DebugIt(void)
 
 		do
 		{
-			for (key = 0; SDL_PollEvent(&event);)
+			for (key = 0; ZHW_Event_Poll(&event);)
 			{
-				if (event.type == SDL_QUIT) exit(0);
-				if (event.type == SDL_KEYDOWN) key = event.key.keysym.sym;
+				if (event.type == ZHW_EVENT_QUIT) exit(0);
+				if (event.type == ZHW_EVENT_KEYDOWN) key = event.key.keysym.sym;
 			}
 
 			DlgClearScreen();
@@ -853,36 +853,36 @@ void DebugIt(void)
 
 			OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage *) &img_zemuIco);
 			UpdateScreen();
-			SDL_Delay(10);
+			ZHW_Timer_Delay(10);
 		} while (key == 0);
 
-		if (key == SDLK_UP)
+		if (key == ZHW_KEY_UP)
 		{
 			userAddr = dispBuf[userPos > 0 ? userPos-1 : 0].addr;
 		}
 		else
-		if (key == SDLK_DOWN)
+		if (key == ZHW_KEY_DOWN)
 		{
 			userAddr = dispBuf[userPos < mx-1 ? userPos+1 : mx-1].addr;
 		}
 		else
-		if (key == SDLK_PAGEUP)
+		if (key == ZHW_KEY_PAGEUP)
 		{
 			userAddr = dispBuf[0].addr;
 		}
 		else
-		if (key == SDLK_PAGEDOWN)
+		if (key == ZHW_KEY_PAGEDOWN)
 		{
 			userAddr = dispBuf[mx-2].addr;
 		}
 		else
-		if (key == SDLK_F2)
+		if (key == ZHW_KEY_F2)
 		{
 			breakpoints[userAddr] = !breakpoints[userAddr];
 			exactAddr = true;
 		}
 		else
-		if (key=='w' || key=='W')
+		if (key == ZHW_KEY_w)
 		{
 			if (IsWatched(userAddr))
 			{
@@ -904,19 +904,19 @@ void DebugIt(void)
 			exactAddr = true;
 		}
 		else
-		if (key == SDLK_F4)
+		if (key == ZHW_KEY_F4)
 		{
 			hexMode = !hexMode;
 			exactAddr = true;
 		}
 		else
-		if (key == SDLK_F3)
+		if (key == ZHW_KEY_F3)
 		{
 			showLabels = !showLabels;
 			exactAddr = true;
 		}
 		else
-		if (key=='g' || key=='G')
+		if (key == ZHW_KEY_g)
 		{
 			int newAddr = DbgAskHexNum("GoTo address");
 
@@ -927,7 +927,7 @@ void DebugIt(void)
 			}
 		}
 		else
-		if (key=='p' || key=='P')
+		if (key == ZHW_KEY_p)
 		{
 			sprintf(buf, "Poke to #%04X", userAddr);
 			int val = DbgAskHexNum(buf);
@@ -937,7 +937,7 @@ void DebugIt(void)
 			}
 		}
 		else
-		if (key == SDLK_F7)
+		if (key == ZHW_KEY_F7)
 		{
 			DebugStep();
 			curAddr = z80ex_get_reg(cpu, regPC);
@@ -945,7 +945,7 @@ void DebugIt(void)
 			correctAddr = true;
 		}
 		else
-		if (key == SDLK_F8)
+		if (key == ZHW_KEY_F8)
 		{
 			addr = z80ex_get_reg(cpu, regPC);
 			unsigned int maxCnt = 71680 / 4;
@@ -961,7 +961,7 @@ void DebugIt(void)
 			correctAddr = true;
 		}
 		else
-		if (key == SDLK_F9)
+		if (key == ZHW_KEY_F9)
 		{
 			restoreBpAddr = userAddr;
 			restoreBpVal = breakpoints[userAddr];
@@ -970,23 +970,23 @@ void DebugIt(void)
 			break;
 		}
 		else
-		if (key == SDLK_F12)
+		if (key == ZHW_KEY_F12)
 		{
 			wdDebug = !wdDebug;
 			DlgConfirm(wdDebug ? "WD1793 debug enabled" : "WD1793 debug disabled");
 		}
-	} while (key != SDLK_ESCAPE);
+	} while (key != ZHW_KEY_ESCAPE);
 
 	delete[] dispBuf;
 
 	do
 	{
-		SDL_Delay(1);
+		ZHW_Timer_Delay(1);
 
-		for (keyx = 0; SDL_PollEvent(&event);)
+		for (keyx = 0; ZHW_Event_Poll(&event);)
 		{
-			if (event.type == SDL_QUIT) exit(0);
-			if (event.type == SDL_KEYUP) keyx = event.key.keysym.sym;
+			if (event.type == ZHW_EVENT_QUIT) exit(0);
+			if (event.type == ZHW_EVENT_KEYUP) keyx = event.key.keysym.sym;
 		}
 	} while (key != keyx);
 }
@@ -994,10 +994,10 @@ void DebugIt(void)
 void RunDebugger(void)
 {
 	disableSound = true;
-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+	ZHW_Keyboard_EnableKeyRepeat();
 
 	DebugIt();
 
-	SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
+	ZHW_Keyboard_DisableKeyRepeat();
 	disableSound = false;
 }

@@ -33,16 +33,16 @@ class C_Keyboard : public C_Device
 		s_HostKeyMods mods;
 	};
 
-	static bool hostKeyPressed[SDLK_LAST];
-	static s_HostKey hostKeys[SDLK_LAST];
+	static bool hostKeyPressed[ZHW_KEY_LAST];
+	static s_HostKey hostKeys[ZHW_KEY_LAST];
 	static int keyboard[8];
 
 	static void ReadKbdConfig(void);
 	void Init(void);
 	void Close(void);
 
-	static bool OnKeyDown(SDL_Event &event);
-	static bool OnKeyUp(SDL_Event &event);
+	static bool OnKeyDown(ZHW_Event &event);
+	static bool OnKeyUp(ZHW_Event &event);
 
 	static bool InputByteCheckPort(Z80EX_WORD port);
 	static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
