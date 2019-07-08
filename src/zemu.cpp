@@ -55,7 +55,7 @@ C_Font font, fixed_font;
 bool disableSound = false;
 bool doCopyOfSurfaces = false;
 
-int videoSpec;
+ZHW_Window *window;
 int actualWidth;
 int actualHeight;
 
@@ -249,45 +249,45 @@ C_Device* devs[] =
 };
 
 int colors_base[0x10] = {
-	DRGB(  0,   0,   0),
-	DRGB(  0,   0, 192),
-	DRGB(192,   0,   0),
-	DRGB(192,   0, 192),
-	DRGB(  0, 192,   0),
-	DRGB(  0, 192, 192),
-	DRGB(192, 192,   0),
-	DRGB(192, 192, 192),
-	DRGB(  0,   0,   0),
-	DRGB(  0,   0, 255),
-	DRGB(255,   0,   0),
-	DRGB(255,   0, 255),
-	DRGB(  0, 255,   0),
-	DRGB(  0, 255, 255),
-	DRGB(255, 255,   0),
-	DRGB(255, 255, 255)
+	ZHW_VIDEO_MAKERGB(  0,   0,   0),
+	ZHW_VIDEO_MAKERGB(  0,   0, 192),
+	ZHW_VIDEO_MAKERGB(192,   0,   0),
+	ZHW_VIDEO_MAKERGB(192,   0, 192),
+	ZHW_VIDEO_MAKERGB(  0, 192,   0),
+	ZHW_VIDEO_MAKERGB(  0, 192, 192),
+	ZHW_VIDEO_MAKERGB(192, 192,   0),
+	ZHW_VIDEO_MAKERGB(192, 192, 192),
+	ZHW_VIDEO_MAKERGB(  0,   0,   0),
+	ZHW_VIDEO_MAKERGB(  0,   0, 255),
+	ZHW_VIDEO_MAKERGB(255,   0,   0),
+	ZHW_VIDEO_MAKERGB(255,   0, 255),
+	ZHW_VIDEO_MAKERGB(  0, 255,   0),
+	ZHW_VIDEO_MAKERGB(  0, 255, 255),
+	ZHW_VIDEO_MAKERGB(255, 255,   0),
+	ZHW_VIDEO_MAKERGB(255, 255, 255)
 };
 
 /*
  * Work in progress
  *
 int c64_colors_base[0x10] = {
-	DRGB(0x00, 0x00, 0x00),
-	DRGB(0x35, 0x28, 0x79),
-	DRGB(0x9A, 0x67, 0x59),
-	DRGB(0x6F, 0x3D, 0x86),
-	DRGB(0x58, 0x8D, 0x43),
-	DRGB(0x70, 0xA4, 0xB2),
-	DRGB(0xB8, 0xC7, 0x6F),
-	DRGB(0x95, 0x95, 0x95),
+	ZHW_VIDEO_MAKERGB(0x00, 0x00, 0x00),
+	ZHW_VIDEO_MAKERGB(0x35, 0x28, 0x79),
+	ZHW_VIDEO_MAKERGB(0x9A, 0x67, 0x59),
+	ZHW_VIDEO_MAKERGB(0x6F, 0x3D, 0x86),
+	ZHW_VIDEO_MAKERGB(0x58, 0x8D, 0x43),
+	ZHW_VIDEO_MAKERGB(0x70, 0xA4, 0xB2),
+	ZHW_VIDEO_MAKERGB(0xB8, 0xC7, 0x6F),
+	ZHW_VIDEO_MAKERGB(0x95, 0x95, 0x95),
 
-	DRGB(0x00, 0x00, 0x00),
-	DRGB(0x35, 0x28, 0x79),
-	DRGB(0x9A, 0x67, 0x59),
-	DRGB(0x6F, 0x3D, 0x86),
-	DRGB(0x58, 0x8D, 0x43),
-	DRGB(0x70, 0xA4, 0xB2),
-	DRGB(0xB8, 0xC7, 0x6F),
-	DRGB(0xFF, 0xFF, 0xFF)
+	ZHW_VIDEO_MAKERGB(0x00, 0x00, 0x00),
+	ZHW_VIDEO_MAKERGB(0x35, 0x28, 0x79),
+	ZHW_VIDEO_MAKERGB(0x9A, 0x67, 0x59),
+	ZHW_VIDEO_MAKERGB(0x6F, 0x3D, 0x86),
+	ZHW_VIDEO_MAKERGB(0x58, 0x8D, 0x43),
+	ZHW_VIDEO_MAKERGB(0x70, 0xA4, 0xB2),
+	ZHW_VIDEO_MAKERGB(0xB8, 0xC7, 0x6F),
+	ZHW_VIDEO_MAKERGB(0xFF, 0xFF, 0xFF)
 };
 */
 
@@ -585,11 +585,12 @@ void Action_LoadFile(void)
 
 void Action_Fullscreen(void)
 {
-	realScreen = ZHW_Video_ToggleFullScreen(realScreen, &videoSpec);
+	ZHW_Video_ToggleFullScreen(window);
+
+	realScreen = window->surface;
 	REAL_PITCH = realScreen->pitch / 4;
 
-	if (!params.scale2x)
-	{
+	if (!params.scale2x) {
 		screen = realScreen;
 		PITCH = REAL_PITCH;
 	}
@@ -1270,15 +1271,15 @@ void Render(void)
 	//	for (int i = 256; i--;)
 	//	{
 	//		unsigned int c = *src;
-	//		int r = GETR(c);
-	//		int g = GETG(c);
-	//		int b = GETB(c);
+	//		int r = ZHW_VIDEO_GETR(c);
+	//		int g = ZHW_VIDEO_GETG(c);
+	//		int b = ZHW_VIDEO_GETB(c);
 	//
 	//		longImageFile.PutBYTE(r);
 	//		longImageFile.PutBYTE(g);
 	//		longImageFile.PutBYTE(b);
 	//
-	//		*(src++) = DRGB(255 - r, 255 - g, 255 - b);
+	//		*(src++) = ZHW_VIDEO_MAKERGB(255 - r, 255 - g, 255 - b);
 	//	}
 	//
 	//	longImageHeight++;
@@ -1298,9 +1299,9 @@ void Render(void)
 	// 		{
 	// 			unsigned int c = *(line++);
 	//
-	// 			*(dst++) += (long)GETR(c);
-	// 			*(dst++) += (long)GETG(c);
-	// 			*(dst++) += (long)GETB(c);
+	// 			*(dst++) += (long)ZHW_VIDEO_GETR(c);
+	// 			*(dst++) += (long)ZHW_VIDEO_GETG(c);
+	// 			*(dst++) += (long)ZHW_VIDEO_GETB(c);
 	// 		}
 	//
 	// 		src += PITCH;
@@ -1455,7 +1456,7 @@ void Process(void)
 		{
 			if (event.type == ZHW_EVENT_QUIT) exit(0);
 
-			if (event.type == ZHW_EVENT_KEYUP)
+			if (event.type == ZHW_EVENT_KEYUP && ZHW_EVENT_OKKEY(window, event))
 			{
 				key = event.key.keysym.sym;
 				if (key == ZHW_KEY_ESCAPE) quitMode = true;
@@ -1526,7 +1527,7 @@ int UpdateScreenThreadFunc(void * param)
 {
 	while (updateScreenThreadActive) {
 		ZHW_Mutex_SemWait(updateScreenThreadSem);
-		ZHW_Video_BlitRenderSurface(realScreen, params.useFlipSurface);
+		ZHW_Video_BlitWindow(window);
 	}
 
 	return 0;
@@ -1540,7 +1541,7 @@ void UpdateScreen(void)
 {
 	if (!params.scale2x) {
 		// do not use threading here, because realScreen == screen
-		ZHW_Video_BlitRenderSurface(realScreen, params.useFlipSurface);
+		ZHW_Video_BlitWindow(window);
 		return;
 	}
 
@@ -1603,7 +1604,7 @@ void UpdateScreen(void)
 #if defined(__APPLE__)
 	ZHW_Mutex_SemPost(updateScreenThreadSem);
 #else
-	ZHW_Video_BlitRenderSurface(realScreen, params.useFlipSurface);
+	ZHW_Video_BlitWindow(window);
 #endif
 }
 
@@ -1633,16 +1634,14 @@ void FreeAll(void)
 		if (system(cmd) == -1) DEBUG_MESSAGE("system() failed");
 	#endif
 
-	if (ZHW_VIDEO_ISFULLSCREEN(videoSpec)) {
-		realScreen = ZHW_Video_ToggleFullScreen(realScreen, &videoSpec);
-	}
-
 	ZHW_Video_FreeSurface(scrSurf[0]);
 	ZHW_Video_FreeSurface(scrSurf[1]);
-	ZHW_Video_FreeSurface(realScreen);
 
-	if (params.scale2x) ZHW_Video_FreeSurface(screen);
+	if (params.scale2x) {
+		ZHW_Video_FreeSurface(screen);
+	}
 
+	ZHW_Video_CloseWindow(window);
 	z80ex_destroy(cpu);
 
 	if (CConfig::executableDir) {
@@ -1853,10 +1852,10 @@ int main(int argc, char *argv[])
 			actualHeight *= 2;
 		}
 
-		videoSpec = ZHW_Video_CreateSpec(params.fullscreen, params.useFlipSurface);
-		realScreen = ZHW_Video_CreateRenderSurface(actualWidth, actualHeight, videoSpec, "ZEmu");
+		window = ZHW_Video_CreateWindow("ZEmu", actualWidth, actualHeight, params.fullscreen, params.useFlipSurface);
+		if (window == NULL) { StrikeError("Unable to create window: %s\n", ZHW_Error_Get()); }
 
-		if (realScreen == NULL) StrikeError("Unable to set requested video mode: %s\n", ZHW_Error_Get());
+		realScreen = window->surface;
 		REAL_PITCH = realScreen->pitch / 4;
 
 		if (params.scale2x)

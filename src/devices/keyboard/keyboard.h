@@ -3,49 +3,53 @@
 
 #include "../../zemu.h"
 #include "../device.h"
+#include <set>
+#include <map>
 
 #define MAX_HOST_KEY_MODS 5
 #define MAX_ZX_KEYS_MAP 5
 
-class C_Keyboard : public C_Device
-{
-	public:
+class C_Keyboard : public C_Device {
+    public:
 
-	struct s_ZxKeys
-	{
-		int count;
-		int portnum[MAX_ZX_KEYS_MAP];
-		int bitmask[MAX_ZX_KEYS_MAP];
-	};
+    struct s_ZxKeys {
+        s_ZxKeys() : count(0) {}
 
-	struct s_HostKeyMods
-	{
-		int count;
-		int keyMod[MAX_HOST_KEY_MODS];
-		void (* actions[MAX_HOST_KEY_MODS])(void);
-		s_ZxKeys zxKeys[MAX_HOST_KEY_MODS];
-	};
+        int count;
+        int portnum[MAX_ZX_KEYS_MAP];
+        int bitmask[MAX_ZX_KEYS_MAP];
+    };
 
-	struct s_HostKey
-	{
-		s_ZxKeys normal;
-		void (* action)(void);
-		s_HostKeyMods mods;
-	};
+    struct s_HostKeyMods {
+        s_HostKeyMods() : count(0) {}
 
-	static bool hostKeyPressed[ZHW_KEY_LAST];
-	static s_HostKey hostKeys[ZHW_KEY_LAST];
-	static int keyboard[8];
+        int count;
+        int keyMod[MAX_HOST_KEY_MODS];
+        void (* actions[MAX_HOST_KEY_MODS])(void);
+        s_ZxKeys zxKeys[MAX_HOST_KEY_MODS];
+    };
 
-	static void ReadKbdConfig(void);
-	void Init(void);
-	void Close(void);
+    struct s_HostKey {
+        s_HostKey() : normal(), action(NULL), mods() {}
 
-	static bool OnKeyDown(ZHW_Event &event);
-	static bool OnKeyUp(ZHW_Event &event);
+        s_ZxKeys normal;
+        void (* action)(void);
+        s_HostKeyMods mods;
+    };
 
-	static bool InputByteCheckPort(Z80EX_WORD port);
-	static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
+    static std::set<ZHW_Keyboard_KeyCode> hostKeyPressed;
+    static std::map<ZHW_Keyboard_KeyCode, s_HostKey> hostKeys;
+    static int keyboard[8];
+
+    static void ReadKbdConfig(void);
+    void Init(void);
+    void Close(void);
+
+    static bool OnKeyDown(ZHW_Event &event);
+    static bool OnKeyUp(ZHW_Event &event);
+
+    static bool InputByteCheckPort(Z80EX_WORD port);
+    static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
 };
 
 #endif

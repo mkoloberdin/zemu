@@ -40,7 +40,7 @@ void DlgClearScreen(void)
 	for (i = 0; i < HEIGHT; i++)
 	{
 		p = s;
-		cl = (i & 1) ? DRGB(0,0,64) : DRGB(0,0,32);
+		cl = (i & 1) ? ZHW_VIDEO_MAKERGB(0,0,64) : ZHW_VIDEO_MAKERGB(0,0,32);
 		for (j = 0; j < WIDTH; j++) *(p++) = cl;
 		s += PITCH;
 	}
@@ -59,7 +59,7 @@ bool DlgConfirm(const char *message)
 	y = (HEIGHT - hgt) / 2;
 
 	DlgClearScreen();
-	Bar(x, y, x+wdt-1, y+hgt-1, DRGB(0x80, 0x20, 0x20));
+	Bar(x, y, x+wdt-1, y+hgt-1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
 	font.PrintString(x+8, y+8, message);
 
 	for (;;)
@@ -69,7 +69,7 @@ bool DlgConfirm(const char *message)
 		for (key = 0; ZHW_Event_Poll(&event);)
 		{
 			if (event.type == ZHW_EVENT_QUIT) exit(0);
-			if (event.type == ZHW_EVENT_KEYUP) key = event.key.keysym.sym;
+			if (event.type == ZHW_EVENT_KEYUP && ZHW_EVENT_OKKEY(window, event)) key = event.key.keysym.sym;
 		}
 
 		if (key==ZHW_KEY_y || key==ZHW_KEY_RETURN) return true;
@@ -104,7 +104,7 @@ const char* DlgInputString(const char *message)
 		y = (HEIGHT - hgt) / 2;
 
 		DlgClearScreen();
-		Bar(x, y, x+wdt-1, y+hgt-1, DRGB(0x80, 0x20, 0x20));
+		Bar(x, y, x+wdt-1, y+hgt-1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
 		font.PrintString(x+8, y+8, buf);
 		UpdateScreen();
 
@@ -113,7 +113,7 @@ const char* DlgInputString(const char *message)
 			for (key = 0; ZHW_Event_Poll(&event);)
 			{
 				if (event.type == ZHW_EVENT_QUIT) exit(0);
-				if (event.type == ZHW_EVENT_KEYDOWN) key = event.key.keysym.sym;
+				if (event.type == ZHW_EVENT_KEYDOWN && ZHW_EVENT_OKKEY(window, event)) key = event.key.keysym.sym;
 			}
 		} while (key == 0);
 
@@ -245,27 +245,53 @@ char* SelectFile(char *oldFile)
 				for (key = 0; ZHW_Event_Poll(&event);)
 				{
 					if (event.type == ZHW_EVENT_QUIT) exit(0);
-					if (event.type == ZHW_EVENT_KEYDOWN) key = event.key.keysym.sym;
+					if (event.type == ZHW_EVENT_KEYDOWN && ZHW_EVENT_OKKEY(window, event)) key = event.key.keysym.sym;
 				}
 
 				DlgClearScreen();
-				Bar(0, scrEnd, WIDTH-1, HEIGHT-1, DRGB(0x80, 0x20, 0x20));
+				Bar(0, scrEnd, WIDTH-1, HEIGHT-1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
 
-				Bar(4+(currentDrive*16), scrEnd+4, 4+(currentDrive*16)+12, scrEnd+4+12, DRGB(0x40, 0x10, 0x10));
+				Bar(4+(currentDrive*16), scrEnd+4, 4+(currentDrive*16)+12, scrEnd+4+12, ZHW_VIDEO_MAKERGB(0x40, 0x10, 0x10));
 				font.PrintString(5, scrEnd+5, "A");
 				font.PrintString(5+0x10+1, scrEnd+5, "B");
 				font.PrintString(5+0x20+1, scrEnd+5, "C");
 				font.PrintString(5+0x30+1, scrEnd+5, "D");
 
-				Bar(4+0x50, scrEnd+4, 4+0x50+20, scrEnd+4+12, wd1793_is_disk_wprotected(currentDrive) ? DRGB(255,128,32) : DRGB(0x40,0x10,0x10));
-				Bar(4+0x68, scrEnd+4, 4+0x68+20, scrEnd+4+12, wd1793_is_disk_loaded(currentDrive) ? DRGB(255,128,32) : DRGB(0x40,0x10,0x10));
-				Bar(4+0x80, scrEnd+4, 4+0x80+20, scrEnd+4+12, wd1793_is_disk_changed(currentDrive) ? DRGB(255,128,32) : DRGB(0x40,0x10,0x10));
+				Bar(
+					4+0x50,
+					scrEnd+4,
+					4+0x50+20,
+					scrEnd+4+12,
+					wd1793_is_disk_wprotected(currentDrive) ? ZHW_VIDEO_MAKERGB(255,128,32) : ZHW_VIDEO_MAKERGB(0x40,0x10,0x10)
+				);
+
+				Bar(
+					4+0x68,
+					scrEnd+4,
+					4+0x68+20,
+					scrEnd+4+12,
+					wd1793_is_disk_loaded(currentDrive) ? ZHW_VIDEO_MAKERGB(255,128,32) : ZHW_VIDEO_MAKERGB(0x40,0x10,0x10)
+				);
+
+				Bar(
+					4+0x80,
+					scrEnd+4,
+					4+0x80+20,
+					scrEnd+4+12,
+					wd1793_is_disk_changed(currentDrive) ? ZHW_VIDEO_MAKERGB(255,128,32) : ZHW_VIDEO_MAKERGB(0x40,0x10,0x10)
+				);
 
 				font.PrintString(5+0x50, scrEnd+5, "WP");
 				font.PrintString(5+0x68, scrEnd+5, "LD");
 				font.PrintString(5+0x80, scrEnd+5, "CH");
 
-				Bar(4+0xB0, scrEnd+4, 4+0xB0+72, scrEnd+4+12, C_Tape::IsActive() ? DRGB(255,128,32) : DRGB(0x40,0x10,0x10));
+				Bar(
+					4+0xB0,
+					scrEnd+4,
+					4+0xB0+72,
+					scrEnd+4+12,
+					C_Tape::IsActive() ? ZHW_VIDEO_MAKERGB(255,128,32) : ZHW_VIDEO_MAKERGB(0x40,0x10,0x10)
+				);
 
 				if (C_Tape::IsLoaded()) sprintf(buf, "TAPE %d%%", C_Tape::GetPosPerc());
 				else sprintf(buf, "TAPE NOP");
@@ -274,7 +300,7 @@ char* SelectFile(char *oldFile)
 
 				for (i = 0; i < gl; i++)
 				{
-					if (csr-pos == i) Bar(0, i*h, x+font.StrLenPx(fnames[i+pos])+x, i*h+h-1, DRGB(0x80, 0x20, 0x20));
+					if (csr-pos == i) Bar(0, i*h, x+font.StrLenPx(fnames[i+pos])+x, i*h+h-1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
 
 					if (folders[i+pos]) font.PrintString(0, i*h, "[]");
 					font.PrintString(x, i*h, fnames[i+pos]);
@@ -444,7 +470,7 @@ char* SelectFile(char *oldFile)
 			for (keyx = 0; ZHW_Event_Poll(&event);)
 			{
 				if (event.type == ZHW_EVENT_QUIT) exit(0);
-				if (event.type == ZHW_EVENT_KEYUP) keyx = event.key.keysym.sym;
+				if (event.type == ZHW_EVENT_KEYUP && ZHW_EVENT_OKKEY(window, event)) keyx = event.key.keysym.sym;
 			}
 		} while (key != keyx);
 
@@ -489,9 +515,9 @@ void FileDialog(void)
 
 	disableSound = true;
 
-	ZHW_Keyboard_EnableKeyRepeat();
+	ZHW_Keyboard_EnableKeyRepeat(window);
 	fname = SelectFile(oldFileName[currentDrive]);
-	ZHW_Keyboard_DisableKeyRepeat();
+	ZHW_Keyboard_DisableKeyRepeat(window);
 
 	if (fname != NULL) {
 		TryNLoadFile(fname, currentDrive);
@@ -528,7 +554,7 @@ int DbgAskHexNum(const char *message)
 	{
 		sprintf(buf, "%s: %s", message, buffer);
 
-		Bar(0, scrEnd, WIDTH-1, HEIGHT-1, DRGB(0x80, 0x20, 0x20));
+		Bar(0, scrEnd, WIDTH-1, HEIGHT-1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
 		fixed_font.PrintString(4, scrEnd+4, buf);
 		UpdateScreen();
 
@@ -537,7 +563,7 @@ int DbgAskHexNum(const char *message)
 			for (key = 0; ZHW_Event_Poll(&event);)
 			{
 				if (event.type == ZHW_EVENT_QUIT) exit(0);
-				if (event.type == ZHW_EVENT_KEYDOWN) key = event.key.keysym.sym;
+				if (event.type == ZHW_EVENT_KEYDOWN && ZHW_EVENT_OKKEY(window, event)) key = event.key.keysym.sym;
 			}
 		} while (key == 0);
 
@@ -751,40 +777,40 @@ void DebugIt(void)
 			for (key = 0; ZHW_Event_Poll(&event);)
 			{
 				if (event.type == ZHW_EVENT_QUIT) exit(0);
-				if (event.type == ZHW_EVENT_KEYDOWN) key = event.key.keysym.sym;
+				if (event.type == ZHW_EVENT_KEYDOWN && ZHW_EVENT_OKKEY(window, event)) key = event.key.keysym.sym;
 			}
 
 			DlgClearScreen();
-			Bar(0, scrEnd, WIDTH-1, HEIGHT-1, DRGB(0x80, 0x20, 0x20));
+			Bar(0, scrEnd, WIDTH-1, HEIGHT-1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
 
 			int lx = WIDTH/2;
 
 			for (int i = 0; i < mx; i++)
 			{
 				if ( (dispBuf[i].addr <= curAddr) && ((dispBuf[i].addr+dispBuf[i].size) > curAddr) ) {
-					Bar(0, i*h, lx, i*h+h-1, DRGB(0x80, 0x20, 0x20));
+					Bar(0, i*h, lx, i*h+h-1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
 				}
 
 				if (dispBuf[i].addr == userAddr)
 				{
-					Bar(0, i*h, lx, i*h, DRGB(0xFF, 0xCC, 0x00));
-					Bar(0, i*h+h-1, lx, i*h+h-1, DRGB(0xFF, 0xCC, 0x00));
-					Bar(0, i*h+1, 0, i*h+h-2, DRGB(0xFF, 0xCC, 0x00));
-					Bar(lx, i*h+1, lx, i*h+h-2, DRGB(0xFF, 0xCC, 0x00));
+					Bar(0, i*h, lx, i*h, ZHW_VIDEO_MAKERGB(0xFF, 0xCC, 0x00));
+					Bar(0, i*h+h-1, lx, i*h+h-1, ZHW_VIDEO_MAKERGB(0xFF, 0xCC, 0x00));
+					Bar(0, i*h+1, 0, i*h+h-2, ZHW_VIDEO_MAKERGB(0xFF, 0xCC, 0x00));
+					Bar(lx, i*h+1, lx, i*h+h-2, ZHW_VIDEO_MAKERGB(0xFF, 0xCC, 0x00));
 
 					userPos = i;
 				}
 
 				if (breakpoints[dispBuf[i].addr])
 				{
-					Bar(lx-5, i*h+h/2-2, lx-2, i*h+h/2+1, DRGB(0x00, 0x00, 0x00));
-					Bar(lx-4, i*h+h/2-1, lx-3, i*h+h/2, DRGB(0xFF, 0x00, 0x00));
+					Bar(lx-5, i*h+h/2-2, lx-2, i*h+h/2+1, ZHW_VIDEO_MAKERGB(0x00, 0x00, 0x00));
+					Bar(lx-4, i*h+h/2-1, lx-3, i*h+h/2, ZHW_VIDEO_MAKERGB(0xFF, 0x00, 0x00));
 				}
 
 				if (IsWatched(dispBuf[i].addr))
 				{
-					Bar(lx-10, i*h+h/2-2, lx-7, i*h+h/2+1, DRGB(0x00, 0x00, 0x00));
-					Bar(lx-9, i*h+h/2-1, lx-8, i*h+h/2, DRGB(0x00, 0x00, 0xFF));
+					Bar(lx-10, i*h+h/2-2, lx-7, i*h+h/2+1, ZHW_VIDEO_MAKERGB(0x00, 0x00, 0x00));
+					Bar(lx-9, i*h+h/2-1, lx-8, i*h+h/2, ZHW_VIDEO_MAKERGB(0x00, 0x00, 0xFF));
 				}
 
 				const char * lbl = (showLabels ? GetLabel(dispBuf[i].addr) : NULL);
@@ -986,7 +1012,7 @@ void DebugIt(void)
 		for (keyx = 0; ZHW_Event_Poll(&event);)
 		{
 			if (event.type == ZHW_EVENT_QUIT) exit(0);
-			if (event.type == ZHW_EVENT_KEYUP) keyx = event.key.keysym.sym;
+			if (event.type == ZHW_EVENT_KEYUP && ZHW_EVENT_OKKEY(window, event)) keyx = event.key.keysym.sym;
 		}
 	} while (key != keyx);
 }
@@ -994,10 +1020,10 @@ void DebugIt(void)
 void RunDebugger(void)
 {
 	disableSound = true;
-	ZHW_Keyboard_EnableKeyRepeat();
+	ZHW_Keyboard_EnableKeyRepeat(window);
 
 	DebugIt();
 
-	ZHW_Keyboard_DisableKeyRepeat();
+	ZHW_Keyboard_DisableKeyRepeat(window);
 	disableSound = false;
 }

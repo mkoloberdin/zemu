@@ -22,12 +22,6 @@
 	#endif
 #endif
 
-#ifdef _WIN32
-	#define SleepX() Sleep(1)
-#else
-	#define SleepX() sleep(0)
-#endif
-
 #ifndef _WIN32
 	#define stricmp(s1,s2) strcasecmp((s1),(s2))
 	#include <unistd.h>
@@ -44,22 +38,6 @@
 #ifndef zmax
 	#define zmax(a,b) ((a)>(b)?(a):(b))
 #endif
-
-#ifdef __APPLE__
-	#define DRGB(r,g,b) (((b)<<0x18)|((g)<<0x10)|((r)<<8))
-	#define GETB(c) ((c)>>0x18)
-	#define GETG(c) (((c)>>0x10)&0xFF)
-	#define GETR(c) (((c)>>8)&0xFF)
-#else
-	#define DRGB(r,g,b) (((r)<<0x10)|((g)<<8)|(b))
-	#define GETR(c) ((c)>>0x10)
-	#define GETG(c) (((c)>>8)&0xFF)
-	#define GETB(c) ((c)&0xFF)
-#endif
-
-#define GET_R GETR
-#define GET_G GETG
-#define GET_B GETB
 
 extern char hex[17];
 

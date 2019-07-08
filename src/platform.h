@@ -16,10 +16,6 @@
 
 #endif // _WIN32
 
-#ifdef ZEMU_BIG_ENDIAN
-	#define WORD_SWAP_BYTES(a) ((((a)&0xFF)<<8)|((a)>>8))
-#endif
-
 // #define AUTO_DEHRUST
 
 #endif

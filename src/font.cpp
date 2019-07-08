@@ -23,7 +23,7 @@ ZHW_Video_Surface *ExtractImage(uint8_t *data)
 			r = *(data++);
 			g = *(data++);
 			b = *(data++);
-			((int *)surf->pixels)[i*spitch + j] = DRGB(r, g, b);
+			((int *)surf->pixels)[i*spitch + j] = ZHW_VIDEO_MAKERGB(r, g, b);
 		}
 	}
 

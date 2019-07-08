@@ -9,4 +9,8 @@
     #define ZEMU_BIG_ENDIAN 1
 #endif
 
+#if (@USE_SDL1@)
+    #define USE_SDL1 1
+#endif
+
 #endif

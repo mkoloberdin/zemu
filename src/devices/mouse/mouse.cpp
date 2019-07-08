@@ -8,7 +8,7 @@ Z80EX_BYTE C_Mouse::wheelCnt;
 void C_Mouse::Init(void)
 {
 	AttachZ80InputHandler(InputByteCheckPort, OnInputByte);
-	AttachHwHandler(ZHW_EVENT_MOUSEBUTTONDOWN, OnHwMouseButtonDown);
+	AttachHwHandler(ZHW_EVENT_MOUSEWHEEL, OnHwMouseButtonDown);
 
 	portFBDF = 128;
 	portFFDF = 96;
@@ -53,13 +53,13 @@ bool C_Mouse::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval)
 
 bool C_Mouse::OnHwMouseButtonDown(ZHW_Event &event)
 {
-	if (event.button.button == ZHW_MOUSE_WHEELUP)
+	if (ZHW_EVENT_WHEELDIRECTION(event) == ZHW_MOUSE_WHEELUP)
 	{
 		wheelCnt++;
 		return true;
 	}
 	else
-	if (event.button.button == ZHW_MOUSE_WHEELDOWN)
+	if (ZHW_EVENT_WHEELDIRECTION(event) == ZHW_MOUSE_WHEELDOWN)
 	{
 		wheelCnt--;
 		return true;

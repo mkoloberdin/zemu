@@ -18,7 +18,7 @@ void OutputGimpImage(int x, int y, s_GimpImage *img)
 				r = *(o++);
 				g = *(o++);
 				b = *(o++);
-				((int *)screen->pixels)[(y+i)*PITCH + x+j] = DRGB(r, g, b);
+				((int *)screen->pixels)[(y+i)*PITCH + x+j] = ZHW_VIDEO_MAKERGB(r, g, b);
 			}
 		}
 	}
@@ -33,7 +33,7 @@ void OutputGimpImage(int x, int y, s_GimpImage *img)
 				g = *(o++);
 				b = *(o++);
 				a = *(o++);
-				if (a > 128) ((int *)screen->pixels)[(y+i)*PITCH + x+j] = DRGB(r, g, b);
+				if (a > 128) ((int *)screen->pixels)[(y+i)*PITCH + x+j] = ZHW_VIDEO_MAKERGB(r, g, b);
 			}
 		}
 	}

@@ -1,16 +1,13 @@
 #ifndef _PLATFORM_HARDWARE_H_INCLUDED_
 #define _PLATFORM_HARDWARE_H_INCLUDED_
 
-/*
- * https://wiki.libsdl.org/MigrationGuide
- */
-
+#include <ZEmuConfig.h>
 #include <SDL.h>
 #include <SDL_thread.h>
 #include <SDL_mutex.h>
 
 #ifdef _WIN32
-#include <SDL_syswm.h>
+    #include <SDL_syswm.h>
 #endif
 
 /*
@@ -21,11 +18,51 @@
 
 #define ZHW_VIDEO_LOCKSURFACE(surface) (!SDL_MUSTLOCK(surface) || SDL_LockSurface(surface) >= 0)
 #define ZHW_VIDEO_UNLOCKSURFACE(surface) if (SDL_MUSTLOCK(surface)) { SDL_UnlockSurface(surface); }
-#define ZHW_VIDEO_ISFULLSCREEN(videoSpec) ((videoSpec) & SDL_FULLSCREEN)
+
+#ifdef USE_SDL1
+    #define ZHW_EVENT_WHEELDIRECTION(event) (event.button.button)
+    #define ZHW_EVENT_OKKEY(window, event) (1)
+
+    #ifdef __APPLE__
+        #define ZHW_VIDEO_MAKERGB(r, g, b) (((b) << 0x18) | ((g) << 0x10) | ((r) << 8))
+        #define ZHW_VIDEO_GETR(c) (((c) >> 8) & 0xFF)
+        #define ZHW_VIDEO_GETG(c) (((c) >> 0x10) & 0xFF)
+        #define ZHW_VIDEO_GETB(c) ((c) >> 0x18)
+    #else
+        #define ZHW_VIDEO_MAKERGB(r, g, b) (((r) << 0x10) | ((g) << 8) | (b))
+        #define ZHW_VIDEO_GETR(c) ((c) >> 0x10)
+        #define ZHW_VIDEO_GETG(c) (((c) >> 8) & 0xFF)
+        #define ZHW_VIDEO_GETB(c) ((c) & 0xFF)
+    #endif
+#else
+    #define ZHW_EVENT_WHEELDIRECTION(event) (event.wheel.direction)
+    #define ZHW_EVENT_OKKEY(window, event) ((window)->isKeyRepeatEnabled || (event).key.repeat == 0)
+
+    #define ZHW_VIDEO_MAKERGB(r, g, b) (((r) << 0x10) | ((g) << 8) | (b))
+    #define ZHW_VIDEO_GETR(c) ((c) >> 0x10)
+    #define ZHW_VIDEO_GETG(c) (((c) >> 0x8) & 0xFF)
+    #define ZHW_VIDEO_GETB(c) ((c) & 0xFF)
+#endif
 
 /*
- * Structures
+ * Structures and types
  */
+
+#ifdef USE_SDL1
+    typedef struct {
+        int videoSpec;
+        bool useFlipSurface;
+        SDL_Surface *surface;
+    } ZHW_Window;
+#else
+    typedef struct {
+        SDL_Window *nativeWindow;
+        SDL_Renderer *renderer;
+        SDL_Texture *texture;
+        SDL_Surface *surface;
+        bool isKeyRepeatEnabled;
+    } ZHW_Window;
+#endif
 
 #define ZHW_Audio_Spec SDL_AudioSpec
 #define ZHW_Event SDL_Event
@@ -36,40 +73,46 @@
 #define ZHW_Video_Rect SDL_Rect
 #define ZHW_Video_Surface SDL_Surface
 
+#ifdef USE_SDL1
+    typedef int ZHW_Keyboard_KeyCode;
+#else
+    typedef SDL_Keycode ZHW_Keyboard_KeyCode;
+#endif
+
 #ifdef _WIN32
-#define ZHW_SysWm_Info SDL_SysWMinfo
+    #define ZHW_SysWm_Info SDL_SysWMinfo
 #endif
 
 /*
  * Functions
  */
 
-#define ZHW_Error_Get SDL_GetError
-#define ZHW_Mutex_CreateSemaphore SDL_CreateSemaphore
-#define ZHW_Thread_Create SDL_CreateThread
-#define ZHW_Mutex_SemPost SDL_SemPost
-#define ZHW_Mutex_SemValue SDL_SemValue
-#define ZHW_Mutex_SemWait SDL_SemWait
-#define ZHW_Thread_Wait SDL_WaitThread
-#define ZHW_Timer_GetTicks SDL_GetTicks
-#define ZHW_Timer_Delay SDL_Delay
-#define ZHW_Event_Poll SDL_PollEvent
-#define ZHW_Core_Quit SDL_Quit
-#define ZHW_Video_FreeSurface SDL_FreeSurface
-#define ZHW_Joystick_GetNum SDL_NumJoysticks
-#define ZHW_Joystick_EventState SDL_JoystickEventState
-#define ZHW_Joystick_Open SDL_JoystickOpen
-#define ZHW_Video_FillRect SDL_FillRect
-#define ZHW_Video_BlitSurface SDL_BlitSurface
 #define ZHW_Audio_Close SDL_CloseAudio
 #define ZHW_Audio_Lock SDL_LockAudio
 #define ZHW_Audio_Open SDL_OpenAudio
 #define ZHW_Audio_Pause SDL_PauseAudio
 #define ZHW_Audio_Unlock SDL_UnlockAudio
+#define ZHW_Core_Quit SDL_Quit
+#define ZHW_Error_Get SDL_GetError
+#define ZHW_Event_Poll SDL_PollEvent
+#define ZHW_Joystick_EventState SDL_JoystickEventState
+#define ZHW_Joystick_GetNum SDL_NumJoysticks
+#define ZHW_Joystick_Open SDL_JoystickOpen
 #define ZHW_Moyse_GetRelativeState SDL_GetRelativeMouseState
+#define ZHW_Mutex_CreateSemaphore SDL_CreateSemaphore
+#define ZHW_Mutex_SemPost SDL_SemPost
+#define ZHW_Mutex_SemValue SDL_SemValue
+#define ZHW_Mutex_SemWait SDL_SemWait
+#define ZHW_Thread_Create SDL_CreateThread
+#define ZHW_Thread_Wait SDL_WaitThread
+#define ZHW_Timer_Delay SDL_Delay
+#define ZHW_Timer_GetTicks SDL_GetTicks
+#define ZHW_Video_BlitSurface SDL_BlitSurface
+#define ZHW_Video_FillRect SDL_FillRect
+#define ZHW_Video_FreeSurface SDL_FreeSurface
 
 #ifdef _WIN32
-#define ZHW_SysWm_GetInfo SDL_GetWMInfo
+    #define ZHW_SysWm_GetInfo SDL_GetWMInfo // TODO -- SDL_GetWindowWMInfo(SDL_Window * window, SDL_SysWMinfo * info)
 #endif
 
 #define ZHW_Video_CreateSurface(width, height, baseSurface) SDL_CreateRGBSurface(SDL_SWSURFACE, \
@@ -85,29 +128,36 @@
 
 int ZHW_Core_Init(bool withAudio);
 int ZHW_Joystick_Init();
-int ZHW_Video_CreateSpec(bool isFullscreen, bool useFlipSurface);
-ZHW_Video_Surface* ZHW_Video_CreateRenderSurface(int width, int height, int videoSpec, const char *title);
-ZHW_Video_Surface* ZHW_Video_ToggleFullScreen(ZHW_Video_Surface *surface, int *videoSpec);
-void ZHW_Video_BlitRenderSurface(ZHW_Video_Surface *surface, bool useFlipSurface);
-void ZHW_Keyboard_EnableKeyRepeat();
-void ZHW_Keyboard_DisableKeyRepeat();
+ZHW_Window* ZHW_Video_CreateWindow(const char *title, int width, int height, bool isFullscreen, bool useFlipSurface);
+void ZHW_Video_ToggleFullScreen(ZHW_Window *window);
+void ZHW_Video_BlitWindow(ZHW_Window *window);
+void ZHW_Video_CloseWindow(ZHW_Window *window);
+void ZHW_Keyboard_EnableKeyRepeat(ZHW_Window *window);
+void ZHW_Keyboard_DisableKeyRepeat(ZHW_Window *window);
 
 /*
  * Constants
  */
 
-#define ZHW_EVENT_QUIT SDL_QUIT
-#define ZHW_EVENT_KEYUP SDL_KEYUP
 #define ZHW_EVENT_JOYAXISMOTION SDL_JOYAXISMOTION
 #define ZHW_EVENT_JOYBUTTONDOWN SDL_JOYBUTTONDOWN
 #define ZHW_EVENT_JOYBUTTONUP SDL_JOYBUTTONUP
 #define ZHW_EVENT_KEYDOWN SDL_KEYDOWN
-#define ZHW_EVENT_MOUSEBUTTONDOWN SDL_MOUSEBUTTONDOWN
-#define ZHW_MOUSE_WHEELUP SDL_BUTTON_WHEELUP
-#define ZHW_MOUSE_WHEELDOWN SDL_BUTTON_WHEELDOWN
+#define ZHW_EVENT_KEYUP SDL_KEYUP
+#define ZHW_EVENT_QUIT SDL_QUIT
 #define ZHW_MOUSE_LMASK SDL_BUTTON_LMASK
-#define ZHW_MOUSE_RMASK SDL_BUTTON_RMASK
 #define ZHW_MOUSE_MMASK SDL_BUTTON_MMASK
+#define ZHW_MOUSE_RMASK SDL_BUTTON_RMASK
+
+#ifdef USE_SDL1
+    #define ZHW_EVENT_MOUSEWHEEL SDL_MOUSEBUTTONDOWN
+    #define ZHW_MOUSE_WHEELDOWN SDL_BUTTON_WHEELDOWN
+    #define ZHW_MOUSE_WHEELUP SDL_BUTTON_WHEELUP
+#else
+    #define ZHW_EVENT_MOUSEWHEEL SDL_MOUSEWHEEL
+    #define ZHW_MOUSE_WHEELDOWN SDL_MOUSEWHEEL_NORMAL
+    #define ZHW_MOUSE_WHEELUP SDL_MOUSEWHEEL_FLIPPED
+#endif
 
 /*
  * Keyboard constants
@@ -176,17 +226,22 @@ void ZHW_Keyboard_DisableKeyRepeat();
 #define ZHW_KEY_m SDLK_m
 #define ZHW_KEY_RSHIFT SDLK_RSHIFT
 #define ZHW_KEY_LCTRL SDLK_LCTRL
-#define ZHW_KEY_LSUPER SDLK_LSUPER
 #define ZHW_KEY_LALT SDLK_LALT
 #define ZHW_KEY_SPACE SDLK_SPACE
 #define ZHW_KEY_RALT SDLK_RALT
-#define ZHW_KEY_RSUPER SDLK_RSUPER
 #define ZHW_KEY_RCTRL SDLK_RCTRL
 #define ZHW_KEY_UP SDLK_UP
 #define ZHW_KEY_DOWN SDLK_DOWN
 #define ZHW_KEY_LEFT SDLK_LEFT
 #define ZHW_KEY_RIGHT SDLK_RIGHT
 #define ZHW_KEY_NUMLOCK SDLK_NUMLOCK
-#define ZHW_KEY_LAST SDLK_LAST
+
+#ifdef USE_SDL1
+    #define ZHW_KEY_LSUPER SDLK_LSUPER
+    #define ZHW_KEY_RSUPER SDLK_RSUPER
+#else
+    #define ZHW_KEY_LSUPER SDLK_LGUI
+    #define ZHW_KEY_RSUPER SDLK_RGUI
+#endif
 
 #endif

@@ -16,14 +16,12 @@
 #include "params.h"
 #define SOUND_ENABLED (!params.maxSpeed && params.sound)
 
-struct s_Action
-{
+struct s_Action {
 	const char *name;
 	void (* action)(void);
 };
 
-struct s_Params
-{
+struct s_Params {
 	bool useFlipSurface;
 	bool fullscreen;
 	bool scale2x;
@@ -53,6 +51,7 @@ extern Z80EX_CONTEXT *cpu;
 extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;
 extern ZHW_Video_Surface *screen;
+extern ZHW_Window *window;
 extern int PITCH;
 extern bool drawFrame;
 extern int frames;

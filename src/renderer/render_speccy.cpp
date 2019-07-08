@@ -22,14 +22,14 @@ void RenderSpeccy(unsigned long nextClk)
 			{
 				cp = colors[cp];
 
-				int r = ((unsigned int)GETR(ci) + (unsigned int)GETR(cp)) >> 1;
-				int g = ((unsigned int)GETG(ci) + (unsigned int)GETG(cp)) >> 1;
-				int b = ((unsigned int)GETB(ci) + (unsigned int)GETB(cp)) >> 1;
+				int r = ((unsigned int)ZHW_VIDEO_GETR(ci) + (unsigned int)ZHW_VIDEO_GETR(cp)) >> 1;
+				int g = ((unsigned int)ZHW_VIDEO_GETG(ci) + (unsigned int)ZHW_VIDEO_GETG(cp)) >> 1;
+				int b = ((unsigned int)ZHW_VIDEO_GETB(ci) + (unsigned int)ZHW_VIDEO_GETB(cp)) >> 1;
 
-				ci = DRGB(r, g, b);
+				ci = ZHW_VIDEO_MAKERGB(r, g, b);
 			}
 
-			cp = DRGB(0, 0, 0);
+			cp = ZHW_VIDEO_MAKERGB(0, 0, 0);
 		}
 		else
 		{
@@ -51,13 +51,13 @@ void RenderSpeccy(unsigned long nextClk)
 
 		if (((zxLine >> 3) & 1) ^ (pos & 1))
 		{
-			ci = DRGB(0,0,0);
-			cp = DRGB(192,192,192);
+			ci = ZHW_VIDEO_MAKERGB(0,0,0);
+			cp = ZHW_VIDEO_MAKERGB(192,192,192);
 		}
 		else
 		{
-			ci = DRGB(64,64,64);
-			cp = DRGB(255,255,255);
+			ci = ZHW_VIDEO_MAKERGB(64,64,64);
+			cp = ZHW_VIDEO_MAKERGB(255,255,255);
 		}
 	}
 	else	// attributesHack == 2
