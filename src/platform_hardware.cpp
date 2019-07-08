@@ -135,12 +135,8 @@ int ZHW_Joystick_Init() {
         window->isKeyRepeatEnabled = false;
 
         SDL_ShowCursor(SDL_DISABLE);
-        SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL)
-
         return window;
     }
-
-    // SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN
 
     void ZHW_Video_ToggleFullScreen(ZHW_Window *window) {
         SDL_SetWindowFullscreen(
@@ -154,7 +150,7 @@ int ZHW_Joystick_Init() {
             return;
         }
 
-        SDL_UpdateTexture(window->texture, NULL, window->surface->pixels, window->texture->pitch);
+        SDL_UpdateTexture(window->texture, NULL, window->surface->pixels, window->surface->pitch);
 
         if (SDL_MUSTLOCK(window->surface)) {
             SDL_UnlockSurface(window->surface);

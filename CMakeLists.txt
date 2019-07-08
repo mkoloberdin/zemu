@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.7)
 project (ZEmu)
 
 if (NOT USE_SDL1)
+	set(USE_SDL1 0)
+
 	# CMake should be able to find SDL2 without this module, but I'm not sure what about Windows.
 	# So this module is used mainly for compatibility with old-way and for Windows.
 	list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake-sdl2)

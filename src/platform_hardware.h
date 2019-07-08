@@ -103,17 +103,12 @@
 #define ZHW_Mutex_SemPost SDL_SemPost
 #define ZHW_Mutex_SemValue SDL_SemValue
 #define ZHW_Mutex_SemWait SDL_SemWait
-#define ZHW_Thread_Create SDL_CreateThread
 #define ZHW_Thread_Wait SDL_WaitThread
 #define ZHW_Timer_Delay SDL_Delay
 #define ZHW_Timer_GetTicks SDL_GetTicks
 #define ZHW_Video_BlitSurface SDL_BlitSurface
 #define ZHW_Video_FillRect SDL_FillRect
 #define ZHW_Video_FreeSurface SDL_FreeSurface
-
-#ifdef _WIN32
-    #define ZHW_SysWm_GetInfo SDL_GetWMInfo // TODO -- SDL_GetWindowWMInfo(SDL_Window * window, SDL_SysWMinfo * info)
-#endif
 
 #define ZHW_Video_CreateSurface(width, height, baseSurface) SDL_CreateRGBSurface(SDL_SWSURFACE, \
     (width), \
@@ -124,7 +119,21 @@
     (baseSurface)->format->Bmask, \
     0)
 
-#define ZHW_Video_SetColorKey(surface, key) SDL_SetColorKey((surface), SDL_SRCCOLORKEY, (key))
+#ifdef USE_SDL1
+    #define ZHW_Thread_Create SDL_CreateThread
+    #define ZHW_Video_SetColorKey(surface, key) SDL_SetColorKey((surface), SDL_SRCCOLORKEY, (key))
+
+    #ifdef _WIN32
+        #define ZHW_SysWm_GetInfo(window, info) SDL_GetWMInfo(info)
+    #endif
+#else
+    #define ZHW_Thread_Create(fn, data) SDL_CreateThread((fn), NULL, (data))
+    #define ZHW_Video_SetColorKey(surface, key) SDL_SetColorKey((surface), 1, (key))
+
+    #ifdef _WIN32
+        #define ZHW_SysWm_GetInfo SDL_GetWindowWMInfo
+    #endif
+#endif
 
 int ZHW_Core_Init(bool withAudio);
 int ZHW_Joystick_Init();
@@ -234,14 +243,15 @@ void ZHW_Keyboard_DisableKeyRepeat(ZHW_Window *window);
 #define ZHW_KEY_DOWN SDLK_DOWN
 #define ZHW_KEY_LEFT SDLK_LEFT
 #define ZHW_KEY_RIGHT SDLK_RIGHT
-#define ZHW_KEY_NUMLOCK SDLK_NUMLOCK
 
 #ifdef USE_SDL1
     #define ZHW_KEY_LSUPER SDLK_LSUPER
     #define ZHW_KEY_RSUPER SDLK_RSUPER
+    #define ZHW_KEY_NUMLOCK SDLK_NUMLOCK
 #else
     #define ZHW_KEY_LSUPER SDLK_LGUI
     #define ZHW_KEY_RSUPER SDLK_RGUI
+    #define ZHW_KEY_NUMLOCK SDLK_NUMLOCKCLEAR
 #endif
 
 #endif
