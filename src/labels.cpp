@@ -51,8 +51,23 @@ void Labels_Load(const char *fname)
 			}
 
 			char *label = (buf + 8);
+            int len = strlen(label);
 
-			if (strlen(label) > 14)
+            if (len >= 6)
+            {
+                for (int i = 0; i <= len - 6; i++) {
+                    if (label[i]=='_' && label[i+1]=='_' &&
+                            label[i+2]=='b' && label[i+3]=='p' &&
+                            label[i+4]=='_' && label[i+5]=='_')
+                    {
+                        printf("Set breakpoint on 0x%04X bank %02X\n", addr, bank);
+                        breakpoints[addr] = true;
+                        break;
+                    }
+                }
+            }
+
+			if (len > 14)
 			{
 				label[11] = '.';
 				label[12] = '.';
@@ -66,17 +81,6 @@ void Labels_Load(const char *fname)
 			item.label.assign(label);
 
 			labels.push_back(item);
-
-			if (strlen(label) >= 6)
-			{
-				if (label[0]=='_' && label[1]=='_' &&
-						label[2]=='b' && label[3]=='p' &&
-						label[4]=='_' && label[5]=='_')
-				{
-					printf("Set breakpoint on 0x%04X bank %02X\n", addr, bank);
-					breakpoints[addr] = true;
-				}
-			}
 		}
 	}
 
