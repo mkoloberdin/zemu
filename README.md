@@ -55,6 +55,6 @@ The product has already been completed, but some refactoring is doing right now 
 | Critical bugfixes | Yes, but it depends... |
 | Pull requests | Accepted (after review) |
 | Issues | Monitored, but if you want to change something - submit a pull request |
-| Suport of existing platforms (Windows, Linux, macOS) | At the moment emulator is tested only on macOS, however it should work at other platforms (I hope) |
+| Suport of existing platforms (Windows, Linux, macOS) | At the moment emulator is tested only on macOS, however it should work on other platforms (I hope) |
 | Support of new platforms | At the moment only via pull requests, but who knows... |
 | Estimated end-of-life | Up to 2019 |
