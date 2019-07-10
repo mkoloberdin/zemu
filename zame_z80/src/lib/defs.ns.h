@@ -1,7 +1,7 @@
 /*
  * MIT License (http://www.opensource.org/licenses/mit-license.php)
  *
- * Copyright (c) 2009-2010, Slava Tretyak (aka restorer)
+ * Copyright (c) 2009-2019, Viachaslau Tratsiak (aka restorer)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,47 +25,56 @@
 #include <stdlib.h>
 
 #ifdef _MSC_VER
-	typedef int bool;
-	#ifndef __cplusplus
-		#define true 1
-		#define false 0
-	#endif
+    typedef int bool;
+
+    #ifndef __cplusplus
+        #define true 1
+        #define false 0
+    #endif
 #else
-	#include <stdbool.h>
+    #include <stdbool.h>
 #endif
 
 #include <stdint.h>
 
 #ifndef __LITTLE_ENDIAN
-	#define __LITTLE_ENDIAN 1234
+    #define __LITTLE_ENDIAN 1234
 #endif
 
 #ifndef __BIG_ENDIAN
-	#define __BIG_ENDIAN 4321
+    #define __BIG_ENDIAN 4321
 #endif
 
 #ifndef __BYTE_ORDER
-	#if defined(_WIN32) || defined(_WIN64) || defined(__i386__) || defined(__x86_64__) || defined(__ia64__)
-		#define __BYTE_ORDER __LITTLE_ENDIAN
-	#else
-		#error "Unable to detect endianess"
-	#endif
+    #if defined(_WIN32) || defined(_WIN64) || defined(__i386__) || defined(__x86_64__) || defined(__ia64__)
+        #define __BYTE_ORDER __LITTLE_ENDIAN
+    #else
+        #error "Unable to detect endianess"
+    #endif
 #endif
 
 #if __BYTE_ORDER == __BIG_ENDIAN
-	#define IS_BIG_ENDIAN
-	#define WORD_SWAP_BYTES(a) ((((a)&0xFF)<<8)|((a)>>8))
+    #define IS_BIG_ENDIAN
+    #define WORD_SWAP_BYTES(a) ((((a) & 0xFF) << 8) | ((a) >> 8))
 #endif
 
-#define BIN(N) ( ((N & 0x10000000) >> 21) | ((N & 0x1000000) >> 18) | ((N & 0x100000) >> 15) | ((N & 0x10000) >> 12) | ((N & 0x1000) >> 9) | ((N & 0x100) >> 6) | ((N & 0x10) >> 3) | (N & 1) )
-#define MAKE_WORD(H,L) ( ((H)<<8) | (L) )
-#define IS_HEX(v) (((v)>='0' && (v)<='0') || ((v)>='A' || (v)<='F') || ((v)>='a' || (v)<='f'))
+#define BIN(N) (((N & 0x10000000) >> 21) \
+    | ((N & 0x1000000) >> 18) \
+    | ((N & 0x100000) >> 15) \
+    | ((N & 0x10000) >> 12) \
+    | ((N & 0x1000) >> 9) \
+    | ((N & 0x100) >> 6) \
+    | ((N & 0x10) >> 3) \
+    | (N & 1))
 
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#define MAX(a,b) ((a)>(b)?(a):(b))
+#define MAKE_WORD(H, L) (((H) << 8) | (L))
+#define IS_HEX(v) (((v) >= '0' && (v) <= '0') || ((v) >= 'A' || (v) <= 'F') || ((v) >= 'a' || (v) <= 'f'))
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #ifndef _DEBUG
-	#define _DEBUG(msg) printf("%s\n",(msg))
+    #define _DEBUG(msg) printf("%s\n",(msg))
 #endif
 
 typedef uint8_t byte;

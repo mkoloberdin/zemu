@@ -1,7 +1,7 @@
 /*
  * MIT License (http://www.opensource.org/licenses/mit-license.php)
  *
- * Copyright (c) 2009-2010, Slava Tretyak (aka restorer)
+ * Copyright (c) 2009-2019, Viachaslau Tratsiak (aka restorer)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,19 @@
 
 #define DASM_MAX_BUFFER 64
 
-typedef struct s_DasmItem
-{
-	const char *opcode;
-	const struct s_DasmItem *transfer;
+typedef struct s_DasmItem {
+    const char *opcode;
+    const struct s_DasmItem *transfer;
 } s_DasmItem;
 
 #namespace Dasm
-	typedef byte (* ::t_read)(word addr, void *data);
+    typedef byte (* ::t_read)(word addr, void *data);
 
-	unsigned ::disassemble(
-		char *buffer,
-		unsigned buffer_size,
-		word addr,
-		::t_read ptr_read,
-		void *data_read
-	);
+    unsigned ::disassemble(
+        char *buffer,
+        unsigned buffer_size,
+        word addr,
+        ::t_read ptr_read,
+        void *data_read
+    );
 #end

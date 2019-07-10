@@ -1,7 +1,7 @@
 /*
  * MIT License (http://www.opensource.org/licenses/mit-license.php)
  *
- * Copyright (c) 2009-2010, Slava Tretyak (aka restorer)
+ * Copyright (c) 2009-2019, Viachaslau Tratsiak (aka restorer)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,120 +43,103 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 #include "op_pref_FD_CB.h"
 
 #namespace Dasm
-	unsigned ::disassemble(
-		char *buffer,
-		unsigned buffer_size,
-		word addr,
-		::t_read ptr_read,
-		void *data_read
-	) {
-		if (!buffer_size) {
-			return 0;
-		}
+    unsigned ::disassemble(
+        char *buffer,
+        unsigned buffer_size,
+        word addr,
+        ::t_read ptr_read,
+        void *data_read
+    ) {
+        if (!buffer_size) {
+            return 0;
+        }
 
-		const s_DasmItem *optable = ::optable_00;
-		const char *opcode_ptr;
-		unsigned size = 0;
-		int8_t offset = 0;
+        const s_DasmItem *optable = ::optable_00;
+        const char *opcode_ptr;
+        unsigned size = 0;
+        int8_t offset = 0;
 
-		for (;;)
-		{
-			const s_DasmItem *item = &optable[(unsigned)ptr_read(addr, data_read)];
-			addr++;
-			size++;
+        for (;;) {
+            const s_DasmItem *item = &optable[(unsigned)ptr_read(addr, data_read)];
+            addr++;
+            size++;
 
-			if (item->transfer)
-			{
-				if (item->opcode)
-				{
-					size--;
-					opcode_ptr = item->opcode;
-					break;
-				}
-				else
-				{
-					optable = item->transfer;
+            if (!item->transfer) {
+                opcode_ptr = item->opcode;
+                break;
+            }
 
-					if (optable == ::optable_DD_CB || optable == ::optable_FD_CB)
-					{
-						offset = ptr_read(addr, data_read);
-						addr++;
-						size++;
-					}
-				}
-			}
-			else
-			{
-				opcode_ptr = item->opcode;
-				break;
-			}
-		}
+            if (item->opcode) {
+                size--;
+                opcode_ptr = item->opcode;
+                break;
+            }
 
-		buffer_size--;		// reserve space for 0-terminator
+            optable = item->transfer;
 
-		while (*opcode_ptr && buffer_size)
-		{
-			if (*opcode_ptr == '[')
-			{
-				opcode_ptr++;
+            if (optable == ::optable_DD_CB || optable == ::optable_FD_CB) {
+                offset = ptr_read(addr, data_read);
+                addr++;
+                size++;
+            }
+        }
 
-				char tmp[0x100];
-				char *ptr = tmp;
+        buffer_size--; // reserve space for 0-terminator
 
-				while (*opcode_ptr && *opcode_ptr!=']') { *(ptr++) = *(opcode_ptr++); }
-				opcode_ptr++;
-				*ptr = 0;
+        while (*opcode_ptr && buffer_size) {
+            if (*opcode_ptr != '[') {
+                *(buffer++) = *(opcode_ptr++);
+                buffer_size--;
+                continue;
+            }
 
-				if (!strcmp(tmp, "N"))
-				{
-					sprintf(tmp, "#%02X", (unsigned)ptr_read(addr, data_read));
-					addr++;
-					size++;
-				}
-				else if (!strcmp(tmp, "NN"))
-				{
-					sprintf(tmp, "#%04X", (unsigned)ptr_read(addr, data_read) | (((unsigned)ptr_read(addr + 1, data_read)) << 8));
-					addr += 2;
-					size += 2;
-				}
-				else if (!strcmp(tmp, "O"))
-				{
-					sprintf(tmp, "#%04X", (word)((addr + 1) + (int8_t)ptr_read(addr, data_read)));
-					addr++;
-					size++;
-				}
-				else if (!strcmp(tmp, "SO"))
-				{
-					if (optable != ::optable_DD_CB && optable != ::optable_FD_CB)
-					{
-						offset = ptr_read(addr, data_read);
-						addr++;
-						size++;
-					}
+            opcode_ptr++;
 
-					if (offset < 0) {
-						sprintf(tmp, "-#%02X", (unsigned)(- offset));
-					} else {
-						sprintf(tmp, "+#%02X", offset);
-					}
-				}
+            char tmp[0x100];
+            char *ptr = tmp;
 
-				ptr = tmp;
+            while (*opcode_ptr && *opcode_ptr!=']') {
+                *(ptr++) = *(opcode_ptr++);
+            }
 
-				while (*ptr && buffer_size)
-				{
-					*(buffer++) = *(ptr++);
-					buffer_size--;
-				}
-			}
-			else
-			{
-				*(buffer++) = *(opcode_ptr++);
-				buffer_size--;
-			}
-		}
+            opcode_ptr++;
+            *ptr = 0;
 
-		*buffer = 0;
-		return size;
-	}
+            if (!strcmp(tmp, "N")) {
+                sprintf(tmp, "#%02X", (unsigned)ptr_read(addr, data_read));
+                addr++;
+                size++;
+            } else if (!strcmp(tmp, "NN")) {
+                sprintf(tmp, "#%04X", (unsigned)ptr_read(addr, data_read) | (((unsigned)ptr_read(addr + 1, data_read)) << 8));
+                addr += 2;
+                size += 2;
+            } else if (!strcmp(tmp, "O")) {
+                sprintf(tmp, "#%04X", (word)((addr + 1) + (int8_t)ptr_read(addr, data_read)));
+                addr++;
+                size++;
+            } else if (!strcmp(tmp, "SO")) {
+                if (optable != ::optable_DD_CB && optable != ::optable_FD_CB) {
+                    offset = ptr_read(addr, data_read);
+                    addr++;
+                    size++;
+                }
+
+                if (offset < 0) {
+                    sprintf(tmp, "-#%02X", (unsigned)(- offset));
+                } else {
+                    sprintf(tmp, "+#%02X", offset);
+                }
+            }
+
+            ptr = tmp;
+
+            while (*ptr && buffer_size) {
+                *(buffer++) = *(ptr++);
+                buffer_size--;
+            }
+        }
+
+        *buffer = 0;
+        return size;
+    }
 #end

@@ -1,8 +1,32 @@
 # zEmu
 
-ZX Spectrum Emulator by restorer (Sinus) &amp; others with modifications by mkoloberdin
+ZX Spectrum Emulator by:
 
-# Идея эмулятора (из оригинального readme)
+- restorer (ex Sinus) - emulator idea and most of code
+- mastermind (mkoloberdin) - a lot of work to speedup emulation, migration to CMake, additional work on emulator
+- boo_boo - initial cpu core (z80ex, not used anymore), extracting WD1793 and YM/AY emulation from Unreal by SMT, kempston joystick support
+- breeze - graphics and icons, work on compilation under FreeBSD
+- Doctor Max - mouse scroll support, initial work for UTF-8 support
+- and others
+
+Special thanks to SMT for open sourcing the Unreal spectrum emulator.
+
+# Compilation under macOS and Linux
+
+At first install dependencies: `cmake`, `gcc`, `ruby` and `sdl2`. Than:
+
+```
+cd <into emulator directory>
+./build.sh
+```
+
+Binary will be in the `build` folder.
+
+# Compilation under Windows
+
+Sorry, that was too long ago. All I remember is that you should use MinGW.
+
+# Emulator idea (in russian)
 
 У каждого продукта в целом и у эмуляторов в частности обязательно есть какая-нибудь идея.
 
@@ -20,20 +44,17 @@ ZX Spectrum Emulator by restorer (Sinus) &amp; others with modifications by mkol
 
 Спасибо за внимание.
 
-# Поддержка продукта (текст от restorer)
+# Product support
 
-Продукт завершён, и цикл его поддержки тоже близится к завершению.
+The product has already been completed, but some refactoring is doing right now (as of 2019), and who knows...
 
-На мой взгляд этот эмулятор исчерпал себя в плане архитектуры, и нуждается то ли в серьёзном рефакторинге,
-то ли надо переписать всё с нуля (и такие идеи есть).
-
-| Фича | Статус поддержки |
+| Feature | Support status |
 |---|---|
-| Новые фичи | Нет |
-| Некритические багфиксы | Нет |
-| Критические багфиксы | Да, если не надо будет сильно закапываться |
-| Пулл-реквесты | Принимаются (после ревью) |
-| Issues | Мониторятся, но если что-то хотете добавить, то присылайте пулл-реквест |
-| Поддержка старых платформ (Windows, Linux, macOS) | На данный момент автор (restorer) в слабом режиме поддерживает только macOS |
-| Поддержка новых платформ | Либо через сторонние пулл-реквесты, либо если у автора будет новая платформа, которую захочется поддержать |
-| Приблизительное завершение времени жизни проекта | До 2018 |
+| New features | No |
+| Non-critical bugfixes | Maybe |
+| Critical bugfixes | Yes, but it depends... |
+| Pull requests | Accepted (after review) |
+| Issues | Monitored, but if you want to change something - submit a pull request |
+| Suport of existing platforms (Windows, Linux, macOS) | At the moment emulator is tested only on macOS, however it should work at other platforms (I hope) |
+| Support of new platforms | At the moment only via pull requests, but who knows... |
+| Estimated end-of-life | Up to 2019 |
