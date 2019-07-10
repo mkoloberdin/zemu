@@ -13,7 +13,7 @@ Special thanks to SMT for open sourcing the Unreal spectrum emulator.
 
 # Compilation under macOS and Linux
 
-At first install dependencies: `cmake`, `gcc`, `ruby` and `sdl2`. Than:
+At first install dependencies: `cmake`, `ruby` and `sdl2`. Obviously, you should have a C++ compiler - `gcc` for Linux (probably other compilers should work also, but not tested), `XCode` for macOS (do not forget to do `xcode-select --install`). Than do:
 
 ```
 cd <into emulator directory>
