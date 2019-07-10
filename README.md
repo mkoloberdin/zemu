@@ -7,6 +7,7 @@ ZX Spectrum Emulator by:
 - boo_boo - initial cpu core (z80ex, not used anymore), extracting WD1793 and YM/AY emulation from Unreal by SMT, kempston joystick support
 - breeze - graphics and icons, work on compilation under FreeBSD
 - Doctor Max - mouse scroll support, initial work for UTF-8 support
+- Eltaron - winmobile version (not sure what is with it now)
 - and others
 
 Special thanks to SMT for open sourcing the Unreal spectrum emulator.
