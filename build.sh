@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 
 if [ "$1" = "--clean" ] || [ "$2" = "--clean" ] ; then
-	[ -e build ] && rm -r build
+    [ -e build ] && rm -r build
 fi
 
 CMAKE_PARAMS=""
