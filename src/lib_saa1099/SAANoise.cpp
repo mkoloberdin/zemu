@@ -1,3 +1,8 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
+//////////////////////////////////////////////////////////////////////
+//
 // Part of SAASound copyright 1998-2004 Dave Hooper <dave@rebuzz.org>
 //
 // SAANoise.cpp: implementation of the CSAANoise class.
@@ -88,7 +93,7 @@ void CSAANoise::Trigger(void)
 	// Trigger only does anything useful when we're
 	// clocking from the frequency generator - i.e
 	// if bUseFreqGen = true (i.e. SourceMode = 3)
-	
+
 	// So if we're clocking from the noise generator
 	// clock (ie, SourceMode = 0, 1 or 2) then do nothing
 
@@ -107,7 +112,7 @@ unsigned short CSAANoise::Tick(void)
 	// Tick only does anything useful when we're
 	// clocking from the noise generator clock
 	// (ie, SourceMode = 0, 1 or 2)
-	
+
 	// So, if SourceMode = 3 (ie, we're clocking from a
 	// frequency generator ==> bUseFreqGen = true)
 	// then do nothing

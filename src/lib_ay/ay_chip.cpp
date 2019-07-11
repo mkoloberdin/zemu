@@ -1,3 +1,6 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "ay_chip.h"
 
 const unsigned MULT_C_1 = 14; // fixed point precision for 'system tick -> ay tick'

@@ -1,3 +1,8 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
+//////////////////////////////////////////////////////////////////////
+//
 // Part of SAASound copyright 1998-2004 Dave Hooper <dave@rebuzz.org>
 //
 // SAAEnv.cpp: implementation of the CSAAEnv class.
@@ -72,7 +77,7 @@ void CSAAEnv::ExternalClock(void)
 
 void CSAAEnv::SetEnvControl(int nData)
 {
-	
+
 	// process immediate stuff first:
 	m_nResolution = ((nData & 0x10)==0x10) ? 2 : 1;
 	m_bEnabled = ((nData & 0x80)==0x80);
@@ -112,14 +117,14 @@ void CSAAEnv::SetEnvControl(int nData)
 		// since the 'next resolution' changes arrive unbuffered, we
 		// may need to change the current level because of this:
 		SetLevels();
-	
+
 		// store current new data, and set the newdata flag:
 		m_bNewData = true;
 		m_nNextData = nData;
 	}
-			
+
 }
-	
+
 unsigned short CSAAEnv::LeftLevel(void) const
 {
 	return m_nLeftLevel;
@@ -148,17 +153,17 @@ inline void CSAAEnv::Tick(void)
 
 	if (m_bEnvelopeEnded)
 	{
-		// do nothing 
+		// do nothing
 		// (specifically, don't change the values of m_bEnvelopeEnded,
 		//  m_nPhase and m_nPhasePosition, as these will still be needed
 		//  by SetLevels() should it be called again)
-		
+
 		return;
 	}
 
 
 	// else : !m_bEnvelopeEnded
-	// Continue playing the same envelope ... 
+	// Continue playing the same envelope ...
 	// increments the phaseposition within an envelope.
 	// also handles looping and resolution appropriately.
 	// Changes the level of the envelope accordingly
@@ -175,7 +180,7 @@ inline void CSAAEnv::Tick(void)
 	{
 		m_nPhase++;
 		m_nPhasePosition-=16;
-			
+
 		// if we should loop, then do so - and we've reached position (4)
 		// otherwise, if we shouldn't loop,
 		// then we've reached position (3) and so we say that
@@ -204,7 +209,7 @@ inline void CSAAEnv::Tick(void)
 		}
 		else // (m_nPhase < m_nNumberOfPhases)
 		{
-			// not at position (3) or (4) ... 
+			// not at position (3) or (4) ...
 			// (i.e., we're in the middle of an envelope with
 			//  more than one phase. Specifically, we're in
 			//  the middle of envelope 4 or 5 - the
@@ -227,7 +232,7 @@ inline void CSAAEnv::Tick(void)
 		// the output 'level' of this envelope controller
 	}
 
-	
+
 	// if we have new (buffered) data, now is the time to act on it
 	if (m_bNewData && m_bOkForNewData)
 	{
@@ -250,7 +255,7 @@ inline void CSAAEnv::Tick(void)
 
 inline void CSAAEnv::SetLevels(void)
 {
-	// sets m_nLeftLevel 
+	// sets m_nLeftLevel
 	// Also sets m_nRightLevel in terms of m_nLeftLevel
 	//								   and m_bInvertRightChannel
 
@@ -307,7 +312,7 @@ inline void CSAAEnv::SetNewEnvData(int nData)
 		m_nPhasePosition = 0;
 		m_bOkForNewData = true;
 	}
-	
+
 	SetLevels();
 
 }

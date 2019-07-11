@@ -1,8 +1,12 @@
 #ifndef _SND_RENDERER_H_INCLUDED_
 #define _SND_RENDERER_H_INCLUDED_
 
+//////////////////////////////////////////////////////////////////////
+//
 // Based on sound resampling core for Unreal Speccy project
 // created under public domain license by SMT, jan.2006
+//
+//////////////////////////////////////////////////////////////////////
 
 #ifdef _MSC_VER
     typedef unsigned __int64 uint64_t;

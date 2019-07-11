@@ -1,5 +1,12 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
+//////////////////////////////////////////////////////////////////////
+//
 // Based on sound resampling core for Unreal Speccy project
 // created under public domain license by SMT, jan.2006
+//
+//////////////////////////////////////////////////////////////////////
 
 #include "snd_renderer.h"
 #include "../zemu.h"
