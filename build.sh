@@ -10,11 +10,11 @@ CMAKE_PARAMS=""
 USE_SDL1="no"
 
 if [ "$1" = "--sdl1" ] || [ "$2" = "--sdl1" ] ; then
-    CMAKE_PARAMS="-D USE_SDL1=1"
+    CMAKE_PARAMS="-D USE_SDL1=On"
     USE_SDL1="yes"
 fi
 
-cmake $CMAKE_PARAMS -D CMAKE_FIND_FRAMEWORK=LAST -B build . && cmake --build build
+cmake $CMAKE_PARAMS -D CMAKE_FIND_FRAMEWORK=LAST -D CMAKE_EXPORT_COMPILE_COMMANDS=On -B build . && cmake --build build
 [ "$?" != "0" ] && exit "$?"
 
 if [ "$USE_SDL1" = "yes" ] && [ "$(uname -s)" = "Darwin" ] && [ -e build/zemu ] ; then
