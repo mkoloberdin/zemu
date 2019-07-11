@@ -7,14 +7,6 @@
 #define WORD4(a, b, c, d) (((unsigned)(a)) + ((unsigned)(b)) * 0x100L + ((unsigned)(c)) * 0x10000L + ((unsigned)(d)) * 0x1000000L)
 #define WORD2(a, b) (((unsigned)(a)) + ((unsigned)(b)) * 0x100)
 
-#ifndef zmax
-    #define zmax(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef zmin
-    #define zmin(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 struct s_SecHdr {
     uint8_t c;
     uint8_t s;

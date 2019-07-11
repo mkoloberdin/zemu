@@ -2,6 +2,7 @@
 #include <string.h>
 #include "wd1793_trkcache.h"
 #include "wd1793_fdd.h"
+#include <algorithm>
 
 C_TrkCache::C_TrkCache() {
     clear();
@@ -97,7 +98,7 @@ void C_TrkCache::seek(C_Fdd* d, unsigned cyl, unsigned side, SEEK_MODE fs) {
             continue;
         }
 
-        unsigned end = zmin(trklen - 8, i + 8 + 43); // 43-DD, 30-SD
+        unsigned end = std::min(trklen - 8, i + 8 + 43); // 43-DD, 30-SD
 
         for (unsigned j = i + 8; j < end; j++) {
             if (trkd[j] != 0xA1 || !test_i(j) || test_i(j + 1)) {

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 #include "../defines.h"
 #include "wd1793_fdd.h"
 
@@ -137,8 +138,8 @@ int C_Fdd::read_td0() {
             break;
         }
 
-        max_cyl = zmax(max_cyl, td0_src[1]);
-        max_head = zmax(max_head, td0_src[2]);
+        max_cyl = std::max(max_cyl, td0_src[1]);
+        max_head = std::max(max_head, td0_src[2]);
         td0_src += 4;
 
         for (; s; s--) {

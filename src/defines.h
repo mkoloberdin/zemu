@@ -31,14 +31,6 @@
     #define M_PI 3.1415926535897932
 #endif
 
-#ifndef zmin
-    #define zmin(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-#ifndef zmax
-    #define zmax(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
 extern char hex[17];
 
 double sqq(double n);
