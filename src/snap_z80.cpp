@@ -122,10 +122,10 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
         return false;
     }
 
-    z80ex_set_reg(cpu, regAF, MAKEWORD(hdr.A, hdr.F));
-    z80ex_set_reg(cpu, regBC, MAKEWORD(hdr.B, hdr.C));
-    z80ex_set_reg(cpu, regHL, MAKEWORD(hdr.H, hdr.L));
-    z80ex_set_reg(cpu, regSP, MAKEWORD(hdr.SPh, hdr.SPl));
+    z80ex_set_reg(cpu, regAF, ZEMU_MAKEWORD(hdr.A, hdr.F));
+    z80ex_set_reg(cpu, regBC, ZEMU_MAKEWORD(hdr.B, hdr.C));
+    z80ex_set_reg(cpu, regHL, ZEMU_MAKEWORD(hdr.H, hdr.L));
+    z80ex_set_reg(cpu, regSP, ZEMU_MAKEWORD(hdr.SPh, hdr.SPl));
     z80ex_set_reg(cpu, regI, hdr.I);
 
     if (hdr.R7_n_misc == 255) {
@@ -136,13 +136,13 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     border_color = (hdr.R7_n_misc >> 1) & 0x07;
     is_compressed = hdr.R7_n_misc & 0x20;
 
-    z80ex_set_reg(cpu, regDE, MAKEWORD(hdr.D, hdr.E));
-    z80ex_set_reg(cpu, regBC_, MAKEWORD(hdr.B_, hdr.C_));
-    z80ex_set_reg(cpu, regDE_, MAKEWORD(hdr.D_, hdr.E_));
-    z80ex_set_reg(cpu, regHL_, MAKEWORD(hdr.H_, hdr.L_));
-    z80ex_set_reg(cpu, regAF_, MAKEWORD(hdr.A_, hdr.F_));
-    z80ex_set_reg(cpu, regIY, MAKEWORD(hdr.IYh, hdr.IYl));
-    z80ex_set_reg(cpu, regIX, MAKEWORD(hdr.IXh, hdr.IXl));
+    z80ex_set_reg(cpu, regDE, ZEMU_MAKEWORD(hdr.D, hdr.E));
+    z80ex_set_reg(cpu, regBC_, ZEMU_MAKEWORD(hdr.B_, hdr.C_));
+    z80ex_set_reg(cpu, regDE_, ZEMU_MAKEWORD(hdr.D_, hdr.E_));
+    z80ex_set_reg(cpu, regHL_, ZEMU_MAKEWORD(hdr.H_, hdr.L_));
+    z80ex_set_reg(cpu, regAF_, ZEMU_MAKEWORD(hdr.A_, hdr.F_));
+    z80ex_set_reg(cpu, regIY, ZEMU_MAKEWORD(hdr.IYh, hdr.IYl));
+    z80ex_set_reg(cpu, regIX, ZEMU_MAKEWORD(hdr.IXh, hdr.IXl));
     z80ex_set_reg(cpu, regIFF1, hdr.IFF1 ? 1 : 0);
     z80ex_set_reg(cpu, regIFF2, hdr.IFF2 ? 1 : 0);
     z80ex_set_reg(cpu, regIM, hdr.IM_n_misc & 0x03);
@@ -157,7 +157,7 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
         }
 
         mmgr.OnOutputByte(0x7ffd, 0x30); // set 48k mode
-        z80ex_set_reg(cpu, regPC, MAKEWORD(hdr.PCh, hdr.PCl));
+        z80ex_set_reg(cpu, regPC, ZEMU_MAKEWORD(hdr.PCh, hdr.PCl));
     } else { // Z80 v2 or v3
         if (fl.Eof()) {
             fl.Close();
@@ -188,7 +188,7 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
                 throw C_E(E_SnapZ80Error);
             }
 
-            z80ex_set_reg(cpu, regPC, MAKEWORD(header_add[1], header_add[0]));
+            z80ex_set_reg(cpu, regPC, ZEMU_MAKEWORD(header_add[1], header_add[0]));
             mode = header_add[2];
 
             if (mode == 10) {
