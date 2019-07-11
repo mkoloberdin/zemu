@@ -25,7 +25,7 @@ CSAAAmp::CSAAAmp(CSAAFreq * const ToneGenerator, const CSAANoise * const NoiseGe
 m_pcConnectedToneGenerator(ToneGenerator),
 m_pcConnectedNoiseGenerator(NoiseGenerator),
 m_pcConnectedEnvGenerator(EnvGenerator),
-m_bUseEnvelope(EnvGenerator != NULL)
+m_bUseEnvelope(EnvGenerator != nullptr)
 {
 	leftleveltimes32=leftleveltimes16=leftlevela0x0e=leftlevela0x0etimes2=0;
 	rightleveltimes32=rightleveltimes16=rightlevela0x0e=rightlevela0x0etimes2=0;
@@ -60,12 +60,12 @@ void CSAAAmp::SetAmpLevel(BYTE level_byte)
 		leftlevela0x0etimes2 = leftlevela0x0e<<1;
 		leftleveltimes16 = (level_byte&0x0f) << 4;
 		leftleveltimes32 = leftleveltimes16 << 1;
-	
+
 		rightlevela0x0e = (level_byte>>4) & 0x0e;
 		rightlevela0x0etimes2 = rightlevela0x0e<<1;
 		rightleveltimes16 = level_byte & 0xf0;
 		rightleveltimes32 = rightleveltimes16 << 1;
-	
+
 		monoleveltimes16 = leftleveltimes16+rightleveltimes16;
 		monoleveltimes32 = leftleveltimes32+rightleveltimes32;
 	}
@@ -84,7 +84,7 @@ unsigned short CSAAAmp::LeftOutput(void) const
 
 	if (m_bUseEnvelope && m_pcConnectedEnvGenerator->IsActive())
 	{
-//		Implement 
+//		Implement
 //		return m_pcConnectedEnvGenerator->LeftLevel()*leftlevela0x0e*(2-m_nOutputIntermediate);
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -100,7 +100,7 @@ unsigned short CSAAAmp::LeftOutput(void) const
 	}
 	else
 	{
-//		Implement 
+//		Implement
 //		return leftleveltimes16 * m_nOutputIntermediate;
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -115,7 +115,7 @@ unsigned short CSAAAmp::LeftOutput(void) const
 		}
 	}
 }
-	 
+
 
 unsigned short CSAAAmp::RightOutput(void) const
 {
@@ -126,7 +126,7 @@ unsigned short CSAAAmp::RightOutput(void) const
 
 	if (m_bUseEnvelope && m_pcConnectedEnvGenerator->IsActive())
 	{
-//		Implement 
+//		Implement
 //		return m_pcConnectedEnvGenerator->RightLevel()*rightlevela0x0e*(2-m_nOutputIntermediate);
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -142,7 +142,7 @@ unsigned short CSAAAmp::RightOutput(void) const
 	}
 	else
 	{
-//		Implement 
+//		Implement
 //		return rightleveltimes16 * m_nOutputIntermediate;
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -167,7 +167,7 @@ unsigned short CSAAAmp::MonoOutput(void) const
 
 	if (m_bUseEnvelope && m_pcConnectedEnvGenerator->IsActive())
 	{
-//		Implement 
+//		Implement
 //		return ( (m_pcConnectedEnvGenerator->RightLevel()*rightlevela0x0e) + (m_pcConnectedEnvGenerator->LeftLevel()*leftlevela0x0e) ) * (2.0f-m_nOutputIntermediate);
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -183,7 +183,7 @@ unsigned short CSAAAmp::MonoOutput(void) const
 	}
 	else
 	{
-//		Implement 
+//		Implement
 //		return monoleveltimes16 * m_nOutputIntermediate;
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -271,7 +271,7 @@ unsigned short CSAAAmp::TickAndOutputMono(void)
 {
 	// first, do the Tick:
 	Tick();
-	
+
 	// now calculate the returned amplitude for this sample:
 	////////////////////////////////////////////////////////
 
@@ -282,7 +282,7 @@ unsigned short CSAAAmp::TickAndOutputMono(void)
 
 	if (m_bUseEnvelope && m_pcConnectedEnvGenerator->IsActive())
 	{
-//		Implement 
+//		Implement
 //		return ( (m_pcConnectedEnvGenerator->RightLevel()*rightlevela0x0e) + (m_pcConnectedEnvGenerator->LeftLevel()*leftlevela0x0e) ) * (2.0f-m_nOutputIntermediate);
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -298,7 +298,7 @@ unsigned short CSAAAmp::TickAndOutputMono(void)
 	}
 	else
 	{
-//		Implement 
+//		Implement
 //		return monoleveltimes16 * m_nOutputIntermediate;
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -321,10 +321,10 @@ stereolevel CSAAAmp::TickAndOutputStereo(void)
 {
 	static stereolevel retval;
 	static const stereolevel zeroval = { {0,0} };
-	
+
 	// first, do the Tick:
 	Tick();
-	
+
 	// now calculate the returned amplitude for this sample:
 	////////////////////////////////////////////////////////
 
@@ -335,7 +335,7 @@ stereolevel CSAAAmp::TickAndOutputStereo(void)
 
 	if (m_bUseEnvelope && m_pcConnectedEnvGenerator->IsActive())
 	{
-//		Implement 
+//		Implement
 //		return ( (m_pcConnectedEnvGenerator->RightLevel()*rightlevela0x0e) + (m_pcConnectedEnvGenerator->LeftLevel()*leftlevela0x0e) ) * (2.0f-m_nOutputIntermediate);
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)
@@ -355,7 +355,7 @@ stereolevel CSAAAmp::TickAndOutputStereo(void)
 	}
 	else
 	{
-//		Implement 
+//		Implement
 //		return monoleveltimes16 * m_nOutputIntermediate;
 //		as a simple switch statement:
 		switch (m_nOutputIntermediate)

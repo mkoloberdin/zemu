@@ -76,10 +76,10 @@ int (* DoCpuInt)(Z80EX_CONTEXT* cpu) = z80ex_int;
 ZHW_Video_Surface* renderSurf;
 int renderPitch;
 unsigned long prevRenderClk;
-void (* renderPtr)(unsigned long) = NULL;
+void (* renderPtr)(unsigned long) = nullptr;
 
 #if defined(__APPLE__)
-    ZHW_Thread *upadteScreenThread = NULL;
+    ZHW_Thread *upadteScreenThread = nullptr;
     ZHW_Mutex_Sem *updateScreenThreadSem;
     volatile bool updateScreenThreadActive = true;
 
@@ -253,7 +253,7 @@ C_Device* devs[] = {
     &dev_covox,
     &dev_kempston,
     &dev_gsound,
-    NULL
+    nullptr
 };
 
 int colors_base[0x10] = {
@@ -338,7 +338,7 @@ void StrToLower(char* str) {
     }
 }
 
-void LoadNormalFile(const char* fname, int drive, const char* arcName = NULL) {
+void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr) {
     if (C_Tape::IsTapeFormat(fname)) {
         C_Tape::Insert(fname);
     } else if (!stricmp(C_DirWork::ExtractExt(fname), "z80")) {
@@ -632,7 +632,7 @@ s_Action cfgActions[] = {
     {"flash_color",     Action_FlashColor},
     {"pause",           Action_Pause},
     {"joy_on_keyb",     Action_JoyOnKeyb},
-    {"",                NULL}
+    {"",                nullptr}
 };
 
 //--------------------------------------------------------------------------------------------------------------
@@ -711,10 +711,10 @@ void InitDevMapRead(ptrOnReadByteFunc* map) {
 
     for (unsigned m1_state = 0; m1_state < 2; m1_state++) {
         for (unsigned addr = 0; addr < 0x10000; addr++) {
-            map[addr + (m1_state ? 0x10000 : 0)] = NULL;
+            map[addr + (m1_state ? 0x10000 : 0)] = nullptr;
 
             for (int i = 0; i < cnt_z80read; i++) {
-                if ((func = hnd_z80read[i].check(addr, m1_state)) != NULL) {
+                if ((func = hnd_z80read[i].check(addr, m1_state)) != nullptr) {
                     map[addr + (m1_state ? 0x10000 : 0)] = func;
                     break;
                 }
@@ -725,7 +725,7 @@ void InitDevMapRead(ptrOnReadByteFunc* map) {
 
 void InitDevMapWrite(bool (** map)(Z80EX_WORD, Z80EX_BYTE)) {
     for (unsigned addr = 0; addr < 0x10000; addr++) {
-        map[addr] = NULL;
+        map[addr] = nullptr;
 
         for (int i = 0; i < cnt_z80write; i++) {
             if (hnd_z80write[i].check(addr)) {
@@ -738,7 +738,7 @@ void InitDevMapWrite(bool (** map)(Z80EX_WORD, Z80EX_BYTE)) {
 
 void InitDevMapInput(bool (** map)(Z80EX_WORD, Z80EX_BYTE&)) {
     for (unsigned port = 0; port < 0x10000; port++) {
-        map[port] = NULL;
+        map[port] = nullptr;
 
         for (int i = 0; i < cnt_z80input; i++) {
             if (hnd_z80input[i].check(port)) {
@@ -751,7 +751,7 @@ void InitDevMapInput(bool (** map)(Z80EX_WORD, Z80EX_BYTE&)) {
 
 void InitDevMapOutput(bool (** map)(Z80EX_WORD, Z80EX_BYTE)) {
     for (unsigned port = 0; port < 0x10000; port++) {
-        map[port] = NULL;
+        map[port] = nullptr;
 
         for (int i = 0; i < cnt_z80output; i++) {
             if (hnd_z80output[i].check(port)) {
@@ -787,13 +787,13 @@ void InitDevMaps(void) {
 void InitSurfaces(void) {
     scrSurf[0] = ZHW_Video_CreateSurface(WIDTH, HEIGHT, screen);
 
-    if (scrSurf[0] == NULL) {
+    if (scrSurf[0] == nullptr) {
         StrikeError("Unable to create primary surface: %s\n", ZHW_Error_Get());
     }
 
     scrSurf[1] = ZHW_Video_CreateSurface(WIDTH, HEIGHT, screen);
 
-    if (scrSurf[1] == NULL) {
+    if (scrSurf[1] == nullptr) {
         StrikeError("Unable to create secondary surface: %s\n", ZHW_Error_Get());
     }
 }
@@ -831,20 +831,20 @@ void InitAll(void) {
 
     cpu = z80ex_create(
         ReadByte,
-        NULL,
+        nullptr,
         WriteByte,
-        NULL,
+        nullptr,
         InputByte,
-        NULL,
+        nullptr,
         OutputByte,
-        NULL,
+        nullptr,
         ReadIntVec,
-        NULL
+        nullptr
     );
 
     #if defined(__APPLE__)
         updateScreenThreadSem = ZHW_Mutex_CreateSemaphore(0);
-        upadteScreenThread = ZHW_Thread_Create(UpdateScreenThreadFunc, NULL);
+        upadteScreenThread = ZHW_Thread_Create(UpdateScreenThreadFunc, nullptr);
     #endif
 }
 
@@ -1110,7 +1110,7 @@ void Render(void) {
         }
     }
 
-    renderPtr = NULL;
+    renderPtr = nullptr;
     lastDevClk = devClk;
     cpuClk -= MAX_FRAME_TACTS;
     devClk = cpuClk;
@@ -1148,7 +1148,7 @@ void DrawIndicators(void) {
     }
 
     for (unsigned i = 0; i < watchesCount; i++) {
-        Z80EX_BYTE val = ReadByteDasm(watches[i], NULL);
+        Z80EX_BYTE val = ReadByteDasm(watches[i], nullptr);
         sprintf(buf, "%04X:%02X", watches[i], val);
         fixed_font.PrintString(WIDTH - 4 - fixed_font.StrLenPx(buf), 4 + fixed_font.Height() * (i + 1), buf);
     }
@@ -1401,7 +1401,7 @@ void FreeAll(void) {
         if (upadteScreenThread) {
             updateScreenThreadActive = false;
             ZHW_Mutex_SemPost(updateScreenThreadSem);
-            ZHW_Thread_Wait(upadteScreenThread, NULL);
+            ZHW_Thread_Wait(upadteScreenThread, nullptr);
         }
     #endif
 
@@ -1485,10 +1485,10 @@ HWND hwnd;
 #include "windows/resource.h"
 
 void windows_init() {
-    HINSTANCE handle = ::GetModuleHandle(NULL);
+    HINSTANCE handle = ::GetModuleHandle(nullptr);
     windows_icon = ::LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
 
-    if (windows_icon == NULL) {
+    if (windows_icon == nullptr) {
         StrikeError("Error: %d\n", GetLastError());
     }
 
@@ -1658,7 +1658,7 @@ int main(int argc, char *argv[]) {
 
         window = ZHW_Video_CreateWindow("ZEmu", actualWidth, actualHeight, params.fullscreen, params.useFlipSurface);
 
-        if (window == NULL) {
+        if (window == nullptr) {
             StrikeError("Unable to create window: %s\n", ZHW_Error_Get());
         }
 
@@ -1668,7 +1668,7 @@ int main(int argc, char *argv[]) {
         if (params.scale2x) {
             screen = ZHW_Video_CreateSurface(WIDTH, HEIGHT, realScreen);
 
-            if (screen == NULL) {
+            if (screen == nullptr) {
                 StrikeError("Unable to create screen surface: %s\n", ZHW_Error_Get());
             }
 

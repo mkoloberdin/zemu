@@ -126,7 +126,7 @@ void C_Keyboard::ReadKbdConfig(void) {
         }
 
         bool canBeAction = true;
-        void (* action)(void) = NULL;
+        void (* action)(void) = nullptr;
         zxKeys.count = 0;
         s++;
 
@@ -162,7 +162,7 @@ void C_Keyboard::ReadKbdConfig(void) {
                     }
                 }
 
-                if (action == NULL) {
+                if (action == nullptr) {
                     StrikeError("Action %s not defined (line %d of %s)", p, lineNum, fileName);
                 }
 
@@ -184,7 +184,7 @@ void C_Keyboard::ReadKbdConfig(void) {
                 *(s++) = 0;
             }
 
-            s_CfgZxKey* cfgZxKey = NULL;
+            s_CfgZxKey* cfgZxKey = nullptr;
 
             for (int i = 0; cfgZxKeys[i].cfgname[0]; i++) {
                 if (!stricmp(p, cfgZxKeys[i].cfgname)) {
@@ -207,7 +207,7 @@ void C_Keyboard::ReadKbdConfig(void) {
         }
 
         s_HostKey* hostKey = &hostKeys[keySym];
-        s_HostKey* hostKeyAdd = (keySymAdd ? &hostKeys[keySymAdd] : NULL);
+        s_HostKey* hostKeyAdd = (keySymAdd ? &hostKeys[keySymAdd] : nullptr);
 
         if (keyMod) {
             if (hostKey->mods.count >= MAX_HOST_KEY_MODS) {

@@ -57,7 +57,7 @@ C_JoystickManager::C_JoystickManager() {
 bool C_JoystickManager::AddJoystick(int joy_num, int axis_treshold) {
     ZHW_Joystick* joy;
 
-    if (joy_num >= num_joysticks || (joy = ZHW_Joystick_Open(joy_num)) == NULL) {
+    if (joy_num >= num_joysticks || (joy = ZHW_Joystick_Open(joy_num)) == nullptr) {
         return false;
     }
 

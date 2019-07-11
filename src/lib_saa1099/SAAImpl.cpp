@@ -34,8 +34,8 @@
 //////////////////////////////////////////////////////////////////////
 
 #ifdef DEBUGSAA
-FILE * dbgfile = NULL;
-FILE * pcmfile = NULL;
+FILE * dbgfile = nullptr;
+FILE * pcmfile = nullptr;
 #endif
 
 //////////////////////////////////////////////////////////////////////
@@ -62,35 +62,35 @@ m_uParamRate(0)
 	Env[1] = new CSAAEnv;
 
 	// (check that memory allocated succeeded this far)
-	assert (Noise[0] != NULL);
-	assert (Noise[1] != NULL);
-	assert (Env[0] != NULL);
-	assert (Env[1] != NULL);
+	assert (Noise[0] != nullptr);
+	assert (Noise[1] != nullptr);
+	assert (Env[0] != nullptr);
+	assert (Env[1] != nullptr);
 
 	// Create oscillators (tone generators) and link to noise generators and
 	// envelope controllers
-	Osc[0] = new CSAAFreq(Noise[0], NULL);
-	Osc[1] = new CSAAFreq(NULL, Env[0]);
-	Osc[2] = new CSAAFreq(NULL, NULL);
-	Osc[3] = new CSAAFreq(Noise[1], NULL);
-	Osc[4] = new CSAAFreq(NULL, Env[1]);
-	Osc[5] = new CSAAFreq(NULL, NULL);
+	Osc[0] = new CSAAFreq(Noise[0], nullptr);
+	Osc[1] = new CSAAFreq(nullptr, Env[0]);
+	Osc[2] = new CSAAFreq(nullptr, nullptr);
+	Osc[3] = new CSAAFreq(Noise[1], nullptr);
+	Osc[4] = new CSAAFreq(nullptr, Env[1]);
+	Osc[5] = new CSAAFreq(nullptr, nullptr);
 	for (int i=5; i>=0; i--)
 	{
-		assert (Osc[i] != NULL);
+		assert (Osc[i] != nullptr);
 	}
 
 	// Create amplification/mixing stages and link to appropriate oscillators,
 	// noise generators and envelope controlloers
-	Amp[0] = new CSAAAmp(Osc[0], Noise[0], NULL),
-	Amp[1] = new CSAAAmp(Osc[1], Noise[0], NULL),
+	Amp[0] = new CSAAAmp(Osc[0], Noise[0], nullptr),
+	Amp[1] = new CSAAAmp(Osc[1], Noise[0], nullptr),
 	Amp[2] = new CSAAAmp(Osc[2], Noise[0], Env[0]),
-	Amp[3] = new CSAAAmp(Osc[3], Noise[1], NULL),
-	Amp[4] = new CSAAAmp(Osc[4], Noise[1], NULL),
+	Amp[3] = new CSAAAmp(Osc[3], Noise[1], nullptr),
+	Amp[4] = new CSAAAmp(Osc[4], Noise[1], nullptr),
 	Amp[5] = new CSAAAmp(Osc[5], Noise[1], Env[1]);
 	for (int j=5; j>=0; j--)
 	{
-		assert (Amp[j] != NULL);
+		assert (Amp[j] != nullptr);
 	}
 
 
@@ -112,7 +112,7 @@ CSAASoundInternal::~CSAASoundInternal()
 		if (Osc[i]) delete Osc[i];
 		if (Amp[i]) delete Amp[i];
 	}
-	
+
 #ifdef DEBUGSAA
 	if (dbgfile) fclose(dbgfile);
 #endif
@@ -261,7 +261,7 @@ void CSAASoundInternal::WriteData(BYTE nData)
 			Noise[1]->Sync(true);
 			m_bSync = true;
 		}
-		else 
+		else
 		{
 			// Unsync all devices
 			Osc[0]->Sync(false);
@@ -286,7 +286,7 @@ void CSAASoundInternal::WriteData(BYTE nData)
 			Amp[5]->Mute(false);
 			m_bOutputEnabled = true;
 		}
-		else 
+		else
 		{
 			// mute all amps
 			Amp[0]->Mute(true);
@@ -405,7 +405,7 @@ void CSAASoundInternal::SetSoundParameters(SAAPARAM uParam)
 	Noise[0]->SetSampleRateMode(sampleratemode);
 	Noise[1]->SetSampleRateMode(sampleratemode);
 
-		
+
 	switch (uParam & SAAP_MASK_BITDEPTH)
 	{
 	case SAAP_8BIT: // set 8bit mode
@@ -510,13 +510,13 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 			*pBuffer++ = 0x80+(mono>>8);
 		}
 		break;
-	
+
 	case SAAP_NOFILTER | SAAP_MONO | SAAP_16BIT:
 		while (nSamples--)
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
-			
+
 			mono = (Amp[0]->TickAndOutputMono() +
 				  Amp[1]->TickAndOutputMono() +
 				  Amp[2]->TickAndOutputMono() +
@@ -531,14 +531,14 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 			*pBuffer++ = mono >> 8;
 		}
 		break;
-	
+
 	case SAAP_NOFILTER | SAAP_STEREO | SAAP_8BIT:
 		while (nSamples--)
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
 
-			
+
 			stereoval.dword=(Amp[0]->TickAndOutputStereo()).dword;
 			stereoval.dword+=(Amp[1]->TickAndOutputStereo()).dword;
 			stereoval.dword+=(Amp[2]->TickAndOutputStereo()).dword;
@@ -553,8 +553,8 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 			*pBuffer++ = 0x80+((stereoval.sep.Right)>>8);
 		}
 		break;
-			
-	
+
+
 	case SAAP_NOFILTER | SAAP_STEREO | SAAP_16BIT:
 		while (nSamples--)
 		{
@@ -578,7 +578,7 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 			*pBuffer++ = stereoval.sep.Right >> 8;
 		}
 		break;
-	
+
 
 	// FILTER : (high-quality mode + bandpass filter)
 	case SAAP_FILTER | SAAP_MONO | SAAP_8BIT:
@@ -599,13 +599,13 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 			*pBuffer++ = 0x80+(mono>>8);
 		}
 		break;
-	
+
 	case SAAP_FILTER | SAAP_MONO | SAAP_16BIT:
 		while (nSamples--)
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
-			
+
 			mono = (Amp[0]->TickAndOutputMono() +
 				  Amp[1]->TickAndOutputMono() +
 				  Amp[2]->TickAndOutputMono() +
@@ -621,14 +621,14 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 			*pBuffer++ = mono >> 8;
 		}
 		break;
-	
+
 	case SAAP_FILTER | SAAP_STEREO | SAAP_8BIT:
 		while (nSamples--)
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
 
-			
+
 			stereoval.dword=(Amp[0]->TickAndOutputStereo()).dword;
 			stereoval.dword+=(Amp[1]->TickAndOutputStereo()).dword;
 			stereoval.dword+=(Amp[2]->TickAndOutputStereo()).dword;
@@ -643,8 +643,8 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 			*pBuffer++ = 0x80+(stereoval.sep.Right>>8);
 		}
 		break;
-			
-	
+
+
 	case SAAP_FILTER | SAAP_STEREO | SAAP_16BIT:
 		while (nSamples--)
 		{
@@ -668,7 +668,7 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 			*pBuffer++ = stereoval.sep.Right >> 8;
 		}
 		break;
-	
+
 
 	default: // ie - the m_uParam contains modes not implemented yet
 		{
@@ -733,7 +733,7 @@ int CSAASoundInternal::SendCommand(SAACMD nCommandID, long nData)
 	case SAACMD_GetBitDepth: return SAASENDCOMMAND_FEATURE_NOT_YET_IMPLEMENTED;
 	case SAACMD_SetNumChannels: return SAASENDCOMMAND_FEATURE_NOT_YET_IMPLEMENTED;
 	case SAACMD_GetNumChannels: return SAASENDCOMMAND_FEATURE_NOT_YET_IMPLEMENTED;
-	
+
 	default: return SAASENDCOMMAND_UNKNOWN_INVALID_COMMAND;
 	}
 }

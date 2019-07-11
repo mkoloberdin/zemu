@@ -9,7 +9,7 @@ C_SoundMixer soundMixer;
 
 C_SoundMixer::C_SoundMixer() {
     initialized = false;
-    sndBackend = NULL;
+    sndBackend = nullptr;
     recordWav = false;
 }
 
@@ -33,7 +33,7 @@ void C_SoundMixer::InitBackendDefault(int bufferSize) {
 #endif
 
 void C_SoundMixer::Init(int mixerModePtr, bool recordWav, const char* wavFileName) {
-    assert(sndBackend != NULL);
+    assert(sndBackend != nullptr);
 
     this->mixerMode = mixerModePtr;
     this->recordWav = recordWav;

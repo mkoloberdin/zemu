@@ -127,7 +127,7 @@
         #define ZHW_SysWm_GetInfo(window, info) SDL_GetWMInfo(info)
     #endif
 #else
-    #define ZHW_Thread_Create(fn, data) SDL_CreateThread((fn), NULL, (data))
+    #define ZHW_Thread_Create(fn, data) SDL_CreateThread((fn), nullptr, (data))
     #define ZHW_Video_SetColorKey(surface, key) SDL_SetColorKey((surface), 1, (key))
 
     #ifdef _WIN32

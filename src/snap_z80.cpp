@@ -103,7 +103,7 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     C_File fl;
     Z80_snap_header hdr;
     Z80EX_WORD tmp;
-    Z80EX_BYTE* header_add = NULL;
+    Z80EX_BYTE* header_add = nullptr;
     Z80EX_BYTE border_color;
     Z80EX_BYTE mode;
     Z80EX_BYTE page_num;
@@ -180,7 +180,7 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
                 ver=3;
         }
 
-        // вроде как нет понту проверять header_addr на NULL, ибо stdc++ либа сама кинет эксцэпшн если не получиться выделить память
+        // вроде как нет понту проверять header_addr на nullptr, ибо stdc++ либа сама кинет эксцэпшн если не получиться выделить память
         header_add = new Z80EX_BYTE[tmp];
 
         try {

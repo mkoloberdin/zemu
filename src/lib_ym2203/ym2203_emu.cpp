@@ -1896,15 +1896,15 @@ void * YM2203Init(int clock, int rate)
   YM2203 *F2203;
 
   /* allocate ym2203 state space */
-  if( (F2203 = (YM2203 *)malloc(sizeof(YM2203)))==NULL)
-    return NULL;
+  if( (F2203 = (YM2203 *)malloc(sizeof(YM2203)))==nullptr)
+    return nullptr;
   /* clear */
   memset(F2203,0,sizeof(YM2203));
 
   if( !init_tables() )
   {
     free( F2203 );
-    return NULL;
+    return nullptr;
   }
 
   F2203->OPN.ST.param =0;

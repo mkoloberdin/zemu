@@ -12,15 +12,15 @@ using namespace std;
         char* r = _fullpath(resolved_path, path, _MAX_PATH);
 
         if (!r) {
-            return NULL;
+            return nullptr;
         }
 
         if (_access(r, 0) != 0) {
-            return NULL; // path does not exist
+            return nullptr; // path does not exist
         }
 
         // TODO: while * strchr == slow. optimize it
-        while ((c = strchr(r, '\\')) != NULL) {
+        while ((c = strchr(r, '\\')) != nullptr) {
             *c = '/';
         }
 
@@ -173,11 +173,11 @@ using namespace std;
     // TODO: at this time all functions ignore file mask. do it ^_~
 
     C_DirWork::C_DirWork() {
-        hDir = NULL;
+        hDir = nullptr;
     }
 
     C_DirWork::~C_DirWork() {
-        if (hDir != NULL) {
+        if (hDir != nullptr) {
             closedir(hDir);
         }
     }
@@ -187,22 +187,22 @@ using namespace std;
         struct stat st;
         char tpath[MAX_PATH];
 
-        if (hDir != NULL) {
+        if (hDir != nullptr) {
             throw C_E(E_DirWork);
         }
 
         strcpy(bpath, path);
         hDir = opendir(bpath);
 
-        if (hDir == NULL) {
+        if (hDir == nullptr) {
             return false;
         }
 
         di = readdir(hDir);
 
-        if (di == NULL) {
+        if (di == nullptr) {
             closedir(hDir);
-            hDir = NULL;
+            hDir = nullptr;
             return false;
         }
 
@@ -222,13 +222,13 @@ using namespace std;
         struct stat st;
         char path[MAX_PATH];
 
-        if (hDir == NULL) {
+        if (hDir == nullptr) {
             throw C_E(E_DirWork);
         }
 
         di = readdir(hDir);
 
-        if (di == NULL) {
+        if (di == nullptr) {
             return false;
         }
 
@@ -244,19 +244,19 @@ using namespace std;
     }
 
     void C_DirWork::EnumClose(void) {
-        if (hDir == NULL) {
+        if (hDir == nullptr) {
             throw C_E(E_DirWork);
         }
 
         closedir(hDir);
-        hDir = NULL;
+        hDir = nullptr;
     }
 #endif
 
 char* C_DirWork::Normalize(const char* path, bool isFile) {
     static char result[MAX_PATH];
 
-    if (realpath(path, result) == NULL) {
+    if (realpath(path, result) == nullptr) {
         strcpy(result, "/");
         return result;
     }
@@ -448,7 +448,7 @@ char* C_DirWork::LastDirName(const char* path) {
     static char result[MAX_PATH];
 
     #ifndef _WIN32
-        if (realpath(C_DirWork::ExtractPath(path), result) == NULL) {
+        if (realpath(C_DirWork::ExtractPath(path), result) == nullptr) {
             strcpy(result, "");
             return result;
         }

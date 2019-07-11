@@ -5,10 +5,10 @@
 uint8_t snbuf[SNBUF_LEN]; // large temporary buffer
 
 C_Fdd::C_Fdd() {
-    trkcache = NULL;
+    trkcache = nullptr;
     track = 0;
     motor = 0;
-    rawdata = NULL;
+    rawdata = nullptr;
     set_wprotected(false);
     appendboot[0] = 0;
     interleave = 1;
@@ -31,7 +31,7 @@ void C_Fdd::set_wprotected(bool wp) {
 }
 
 char* C_Fdd::get_appendboot(void) {
-    return (appendboot[0] ? appendboot : NULL);
+    return (appendboot[0] ? appendboot : nullptr);
 }
 
 void C_Fdd::set_trd_interleave(int iv) {
@@ -39,7 +39,7 @@ void C_Fdd::set_trd_interleave(int iv) {
 }
 
 int C_Fdd::is_disk_loaded() {
-    return (rawdata != NULL ? 1 : 0);
+    return (rawdata != nullptr ? 1 : 0);
 }
 
 void C_Fdd::eject() {
@@ -50,7 +50,7 @@ int C_Fdd::save_dimage(char* filename, enum DIMAGE_TYPE type) {
     FILE* fp;
     int ret = 0;
 
-    if ((fp = fopen(filename, "wb")) == NULL) {
+    if ((fp = fopen(filename, "wb")) == nullptr) {
         return 0;
     }
 
@@ -101,7 +101,7 @@ void C_Fdd::free() {
         ::free(rawdata);
     }
 
-    rawdata = NULL;
+    rawdata = nullptr;
     rawsize = 0;
     cyls = 0;
     sides = 0;

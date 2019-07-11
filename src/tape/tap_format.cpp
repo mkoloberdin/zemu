@@ -18,7 +18,7 @@ C_TapFormat::C_TapFormat() {
     state = TAPE_STATE_STOP;
     tapeBit = 1;
     counter = 0;
-    data = NULL;
+    data = nullptr;
     size = 0;
 
     blockPos = 0;
@@ -29,7 +29,7 @@ C_TapFormat::C_TapFormat() {
 }
 
 C_TapFormat::~C_TapFormat() {
-    if (data != NULL) {
+    if (data != nullptr) {
         delete[] data;
     }
 }
@@ -45,7 +45,7 @@ bool C_TapFormat::Load(const char* fname) {
 
     size = C_File::FileSize(fname);
 
-    if (data != NULL) {
+    if (data != nullptr) {
         delete[] data;
     }
 
@@ -207,7 +207,7 @@ void C_TapFormat::Stop(void) {
 }
 
 void C_TapFormat::Start(void) {
-    if (data != NULL) {
+    if (data != nullptr) {
         state = TAPE_STATE_PLAY;
     }
 }

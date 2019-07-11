@@ -27,7 +27,7 @@ int C_Fdd::read_fdi() {
                 t.hdr[sec].c1 = 0;
 
                 if (trk[4] & 0x40) {
-                    t.hdr[sec].data = NULL;
+                    t.hdr[sec].data = nullptr;
                 } else {
                     t.hdr[sec].data = t0 + WORD2(trk[5], trk[6]);
 
@@ -39,7 +39,7 @@ int C_Fdd::read_fdi() {
                 }
 
                 if (t.hdr[sec].l > 5) {
-                    t.hdr[sec].data = NULL;
+                    t.hdr[sec].data = nullptr;
 
                     if (!(trk[4] & 0x40)) {
                         res = 0;

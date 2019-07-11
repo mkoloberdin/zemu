@@ -35,7 +35,7 @@ int ZHW_Joystick_Init() {
         SDL_Surface* surface = SDL_SetVideoMode(width, height, 32, videoSpec);
 
         if (!surface) {
-            return NULL;
+            return nullptr;
         }
 
         ZHW_Window* window = new ZHW_Window;
@@ -99,14 +99,14 @@ int ZHW_Joystick_Init() {
         SDL_Window* nativeWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
 
         if (!nativeWindow) {
-            return NULL;
+            return nullptr;
         }
 
         SDL_Renderer* renderer = SDL_CreateRenderer(nativeWindow, -1, 0);
 
         if (!renderer) {
             SDL_DestroyWindow(nativeWindow);
-            return NULL;
+            return nullptr;
         }
 
         SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
@@ -114,7 +114,7 @@ int ZHW_Joystick_Init() {
         if (!texture) {
             SDL_DestroyRenderer(renderer);
             SDL_DestroyWindow(nativeWindow);
-            return NULL;
+            return nullptr;
         }
 
         SDL_Surface* surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
@@ -123,7 +123,7 @@ int ZHW_Joystick_Init() {
             SDL_DestroyTexture(texture);
             SDL_DestroyRenderer(renderer);
             SDL_DestroyWindow(nativeWindow);
-            return NULL;
+            return nullptr;
         }
 
         ZHW_Window* window = new ZHW_Window;
@@ -150,14 +150,14 @@ int ZHW_Joystick_Init() {
             return;
         }
 
-        SDL_UpdateTexture(window->texture, NULL, window->surface->pixels, window->surface->pitch);
+        SDL_UpdateTexture(window->texture, nullptr, window->surface->pixels, window->surface->pitch);
 
         if (SDL_MUSTLOCK(window->surface)) {
             SDL_UnlockSurface(window->surface);
         }
 
         SDL_RenderClear(window->renderer);
-        SDL_RenderCopy(window->renderer, window->texture, NULL, NULL);
+        SDL_RenderCopy(window->renderer, window->texture, nullptr, nullptr);
         SDL_RenderPresent(window->renderer);
     }
 

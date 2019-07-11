@@ -30,7 +30,7 @@ class C_Keyboard : public C_Device {
     };
 
     struct s_HostKey {
-        s_HostKey() : normal(), action(NULL), mods() {}
+        s_HostKey() : normal(), action(nullptr), mods() {}
 
         s_ZxKeys normal;
         void (* action)(void);

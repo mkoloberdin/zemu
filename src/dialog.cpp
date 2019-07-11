@@ -477,7 +477,7 @@ char* SelectFile(char* oldFile) {
         }
     } while (key != ZHW_KEY_ESCAPE);
 
-    return NULL;
+    return nullptr;
 }
 
 void FileDialog(void) {
@@ -486,7 +486,7 @@ void FileDialog(void) {
     char* fname = SelectFile(oldFileName[currentDrive]);
     ZHW_Keyboard_DisableKeyRepeat(window);
 
-    if (fname != NULL) {
+    if (fname != nullptr) {
         TryNLoadFile(fname, currentDrive);
     }
 
@@ -594,7 +594,7 @@ const char* GetLabel(Z80EX_WORD addr) {
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 const char* ReplaceLabels(const char* cmd) {
@@ -667,7 +667,7 @@ void DebugIt(void) {
             Z80EX_WORD instrSz = 1;
 
             for (Z80EX_WORD off = 8; off > 0; off--) {
-                instrSz = z80ex_dasm(buf, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, (Z80EX_WORD)(addr - off), NULL);
+                instrSz = z80ex_dasm(buf, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, (Z80EX_WORD)(addr - off), nullptr);
 
                 if (instrSz == off) {
                     nxaddr = addr - off;
@@ -679,14 +679,14 @@ void DebugIt(void) {
             pos--;
         }
 
-        addr += z80ex_dasm(buf, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, addr, NULL);
-        addr += z80ex_dasm(buf, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, addr, NULL);
+        addr += z80ex_dasm(buf, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, addr, nullptr);
+        addr += z80ex_dasm(buf, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, addr, nullptr);
 
         pos = 0;
         userPos = (mx / 2) - 1;
 
         while (pos < mx) {
-            Z80EX_WORD instrSz = z80ex_dasm(dispBuf[pos].cmd, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, addr, NULL);
+            Z80EX_WORD instrSz = z80ex_dasm(dispBuf[pos].cmd, MAX_INSTR_SIZE, 0, &t, &t2, ReadByteDasm, addr, nullptr);
 
             if (exactAddr && (addr < userAddr && (addr+instrSz) > userAddr)) {
                 strcpy(dispBuf[pos].cmd, "DB ");
@@ -697,7 +697,7 @@ void DebugIt(void) {
                         strcat(dispBuf[pos].cmd, ",");
                     }
 
-                    sprintf(buf, "%02X", ReadByteDasm(tmpAddr, NULL));
+                    sprintf(buf, "%02X", ReadByteDasm(tmpAddr, nullptr));
                     strcat(dispBuf[pos].cmd, buf);
 
                     sep = true;
@@ -757,7 +757,7 @@ void DebugIt(void) {
                     Bar(lx - 9, i * h + h / 2 - 1, lx - 8, i * h + h / 2, ZHW_VIDEO_MAKERGB(0x00, 0x00, 0xFF));
                 }
 
-                const char* lbl = (showLabels ? GetLabel(dispBuf[i].addr) : NULL);
+                const char* lbl = (showLabels ? GetLabel(dispBuf[i].addr) : nullptr);
 
                 if (lbl) {
                     fixed_font.PrintString(4, i * h, lbl);
@@ -770,7 +770,7 @@ void DebugIt(void) {
 
                 if (hexMode) {
                     for (int j = 0; j < dispBuf[i].size; j++) {
-                        sprintf(buf, "%02X", ReadByteDasm(dispBuf[i].addr + j, NULL));
+                        sprintf(buf, "%02X", ReadByteDasm(dispBuf[i].addr + j, nullptr));
                         fixed_font.PrintString(xpos, i*h, buf);
                         xpos += 4*3;
                     }

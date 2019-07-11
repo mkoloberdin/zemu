@@ -48,7 +48,7 @@ ptrOnReadByteFunc C_TrDos::ReadByteCheckAddr(Z80EX_WORD addr, bool m1) {
         return OnReadByte_ROM;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Z80EX_BYTE C_TrDos::OnReadByte_3Dxx_M1(Z80EX_WORD addr, bool m1) {

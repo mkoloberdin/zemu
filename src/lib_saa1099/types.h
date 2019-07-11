@@ -18,11 +18,11 @@
 #else
 #define __BIG_ENDIAN
 #endif
-*/
 
 #ifndef NULL
 #define NULL    0
 #endif
+*/
 
 typedef union
 {

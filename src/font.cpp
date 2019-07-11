@@ -21,7 +21,7 @@ ZHW_Video_Surface* ExtractImage(uint8_t* data) {
     spitch = surf->pitch / 4;
 
     if (!ZHW_VIDEO_LOCKSURFACE(surf)) {
-        return NULL;
+        return nullptr;
     }
 
     for (i = 0; i < hgt; i++) {
@@ -59,7 +59,7 @@ ZHW_Video_Surface* CopySurfaceX(ZHW_Video_Surface* src) {
 //------------------------------------------------------------------------------------------------------------------------------
 
 C_Font::C_Font() {
-    surf = NULL;
+    surf = nullptr;
 }
 
 C_Font::~C_Font() {
