@@ -2,7 +2,6 @@
 #include "snap_z80.h"
 #include "exceptions.h"
 #include "zemu.h"
-#include "bin.h"
 #include "file.h"
 
 #define HANDLE_PRAGMA_PACK_PUSH_POP

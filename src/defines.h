@@ -31,6 +31,8 @@
     #define M_PI 3.1415926535897932
 #endif
 
+#define ZEMU_MAKEWORD(H, L) (((H) << 8) | (L))
+
 extern char hex[17];
 
 double sqq(double n);

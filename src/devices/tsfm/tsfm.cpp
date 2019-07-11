@@ -1,5 +1,4 @@
 #include "tsfm.h"
-#include "../../bin.h"
 #include "../trdos/trdos.h"
 
 #define CHIP_FLAG_MASK 1

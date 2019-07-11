@@ -2,7 +2,6 @@
 #define _KEYS_H_INCLUDED_
 
 #include "../../platform_hardware.h"
-#include "../../bin.h"
 
 struct s_CfgHostKey {
     const char* cfgname;
