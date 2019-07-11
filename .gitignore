@@ -1,7 +1,10 @@
-*.o
 *.a
+*.o
+.kdev*
 callgrind.out.*
+
 .cproject
-.project
 .DS_Store
+.project
+
 /build
