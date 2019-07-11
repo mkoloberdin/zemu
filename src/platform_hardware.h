@@ -28,11 +28,17 @@
         #define ZHW_VIDEO_GETR(c) (((c) >> 8) & 0xFF)
         #define ZHW_VIDEO_GETG(c) (((c) >> 0x10) & 0xFF)
         #define ZHW_VIDEO_GETB(c) ((c) >> 0x18)
+
+        #define ZHW_FLIPPED_RGBA
     #else
         #define ZHW_VIDEO_MAKERGB(r, g, b) (((r) << 0x10) | ((g) << 8) | (b))
         #define ZHW_VIDEO_GETR(c) ((c) >> 0x10)
         #define ZHW_VIDEO_GETG(c) (((c) >> 8) & 0xFF)
         #define ZHW_VIDEO_GETB(c) ((c) & 0xFF)
+
+        #ifdef ZEMU_BIG_ENDIAN
+            #define ZHW_FLIPPED_RGBA
+        #endif
     #endif
 #else
     #define ZHW_EVENT_WHEELDIRECTION(event) (event.wheel.direction)

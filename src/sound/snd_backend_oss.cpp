@@ -1,4 +1,4 @@
-#if !defined(_WIN32) && !defined(__APPLE__)
+#ifdef __unix__
 
 #include "../defines.h"
 #include "snd_backend_oss.h"

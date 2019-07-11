@@ -20,10 +20,10 @@ class C_SoundMixer {
 
     #ifdef _WIN32
         void InitBackendWin32(int soundParam);
-    #else
-        #if !defined(__APPLE__)
-            void InitBackendOSS(int soundParam);
-        #endif
+    #endif
+
+    #ifdef __unix__
+        void InitBackendOSS(int soundParam);
     #endif
 
     void Init(int mixerMode, bool recordWav, const char* wavFileName);

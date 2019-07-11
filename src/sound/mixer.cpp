@@ -23,13 +23,13 @@ void C_SoundMixer::InitBackendDefault(int bufferSize) {
         sndBackend = new CSndBackendWIN32(soundParam, AUDIO_NATIVE_BUFFER);
         sndBackend->Init();
     }
-#else
-    #if !defined(__APPLE__)
-        void C_SoundMixer::InitBackendOSS(int soundParam) {
-            sndBackend = new CSndBackendOSS(soundParam, AUDIO_NATIVE_BUFFER);
-            sndBackend->Init();
-        }
-    #endif
+#endif
+
+#ifdef __unix__
+    void C_SoundMixer::InitBackendOSS(int soundParam) {
+        sndBackend = new CSndBackendOSS(soundParam, AUDIO_NATIVE_BUFFER);
+        sndBackend->Init();
+    }
 #endif
 
 void C_SoundMixer::Init(int mixerModePtr, bool recordWav, const char* wavFileName) {

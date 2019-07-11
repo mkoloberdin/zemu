@@ -78,13 +78,10 @@ int renderPitch;
 unsigned long prevRenderClk;
 void (* renderPtr)(unsigned long) = nullptr;
 
-#if defined(__APPLE__)
-    ZHW_Thread *upadteScreenThread = nullptr;
-    ZHW_Mutex_Sem *updateScreenThreadSem;
-    volatile bool updateScreenThreadActive = true;
-
-    int UpdateScreenThreadFunc(void *param);
-#endif
+ZHW_Thread *upadteScreenThread = nullptr;
+ZHW_Mutex_Sem *updateScreenThreadSem;
+volatile bool updateScreenThreadActive = true;
+int UpdateScreenThreadFunc(void *param);
 
 //--------------------------------------------------------------------------------------------------------------
 
@@ -842,10 +839,8 @@ void InitAll(void) {
         nullptr
     );
 
-    #if defined(__APPLE__)
-        updateScreenThreadSem = ZHW_Mutex_CreateSemaphore(0);
-        upadteScreenThread = ZHW_Thread_Create(UpdateScreenThreadFunc, nullptr);
-    #endif
+    updateScreenThreadSem = ZHW_Mutex_CreateSemaphore(0);
+    upadteScreenThread = ZHW_Thread_Create(UpdateScreenThreadFunc, nullptr);
 }
 
 // ----------------------------------
@@ -905,7 +900,7 @@ void AntiFlicker(ZHW_Video_Surface* copyFrom, ZHW_Video_Surface* copyTo) {
 
         for (j = WIDTH; j--;)
         {
-            #if defined(ZEMU_BIG_ENDIAN) || defined(__APPLE__)
+            #ifdef ZHW_FLIPPED_RGBA
                 *(srw++) = 0;
                 s1w++;
                 s2w++;
@@ -926,7 +921,7 @@ void AntiFlicker(ZHW_Video_Surface* copyFrom, ZHW_Video_Surface* copyTo) {
             s1w++;
             s2w++;
 
-            #if !defined(ZEMU_BIG_ENDIAN) && !defined(__APPLE__)
+            #ifndef ZHW_FLIPPED_RGBA
                 *(srw++) = 0;
                 s1w++;
                 s2w++;
@@ -1300,27 +1295,24 @@ void InitAudio(void) {
         else if (params.sndBackend == SND_BACKEND_WIN32) {
             soundMixer.InitBackendWin32(params.soundParam);
         }
-    #else
-        #if !defined(__APPLE__)
-            else if (params.sndBackend == SND_BACKEND_OSS) {
-                soundMixer.InitBackendOSS(params.soundParam);
-            }
-        #endif
+    #endif
+    #ifdef __unix__
+        else if (params.sndBackend == SND_BACKEND_OSS) {
+            soundMixer.InitBackendOSS(params.soundParam);
+        }
     #endif
 
     soundMixer.Init(params.mixerMode, recordWav, wavFileName);
 }
 
-#if defined(__APPLE__)
-    int UpdateScreenThreadFunc(void* param) {
-        while (updateScreenThreadActive) {
-            ZHW_Mutex_SemWait(updateScreenThreadSem);
-            ZHW_Video_BlitWindow(window);
-        }
-
-        return 0;
+int UpdateScreenThreadFunc(void* param) {
+    while (updateScreenThreadActive) {
+        ZHW_Mutex_SemWait(updateScreenThreadSem);
+        ZHW_Video_BlitWindow(window);
     }
-#endif
+
+    return 0;
+}
 
 // Tries to update screen.
 // If screen is already updating, do nothing, therefore this function must be called in a loop,
@@ -1332,11 +1324,9 @@ void UpdateScreen(void) {
         return;
     }
 
-    #if defined(__APPLE__)
-        if (ZHW_Mutex_SemValue(updateScreenThreadSem)) {
-            return;
-        }
-    #endif
+    if (ZHW_Mutex_SemValue(updateScreenThreadSem)) {
+        return;
+    }
 
     if (!ZHW_VIDEO_LOCKSURFACE(realScreen)) {
         return;
@@ -1383,11 +1373,7 @@ void UpdateScreen(void) {
     ZHW_VIDEO_UNLOCKSURFACE(screen);
     ZHW_VIDEO_UNLOCKSURFACE(realScreen);
 
-    #if defined(__APPLE__)
-        ZHW_Mutex_SemPost(updateScreenThreadSem);
-    #else
-        ZHW_Video_BlitWindow(window);
-    #endif
+    ZHW_Mutex_SemPost(updateScreenThreadSem);
 }
 
 void FreeAll(void) {
@@ -1397,13 +1383,11 @@ void FreeAll(void) {
 
     C_Tape::Close();
 
-    #if defined(__APPLE__)
-        if (upadteScreenThread) {
-            updateScreenThreadActive = false;
-            ZHW_Mutex_SemPost(updateScreenThreadSem);
-            ZHW_Thread_Wait(upadteScreenThread, nullptr);
-        }
-    #endif
+    if (upadteScreenThread) {
+        updateScreenThreadActive = false;
+        ZHW_Mutex_SemPost(updateScreenThreadSem);
+        ZHW_Thread_Wait(upadteScreenThread, nullptr);
+    }
 
     #ifndef _WIN32
         // TODO: do in in more portable way
@@ -1605,12 +1589,11 @@ int main(int argc, char *argv[]) {
             else if (str == "win32") {
                 params.sndBackend = SND_BACKEND_WIN32;
             }
-        #else
-            #if !defined(__APPLE__)
-                else if (str == "oss") {
-                    params.sndBackend = SND_BACKEND_OSS;
-                }
-            #endif
+        #endif
+        #ifdef __unix__
+            else if (str == "oss") {
+                params.sndBackend = SND_BACKEND_OSS;
+            }
         #endif
         else {
             params.sndBackend = default_snd_backend;
