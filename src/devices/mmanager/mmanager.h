@@ -16,12 +16,12 @@ string split_romname(string& romname, size_t* offset);
 class C_MemoryManager : public C_Device {
     public:
 
-    static Z80EX_BYTE port7FFD;
-    static Z80EX_BYTE rom[0x8000];
-    static Z80EX_BYTE ram[0x4000 * 64];
+    static uint8_t port7FFD;
+    static uint8_t rom[0x8000];
+    static uint8_t ram[0x4000 * 64];
 
-    static Z80EX_BYTE* rom_map;
-    static Z80EX_BYTE* ram_map;
+    static uint8_t* rom_map;
+    static uint8_t* ram_map;
     static bool enable512;
     static bool enable1024;
 
@@ -30,15 +30,15 @@ class C_MemoryManager : public C_Device {
     void Close(void);
 
     static void Remap(void);
-    static ptrOnReadByteFunc ReadByteCheckAddr(Z80EX_WORD addr, bool m1);
-    static Z80EX_BYTE OnReadByte_ROM(Z80EX_WORD addr, bool m1);
-    static Z80EX_BYTE OnReadByte_Bank5(Z80EX_WORD addr, bool m1);
-    static Z80EX_BYTE OnReadByte_Bank2(Z80EX_WORD addr, bool m1);
-    static Z80EX_BYTE OnReadByte_C000(Z80EX_WORD addr, bool m1);
-    static bool WriteByteCheckAddr(Z80EX_WORD addr);
-    static bool OnWriteByte(Z80EX_WORD addr, Z80EX_BYTE value);
-    static bool OutputByteCheckPort(Z80EX_WORD port);
-    static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
+    static ptrOnReadByteFunc ReadByteCheckAddr(uint16_t addr, bool m1);
+    static uint8_t OnReadByte_ROM(uint16_t addr, bool m1);
+    static uint8_t OnReadByte_Bank5(uint16_t addr, bool m1);
+    static uint8_t OnReadByte_Bank2(uint16_t addr, bool m1);
+    static uint8_t OnReadByte_C000(uint16_t addr, bool m1);
+    static bool WriteByteCheckAddr(uint16_t addr);
+    static bool OnWriteByte(uint16_t addr, uint8_t value);
+    static bool OutputByteCheckPort(uint16_t port);
+    static bool OnOutputByte(uint16_t port, uint8_t value);
     static void OnReset(void);
 };
 

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <stdint.h> // TODO: For compilation with MSVC an external stdint.h will be needed
+#include <cstdint>
 
 #ifndef _WIN32
     #include <limits.h>

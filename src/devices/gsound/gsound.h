@@ -20,10 +20,10 @@ class C_GSound : public C_Device {
     void Init(void);
     void Close(void);
 
-    static bool InputByteCheckPort(Z80EX_WORD port);
-    static bool OutputByteCheckPort(Z80EX_WORD port);
-    static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval);
-    static bool OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value);
+    static bool InputByteCheckPort(uint16_t port);
+    static bool OutputByteCheckPort(uint16_t port);
+    static bool OnInputByte(uint16_t port, uint8_t& retval);
+    static bool OnOutputByte(uint16_t port, uint8_t value);
     static void OnFrameStart(void);
     static void OnAfterFrameRender(void);
     static void Reset(void);
@@ -34,26 +34,26 @@ class C_GSound : public C_Device {
     static void Update(unsigned clk);
     static void UpdateSound();
 
-    static Z80EX_BYTE GsReadByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, int m1_state, void* userData);
-    static void GsWriteByte(Z80EX_CONTEXT_PARAM Z80EX_WORD addr, Z80EX_BYTE value, void* userData);
-    static Z80EX_BYTE GsInputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, void* userData);
-    static void GsOutputByte(Z80EX_CONTEXT_PARAM Z80EX_WORD port, Z80EX_BYTE value, void* userData);
-    static Z80EX_BYTE GsReadIntVec(Z80EX_CONTEXT_PARAM void* userData);
+    static uint8_t GsReadByte(Z80EX_CONTEXT_PARAM uint16_t addr, int m1_state, void* userData);
+    static void GsWriteByte(Z80EX_CONTEXT_PARAM uint16_t addr, uint8_t value, void* userData);
+    static uint8_t GsInputByte(Z80EX_CONTEXT_PARAM uint16_t port, void* userData);
+    static void GsOutputByte(Z80EX_CONTEXT_PARAM uint16_t port, uint8_t value, void* userData);
+    static uint8_t GsReadIntVec(Z80EX_CONTEXT_PARAM void* userData);
 
-    static Z80EX_BYTE regCommand;
-    static Z80EX_BYTE regStatus;
-    static Z80EX_BYTE regData;
-    static Z80EX_BYTE regOutput;
-    static Z80EX_BYTE volume[4];
-    static Z80EX_BYTE channel[4];
-    static Z80EX_BYTE memPage;
+    static uint8_t regCommand;
+    static uint8_t regStatus;
+    static uint8_t regData;
+    static uint8_t regOutput;
+    static uint8_t volume[4];
+    static uint8_t channel[4];
+    static uint8_t memPage;
 
     static Z80EX_CONTEXT* gsCpu;
-    static Z80EX_BYTE mem[0x8000 * GS_MEM_PAGES];
+    static uint8_t mem[0x8000 * GS_MEM_PAGES];
 
     static unsigned gsClk;
-    static Z80EX_BYTE* readMap[4];
-    static Z80EX_BYTE* writeMap[4];
+    static uint8_t* readMap[4];
+    static uint8_t* writeMap[4];
 };
 
 #endif

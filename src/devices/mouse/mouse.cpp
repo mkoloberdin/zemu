@@ -1,9 +1,9 @@
 #include "mouse.h"
 
-Z80EX_BYTE C_Mouse::portFBDF;
-Z80EX_BYTE C_Mouse::portFFDF;
-Z80EX_BYTE C_Mouse::portFADF;
-Z80EX_BYTE C_Mouse::wheelCnt;
+uint8_t C_Mouse::portFBDF;
+uint8_t C_Mouse::portFFDF;
+uint8_t C_Mouse::portFADF;
+uint8_t C_Mouse::wheelCnt;
 
 void C_Mouse::Init(void) {
     AttachZ80InputHandler(InputByteCheckPort, OnInputByte);
@@ -41,11 +41,11 @@ void C_Mouse::UpdateState(void) {
     }
 }
 
-bool C_Mouse::InputByteCheckPort(Z80EX_WORD port) {
+bool C_Mouse::InputByteCheckPort(uint16_t port) {
     return ((port == 0xFBDF) | (port == 0xFFDF) | (port == 0xFADF));
 }
 
-bool C_Mouse::OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval) {
+bool C_Mouse::OnInputByte(uint16_t port, uint8_t& retval) {
     UpdateState();
 
     if (port == 0xFBDF) {

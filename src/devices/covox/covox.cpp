@@ -20,11 +20,11 @@ void C_Covox::Init(void) {
 void C_Covox::Close(void) {
 }
 
-bool C_Covox::OutputByteCheckPort(Z80EX_WORD port) {
+bool C_Covox::OutputByteCheckPort(uint16_t port) {
     return ((port & 0x07) == 0x03);
 }
 
-bool C_Covox::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value) {
+bool C_Covox::OnOutputByte(uint16_t port, uint8_t value) {
     if (SOUND_ENABLED) {
         unsigned vol = ((unsigned)value << 7);
         sndRenderer.Update(devClk, vol, vol);

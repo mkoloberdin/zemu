@@ -48,8 +48,8 @@ class C_Keyboard : public C_Device {
     static bool OnKeyDown(ZHW_Event& event);
     static bool OnKeyUp(ZHW_Event& event);
 
-    static bool InputByteCheckPort(Z80EX_WORD port);
-    static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval);
+    static bool InputByteCheckPort(uint16_t port);
+    static bool OnInputByte(uint16_t port, uint8_t& retval);
 };
 
 #endif

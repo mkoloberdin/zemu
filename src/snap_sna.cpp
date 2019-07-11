@@ -6,12 +6,12 @@
 
 bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
     C_File fl;
-    Z80EX_BYTE border_color;
+    uint8_t border_color;
     bool banks[8];
-    Z80EX_BYTE buffer[16384];
-    Z80EX_BYTE retval;
-    Z80EX_BYTE port_7ffd;
-    Z80EX_BYTE is_trdos;
+    uint8_t buffer[16384];
+    uint8_t retval;
+    uint8_t port_7ffd;
+    uint8_t is_trdos;
 
     try {
         fl.Read(filename);
@@ -30,7 +30,7 @@ bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     z80ex_set_reg(cpu, regIY, fl.GetWORD());
     z80ex_set_reg(cpu, regIX, fl.GetWORD());
 
-    Z80EX_BYTE intm = fl.GetBYTE();
+    uint8_t intm = fl.GetBYTE();
 
     z80ex_set_reg(cpu, regIFF1, intm & 1);
     z80ex_set_reg(cpu, regIFF2, (intm >> 1) & 1);
@@ -70,15 +70,15 @@ bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
             mmgr.OnWriteByte(i + 49152, buffer[i]);
         }
 
-        Z80EX_WORD sp = z80ex_get_reg(cpu, regSP);
+        uint16_t sp = z80ex_get_reg(cpu, regSP);
 
         retval = ReadByteDasm(sp, nullptr);
-        Z80EX_WORD pc = retval;
+        uint16_t pc = retval;
         mmgr.OnWriteByte(sp, 0);
         sp++;
 
         retval = ReadByteDasm(sp, nullptr);
-        pc |= ((Z80EX_WORD)retval << 8);
+        pc |= ((uint16_t)retval << 8);
         mmgr.OnWriteByte(sp, 0);
         sp++;
 
@@ -137,7 +137,7 @@ void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     fl.PutWORD(z80ex_get_reg(cpu, regIX));
 
     fl.PutBYTE((z80ex_get_reg(cpu, regIFF1) ? 1 : 0) | (z80ex_get_reg(cpu, regIFF2) ? 2 : 0));
-    Z80EX_WORD sp = z80ex_get_reg(cpu, regSP);
+    uint16_t sp = z80ex_get_reg(cpu, regSP);
 
     if (mmgr.port7FFD == 0x30) {
         // 48k
@@ -150,7 +150,7 @@ void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     fl.PutBYTE(z80ex_get_reg(cpu, regIM));
 
     fl.PutBYTE(border.portFB & 7);
-    Z80EX_BYTE buffer[0xC000];
+    uint8_t buffer[0xC000];
 
     for (int i = 0; i < 8; i++) {
         banks[i] = false;
@@ -167,7 +167,7 @@ void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     }
 
     banks[2] = true;
-    Z80EX_WORD pc = z80ex_get_reg(cpu, regPC);
+    uint16_t pc = z80ex_get_reg(cpu, regPC);
 
     if (mmgr.port7FFD == 0x30) { // 48k
         for (int i = 0; i < 16384; i++) {
@@ -175,13 +175,13 @@ void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
         }
 
         if (sp >= 0x4000) {
-            buffer[sp - 0x4000] = (Z80EX_BYTE)(pc & 0xFF);
+            buffer[sp - 0x4000] = (uint8_t)(pc & 0xFF);
         }
 
         sp++;
 
         if (sp >= 0x4000) {
-            buffer[sp - 0x4000] = (Z80EX_BYTE)(pc >> 8);
+            buffer[sp - 0x4000] = (uint8_t)(pc >> 8);
         }
 
         fl.WriteBlock(buffer, 0xC000);

@@ -60,11 +60,11 @@ void C_TsFm::Init(void) {
 void C_TsFm::Close(void) {
 }
 
-bool C_TsFm::InputByteCheckPort(Z80EX_WORD port) {
+bool C_TsFm::InputByteCheckPort(uint16_t port) {
     return ((port & 0b11000000'00000010) == 0b11000000'00000000); // 0xFFFD
 }
 
-bool C_TsFm::OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval) {
+bool C_TsFm::OnInputByte(uint16_t port, uint8_t& retval) {
     if (mode >= TSFM_MODE_TSFM) {
         if (!(pseudoReg & STATUS_FLAG_MASK) && !(pseudoReg & FM_FLAG_MASK)) {
             retval = ym2203Chip[CHIP_NUM].ReadStatus();
@@ -80,7 +80,7 @@ bool C_TsFm::OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval) {
     return true;
 }
 
-bool C_TsFm::OutputByteCheckPort(Z80EX_WORD port) {
+bool C_TsFm::OutputByteCheckPort(uint16_t port) {
     return (
         ((port & 0b11000000'00000010) == 0b11000000'00000000) // 0xFFFD
         || ((port & 0b11000000'00000010) == 0b10000000'00000000) // 0xBFFD
@@ -88,7 +88,7 @@ bool C_TsFm::OutputByteCheckPort(Z80EX_WORD port) {
     );
 }
 
-bool C_TsFm::OnOutputByte(Z80EX_WORD port, Z80EX_BYTE value) {
+bool C_TsFm::OnOutputByte(uint16_t port, uint8_t value) {
     if (port == 0x00FF) {
         if (mode >= TSFM_MODE_ZXM) {
             saa1099Chip.WriteData(value);

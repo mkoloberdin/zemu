@@ -7,7 +7,7 @@
 class C_KempstonStick : public C_Device {
     public:
 
-    static Z80EX_BYTE joy_kbd;
+    static uint8_t joy_kbd;
 
     void Init(void);
     void Close(void);
@@ -15,8 +15,8 @@ class C_KempstonStick : public C_Device {
     static bool OnKeyDown(ZHW_Event& event);
     static bool OnKeyUp(ZHW_Event& event);
 
-    static bool InputByteCheckPort(Z80EX_WORD port);
-    static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval);
+    static bool InputByteCheckPort(uint16_t port);
+    static bool OnInputByte(uint16_t port, uint8_t& retval);
     static void SetJoyNum(int num);
 
     private:

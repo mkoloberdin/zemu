@@ -6,7 +6,7 @@
 #include <list>
 
 struct s_LabelItem {
-    Z80EX_WORD addr;
+    uint16_t addr;
     std::string label;
 };
 

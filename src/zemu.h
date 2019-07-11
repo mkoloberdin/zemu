@@ -62,30 +62,30 @@ extern s_Action cfgActions[];
 
 #define MAX_HANDLERS 64
 
-typedef Z80EX_BYTE (* ptrOnReadByteFunc)(Z80EX_WORD, bool);
+typedef uint8_t (* ptrOnReadByteFunc)(uint16_t, bool);
 
-void AttachZ80ReadHandler(ptrOnReadByteFunc (* check)(Z80EX_WORD, bool));
-void AttachZ80WriteHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE));
-void AttachZ80InputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE&));
-void AttachZ80OutputHandler(bool (* check)(Z80EX_WORD), bool (* func)(Z80EX_WORD, Z80EX_BYTE));
+void AttachZ80ReadHandler(ptrOnReadByteFunc (* check)(uint16_t, bool));
+void AttachZ80WriteHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t));
+void AttachZ80InputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t&));
+void AttachZ80OutputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t));
 void AttachFrameStartHandler(void (* func)(void));
 void AttachAfterFrameRenderHandler(void (* func)(void));
 void AttachHwHandler(int eventType, bool (* func)(ZHW_Event&));
 void AttachResetHandler(void (* func)(void));
 
 extern ptrOnReadByteFunc* devMapRead;
-extern bool (** devMapWrite)(Z80EX_WORD, Z80EX_BYTE);
-extern bool (** devMapInput)(Z80EX_WORD, Z80EX_BYTE&);
-extern bool (** devMapOutput)(Z80EX_WORD, Z80EX_BYTE);
+extern bool (** devMapWrite)(uint16_t, uint8_t);
+extern bool (** devMapInput)(uint16_t, uint8_t&);
+extern bool (** devMapOutput)(uint16_t, uint8_t);
 
 extern ptrOnReadByteFunc devMapRead_base[0x20000];
-extern bool (* devMapWrite_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
-extern bool (* devMapInput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
-extern bool (* devMapOutput_base[0x10000])(Z80EX_WORD, Z80EX_BYTE);
+extern bool (* devMapWrite_base[0x10000])(uint16_t, uint8_t);
+extern bool (* devMapInput_base[0x10000])(uint16_t, uint8_t&);
+extern bool (* devMapOutput_base[0x10000])(uint16_t, uint8_t);
 
 extern ptrOnReadByteFunc devMapRead_trdos[0x20000];
-extern bool (* devMapInput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE&);
-extern bool (* devMapOutput_trdos[0x10000])(Z80EX_WORD, Z80EX_BYTE);
+extern bool (* devMapInput_trdos[0x10000])(uint16_t, uint8_t&);
+extern bool (* devMapOutput_trdos[0x10000])(uint16_t, uint8_t);
 
 //--------------------------------------------------------------------------------------------------------------
 
@@ -106,8 +106,8 @@ extern bool breakpoints[0x10000];
 extern uint16_t watches[MAX_WATCHES];
 extern unsigned watchesCount;
 
-Z80EX_BYTE ReadByteDasm(Z80EX_WORD addr, void* userData);
-void WriteByteDasm(Z80EX_WORD addr, Z80EX_BYTE value);
+uint8_t ReadByteDasm(uint16_t addr, void* userData);
+void WriteByteDasm(uint16_t addr, uint8_t value);
 void DebugStep(void);
 
 extern ZHW_Video_Surface* renderSurf;
