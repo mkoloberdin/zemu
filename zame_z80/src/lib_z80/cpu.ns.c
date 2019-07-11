@@ -37,20 +37,20 @@
     bool ::is_tbl_initialized = false;
     byte ::tbl_parity[0x100];
 
-    s_Cpu * ::new(
+    s_Cpu* ::new(
         ::t_read ptr_read,
-        void *data_read,
+        void* data_read,
         ::t_write ptr_write,
-        void *data_write,
+        void* data_write,
         ::t_in ptr_in,
-        void *data_in,
+        void* data_in,
         ::t_out ptr_out,
-        void *data_out,
+        void* data_out,
         ::t_read_int ptr_read_int,
-        void *data_read_int
+        void* data_read_int
     ) {
         ::init_tables();
-        s_Cpu *cpu = ALLOC_MEM(s_Cpu);
+        s_Cpu* cpu = ALLOC_MEM(s_Cpu);
 
         cpu->ptr_read = ptr_read;
         cpu->ptr_write = ptr_write;
@@ -91,13 +91,13 @@
         ::is_tbl_initialized = true;
     }
 
-    void ::free(s_Cpu *self) {
+    void ::free(s_Cpu* self) {
         if (self) {
             free(self);
         }
     }
 
-    void ::reset(s_Cpu *self) {
+    void ::reset(s_Cpu* self) {
         memset(self->regs, 0, sizeof(word) * CPU_LAST);
 
         REG_AF(self) = 0xFFFF;
@@ -133,7 +133,7 @@
         self->tstate = 0;
     }
 
-    unsigned ::tick_def(s_Cpu *self) {
+    unsigned ::tick_def(s_Cpu* self) {
         self->is_opcode = true;
         self->is_noint = false;
         self->is_reset_pv = false;
@@ -148,7 +148,7 @@
         return self->tstate;
     }
 
-    unsigned ::tick_int(s_Cpu *self) {
+    unsigned ::tick_int(s_Cpu* self) {
         self->is_opcode = true;
         self->is_noint = false;
         self->is_reset_pv = false;
@@ -170,7 +170,7 @@
         return self->tstate;
     }
 
-    unsigned ::do_int(s_Cpu *self) {
+    unsigned ::do_int(s_Cpu* self) {
         if (!REG_IFF1(self) || self->is_noint || self->is_opcode || self->prefix) {
             return 0;
         }
@@ -232,7 +232,7 @@
         return self->tstate;
     }
 
-    unsigned ::do_nmi(s_Cpu *self) {
+    unsigned ::do_nmi(s_Cpu* self) {
         if (self->is_noint || self->is_opcode || self->prefix) {
             return 0;
         }
@@ -259,19 +259,19 @@
         return 11;
     }
 
-    bool ::is_int_possible(s_Cpu *self) {
+    bool ::is_int_possible(s_Cpu* self) {
         return (REG_IFF1(self) && !self->is_noint && !self->is_opcode && !self->prefix);
     }
 
-    bool ::is_nmi_possible(s_Cpu *self) {
+    bool ::is_nmi_possible(s_Cpu* self) {
         return (!self->is_noint && !self->is_opcode && !self->prefix);
     }
 
-    word ::get_reg(s_Cpu *self, int reg) {
+    word ::get_reg(s_Cpu* self, int reg) {
         return self->regs[reg];
     }
 
-    void ::set_reg(s_Cpu *self, int reg, word val) {
+    void ::set_reg(s_Cpu* self, int reg, word val) {
         self->regs[reg] = val;
     }
 #end

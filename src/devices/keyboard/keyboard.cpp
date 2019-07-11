@@ -22,7 +22,7 @@ void C_Keyboard::ReadKbdConfig(void) {
     }
 
     int lineNum = 0;
-    const char *fileName = keysConfigPath.c_str();
+    const char* fileName = keysConfigPath.c_str();
 
     printf("Trying to load keys config from \"%s\" ...\n", fileName);
 
@@ -33,7 +33,7 @@ void C_Keyboard::ReadKbdConfig(void) {
         fl.GetS(buf, sizeof(buf));
         lineNum++;
 
-        char *s = buf;
+        char* s = buf;
 
         while (*s && ((*s) == ' ' || (*s) == 9)) {
             s++;
@@ -43,7 +43,7 @@ void C_Keyboard::ReadKbdConfig(void) {
             continue;
         }
 
-        char *p = s;
+        char* p = s;
 
         while (*s && (*s) != ' ' && (*s) != 9) {
             s++;
@@ -87,7 +87,7 @@ void C_Keyboard::ReadKbdConfig(void) {
             keyModAdd = keySymAdd;
             p = s;
 
-            while (*s && (*s)!=' ' && (*s)!=9) {
+            while (*s && (*s) != ' ' && (*s) != 9) {
                 s++;
             }
 
@@ -131,7 +131,7 @@ void C_Keyboard::ReadKbdConfig(void) {
         s++;
 
         while (*s) {
-            while (*s && ((*s)==' ' || (*s)==9)) {
+            while (*s && ((*s) == ' ' || (*s) == 9)) {
                 s++;
             }
 
@@ -184,7 +184,7 @@ void C_Keyboard::ReadKbdConfig(void) {
                 *(s++) = 0;
             }
 
-            s_CfgZxKey *cfgZxKey = NULL;
+            s_CfgZxKey* cfgZxKey = NULL;
 
             for (int i = 0; cfgZxKeys[i].cfgname[0]; i++) {
                 if (!stricmp(p, cfgZxKeys[i].cfgname)) {
@@ -206,8 +206,8 @@ void C_Keyboard::ReadKbdConfig(void) {
             StrikeError("No ZX keys or actions defined at line %d of %s", lineNum, fileName);
         }
 
-        s_HostKey *hostKey = &hostKeys[keySym];
-        s_HostKey *hostKeyAdd = (keySymAdd ? &hostKeys[keySymAdd] : NULL);
+        s_HostKey* hostKey = &hostKeys[keySym];
+        s_HostKey* hostKeyAdd = (keySymAdd ? &hostKeys[keySymAdd] : NULL);
 
         if (keyMod) {
             if (hostKey->mods.count >= MAX_HOST_KEY_MODS) {
@@ -280,7 +280,7 @@ void C_Keyboard::Init(void) {
 void C_Keyboard::Close(void) {
 }
 
-bool C_Keyboard::OnKeyDown(ZHW_Event &event) {
+bool C_Keyboard::OnKeyDown(ZHW_Event& event) {
     ZHW_Keyboard_KeyCode key = event.key.keysym.sym;
 
     if (!ZHW_EVENT_OKKEY(window, event) || (joyOnKeyb && (key == ZHW_KEY_UP
@@ -300,7 +300,7 @@ bool C_Keyboard::OnKeyDown(ZHW_Event &event) {
     }
 
     hostKeyPressed.insert(key);
-    s_HostKey *hostKey = &keyIt->second;
+    s_HostKey* hostKey = &keyIt->second;
 
     for (int k = 0; k < hostKey->mods.count; k++) {
         ZHW_Keyboard_KeyCode keyMod = hostKey->mods.keyMod[k];
@@ -314,8 +314,8 @@ bool C_Keyboard::OnKeyDown(ZHW_Event &event) {
             return false;
         }
 
-        s_HostKey *hostKeyMod = &hostKeys[keyMod];
-        s_ZxKeys *zxKeys = &hostKey->mods.zxKeys[k];
+        s_HostKey* hostKeyMod = &hostKeys[keyMod];
+        s_ZxKeys* zxKeys = &hostKey->mods.zxKeys[k];
 
         for (int i = 0; i < hostKeyMod->normal.count; i++) {
             keyboard[hostKeyMod->normal.portnum[i]] |= hostKeyMod->normal.bitmask[i];
@@ -342,7 +342,7 @@ bool C_Keyboard::OnKeyDown(ZHW_Event &event) {
     return false;
 }
 
-bool C_Keyboard::OnKeyUp(ZHW_Event &event) {
+bool C_Keyboard::OnKeyUp(ZHW_Event& event) {
     ZHW_Keyboard_KeyCode key = event.key.keysym.sym;
 
     if (!ZHW_EVENT_OKKEY(window, event) || (joyOnKeyb && (key == ZHW_KEY_UP
@@ -362,7 +362,7 @@ bool C_Keyboard::OnKeyUp(ZHW_Event &event) {
     }
 
     hostKeyPressed.erase(key);
-    s_HostKey *hostKey = &keyIt->second;
+    s_HostKey* hostKey = &keyIt->second;
 
     for (int k = 0; k < hostKey->mods.count; k++)
     {
@@ -374,14 +374,14 @@ bool C_Keyboard::OnKeyUp(ZHW_Event &event) {
             return false;
         }
 
-        s_ZxKeys *zxKeys = &hostKey->mods.zxKeys[k];
+        s_ZxKeys* zxKeys = &hostKey->mods.zxKeys[k];
 
         for (int i = 0; i < zxKeys->count; i++) {
             keyboard[zxKeys->portnum[i]] |= zxKeys->bitmask[i];
         }
 
         if (isModPressed) {
-            s_HostKey *hostKeyMod = &hostKeys[keyMod];
+            s_HostKey* hostKeyMod = &hostKeys[keyMod];
 
             for (int i = 0; i < hostKeyMod->normal.count; i++) {
                 keyboard[hostKeyMod->normal.portnum[i]] &= ~hostKeyMod->normal.bitmask[i];
@@ -417,7 +417,7 @@ bool C_Keyboard::InputByteCheckPort(Z80EX_WORD port) {
     return (!(port & 1));
 }
 
-bool C_Keyboard::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval) {
+bool C_Keyboard::OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval) {
     retval = 255;
     int hport = (port >> 8);
 

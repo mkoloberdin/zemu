@@ -32,27 +32,27 @@
 typedef unsigned long SAAPARAM;
 
 
-// command #defines for use with SendCommand function, eg, 
+// command #defines for use with SendCommand function, eg,
 // int nCurrentSampleRate = SendCommand(SAACMD_GetSampleRate,0);
 // or
 // int nError = SendCommand(SAACMD_SetSampleRate,44100);
 typedef unsigned long SAACMD;
-#define SAACMD_SetVolumeBoost	0x00000001
-#define SAACMD_GetVolumeBoost	0x00000002
-#define SAACMD_SetSampleRate	0x00000003
-#define SAACMD_GetSampleRate	0x00000004
-#define SAACMD_SetNumChannels	0x00000005
-#define SAACMD_GetNumChannels	0x00000006
-#define SAACMD_SetBitDepth		0x00000007
-#define SAACMD_GetBitDepth		0x00000008
-#define SAACMD_SetFilterMode	0x00000009
-#define SAACMD_GetFilterMode	0x0000000a
+#define SAACMD_SetVolumeBoost   0x00000001
+#define SAACMD_GetVolumeBoost   0x00000002
+#define SAACMD_SetSampleRate    0x00000003
+#define SAACMD_GetSampleRate    0x00000004
+#define SAACMD_SetNumChannels   0x00000005
+#define SAACMD_GetNumChannels   0x00000006
+#define SAACMD_SetBitDepth      0x00000007
+#define SAACMD_GetBitDepth      0x00000008
+#define SAACMD_SetFilterMode    0x00000009
+#define SAACMD_GetFilterMode    0x0000000a
 
 // 'Special' return values.
-#define	SAASENDCOMMAND_UNKNOWN_INVALID_COMMAND			0x80000000
-#define	SAASENDCOMMAND_FEATURE_NOT_YET_IMPLEMENTED		0x80000001
-#define	SAASENDCOMMAND_OK								0x80000002
-#define SAASENDCOMMAND_INVALIDPARAMETERS				0x80000003
+#define SAASENDCOMMAND_UNKNOWN_INVALID_COMMAND          0x80000000
+#define SAASENDCOMMAND_FEATURE_NOT_YET_IMPLEMENTED      0x80000001
+#define SAASENDCOMMAND_OK                               0x80000002
+#define SAASENDCOMMAND_INVALIDPARAMETERS                0x80000003
 
 
 #include "sound/snd_renderer.h"
@@ -72,25 +72,25 @@ typedef unsigned long SAACMD;
 class CSAASound
 {
 public:
-	virtual ~CSAASound() { }
+    virtual ~CSAASound() { }
 
-	virtual void SetSoundParameters (SAAPARAM uParam) = 0;
-	virtual void WriteAddress (BYTE nReg) = 0;
-	virtual void WriteData (BYTE nData) = 0;
-	virtual void WriteAddressData (BYTE nReg, BYTE nData) = 0;
-	virtual void Clear () = 0;
-	virtual BYTE ReadAddress () = 0;
+    virtual void SetSoundParameters (SAAPARAM uParam) = 0;
+    virtual void WriteAddress (BYTE nReg) = 0;
+    virtual void WriteData (BYTE nData) = 0;
+    virtual void WriteAddressData (BYTE nReg, BYTE nData) = 0;
+    virtual void Clear () = 0;
+    virtual BYTE ReadAddress () = 0;
 
-	virtual SAAPARAM GetCurrentSoundParameters () = 0;
-	virtual unsigned long GetCurrentSampleRate () = 0;
-	static unsigned long GetSampleRate (SAAPARAM uParam);
-	virtual unsigned short GetCurrentBytesPerSample () = 0;
-	static unsigned short GetBytesPerSample (SAAPARAM uParam);
+    virtual SAAPARAM GetCurrentSoundParameters () = 0;
+    virtual unsigned long GetCurrentSampleRate () = 0;
+    static unsigned long GetSampleRate (SAAPARAM uParam);
+    virtual unsigned short GetCurrentBytesPerSample () = 0;
+    static unsigned short GetBytesPerSample (SAAPARAM uParam);
 
-	virtual void GenerateMany (BYTE * pBuffer, unsigned long nSamples) = 0;
-	virtual void GenerateManyUsingSndRenderer (C_SndRenderer *sr, unsigned devClk) = 0;
+    virtual void GenerateMany (BYTE * pBuffer, unsigned long nSamples) = 0;
+    virtual void GenerateManyUsingSndRenderer (C_SndRenderer *sr, unsigned devClk) = 0;
 
-	virtual int SendCommand (SAACMD nCommandID, long nData) = 0;
+    virtual int SendCommand (SAACMD nCommandID, long nData) = 0;
 
 };
 
@@ -99,7 +99,7 @@ typedef class CSAASound * LPCSAASOUND;
 LPCSAASOUND SAAAPI CreateCSAASound(void);
 void SAAAPI DestroyCSAASound(LPCSAASOUND object);
 
-#endif	// __cplusplus
+#endif  // __cplusplus
 
 
 #ifdef __cplusplus
@@ -134,4 +134,4 @@ int SAAAPI SAASNDSendCommand(SAACMD nCommandID, long nData);
 }; // extern "C"
 #endif
 
-#endif	// SAASOUND_H_INCLUDED
+#endif  // SAASOUND_H_INCLUDED

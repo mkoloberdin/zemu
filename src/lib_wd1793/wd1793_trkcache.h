@@ -6,38 +6,42 @@
 
 class C_Fdd;
 
-class C_TrkCache
-{
-	public:
+class C_TrkCache {
+    public:
 
-	// cached track position
-	C_Fdd *drive;
-	unsigned cyl, side;
+    // cached track position
+    C_Fdd* drive;
+    unsigned cyl;
+    unsigned side;
 
-	// generic track data
-	unsigned trklen;
-	uint8_t *trkd, *trki;       // pointer to data inside UDI
-	unsigned ts_byte;                 // cpu.t per byte
-	SEEK_MODE sf;                     // flag: is sectors filled
-	unsigned s;                       // no. of sectors
+    // generic track data
+    unsigned trklen;
 
-	// sectors on track
-	s_SecHdr hdr[MAX_SEC];
+    // pointer to data inside UDI
+    uint8_t* trkd;
+    uint8_t* trki;
 
-	void set_i(unsigned pos);
-	void clr_i(unsigned pos);
-	uint8_t test_i(unsigned pos);
-	void write(unsigned pos, uint8_t byte, char index);
+    unsigned ts_byte; // cpu.t per byte
+    SEEK_MODE sf; // flag: is sectors filled
+    unsigned s; // no. of sectors
 
-	void seek(C_Fdd *d, unsigned cyl, unsigned side, SEEK_MODE fs);
-	void format(); // before use, call seek(d,c,s,JUST_SEEK), set s and hdr[]
-	int write_sector(unsigned sec, uint8_t *data); // call seek(d,c,s,LOAD_SECTORS)
-	s_SecHdr * get_sector(unsigned sec); // before use, call fill(d,c,s,LOAD_SECTORS)
+    // sectors on track
+    s_SecHdr hdr[MAX_SEC];
 
-	// void dump();
-	void clear();
+    void set_i(unsigned pos);
+    void clr_i(unsigned pos);
+    uint8_t test_i(unsigned pos);
+    void write(unsigned pos, uint8_t byte, char index);
 
-	C_TrkCache();
+    void seek(C_Fdd* d, unsigned cyl, unsigned side, SEEK_MODE fs);
+    void format(); // before use, call seek(d, c, s, JUST_SEEK), set s and hdr[]
+    int write_sector(unsigned sec, uint8_t* data); // call seek(d, c, s, LOAD_SECTORS)
+    s_SecHdr* get_sector(unsigned sec); // before use, call fill(d, c, s, LOAD_SECTORS)
+
+    // void dump();
+    void clear();
+
+    C_TrkCache();
 };
 
 #endif

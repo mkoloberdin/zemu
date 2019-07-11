@@ -9,34 +9,34 @@
 #include <stdint.h> // TODO: For compilation with MSVC an external stdint.h will be needed
 
 #ifndef _WIN32
-	#include <limits.h>
+    #include <limits.h>
 #endif
 
-#define DEBUG_MESSAGE(msg) printf("%s\n",(msg))
+#define DEBUG_MESSAGE(msg) printf("%s\n", (msg))
 
 #ifndef MAX_PATH
-	#ifdef PATH_MAX
-		#define MAX_PATH PATH_MAX
-	#else
-		#define MAX_PATH 0x1000
-	#endif
+    #ifdef PATH_MAX
+        #define MAX_PATH PATH_MAX
+    #else
+        #define MAX_PATH 0x1000
+    #endif
 #endif
 
 #ifndef _WIN32
-	#define stricmp(s1,s2) strcasecmp((s1),(s2))
-	#include <unistd.h>
+    #define stricmp(s1, s2) strcasecmp((s1), (s2))
+    #include <unistd.h>
 #endif
 
 #ifndef M_PI
-	#define M_PI 3.1415926535897932
+    #define M_PI 3.1415926535897932
 #endif
 
 #ifndef zmin
-	#define zmin(a,b) ((a)<(b)?(a):(b))
+    #define zmin(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 #ifndef zmax
-	#define zmax(a,b) ((a)>(b)?(a):(b))
+    #define zmax(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
 extern char hex[17];
@@ -46,11 +46,11 @@ int sgn(int a);
 int unhex(char c);
 bool ishex(char c);
 
-void AddLog(const char *fmt, ...);
-void AddLogN(const char *fmt, ...);
-void StrikeError(const char *fmt, ...);
-void StrikeMessage(const char *fmt, ...);
+void AddLog(const char* fmt, ...);
+void AddLogN(const char* fmt, ...);
+void StrikeError(const char* fmt, ...);
+void StrikeMessage(const char* fmt, ...);
 
-char* AllocNstrcpy(const char *str);
+char* AllocNstrcpy(const char* str);
 
 #endif

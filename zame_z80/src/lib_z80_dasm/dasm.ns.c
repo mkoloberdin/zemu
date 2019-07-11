@@ -44,23 +44,23 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
 
 #namespace Dasm
     unsigned ::disassemble(
-        char *buffer,
+        char* buffer,
         unsigned buffer_size,
         word addr,
         ::t_read ptr_read,
-        void *data_read
+        void* data_read
     ) {
         if (!buffer_size) {
             return 0;
         }
 
-        const s_DasmItem *optable = ::optable_00;
-        const char *opcode_ptr;
+        const s_DasmItem* optable = ::optable_00;
+        const char* opcode_ptr;
         unsigned size = 0;
         int8_t offset = 0;
 
         for (;;) {
-            const s_DasmItem *item = &optable[(unsigned)ptr_read(addr, data_read)];
+            const s_DasmItem* item = &optable[(unsigned)ptr_read(addr, data_read)];
             addr++;
             size++;
 
@@ -96,7 +96,7 @@ extern const s_DasmItem Dasm::optable_FD_CB[0x100];
             opcode_ptr++;
 
             char tmp[0x100];
-            char *ptr = tmp;
+            char* ptr = tmp;
 
             while (*opcode_ptr && *opcode_ptr!=']') {
                 *(ptr++) = *(opcode_ptr++);

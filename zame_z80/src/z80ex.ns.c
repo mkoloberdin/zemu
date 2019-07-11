@@ -10,27 +10,27 @@
     #define snprintf _snprintf
 #endif
 
-int z80ex_step(Z80EX_CONTEXT *cpu) {
+int z80ex_step(Z80EX_CONTEXT* cpu) {
     return (int)Cpu::tick(cpu);
 }
 
-int z80ex_int(Z80EX_CONTEXT *cpu) {
+int z80ex_int(Z80EX_CONTEXT* cpu) {
     return (int)Cpu::do_int(cpu);
 }
 
-bool z80ex_int_possible(Z80EX_CONTEXT *cpu) {
+bool z80ex_int_possible(Z80EX_CONTEXT* cpu) {
     return !(cpu->is_noint);
 }
 
 int z80ex_dasm(
-    char *output,
+    char* output,
     int output_size,
     unsigned flags,
-    int *t_states,
-    int *t_states2,
+    int* t_states,
+    int* t_states2,
     z80ex_dasm_readbyte_cb readbyte_cb,
     Z80EX_WORD addr,
-    void *user_data
+    void* user_data
 ) {
     *t_states = 1;
     *t_states2 = 0;

@@ -29,7 +29,7 @@
 
 char hex_tab[0x10] = "0123456789ABCDEF";
 
-void error(const char *fmt, ...) {
+void error(const char* fmt, ...) {
     va_list arg_ptr;
     char buf[0x1000];
 
@@ -41,12 +41,12 @@ void error(const char *fmt, ...) {
     exit(0);
 }
 
-void * safe_alloc(size_t size) {
+void* safe_alloc(size_t size) {
     if (!size) {
         return NULL;
     }
 
-    void *ptr = malloc(size);
+    void* ptr = malloc(size);
 
     if (!ptr) {
         error("Can't allocate %d bytes", (int)size);
@@ -55,7 +55,7 @@ void * safe_alloc(size_t size) {
     return ptr;
 }
 
-void safe_realloc(void **ptr, size_t size) {
+void safe_realloc(void** ptr, size_t size) {
     *ptr = realloc(*ptr, size);
 
     if (size && !(*ptr)) {
@@ -63,19 +63,19 @@ void safe_realloc(void **ptr, size_t size) {
     }
 }
 
-void safe_free(void *ptr) {
+void safe_free(void* ptr) {
     if (ptr) {
         free(ptr);
     }
 }
 
-char * alloc_n_strcpy(const char *str) {
-    char * res = safe_alloc(strlen(str) + 1);
+char* alloc_n_strcpy(const char* str) {
+    char* res = safe_alloc(strlen(str) + 1);
     strcpy(res, str);
     return res;
 }
 
-char * alloc_n_sprintf(const char *fmt, ...) {
+char* alloc_n_sprintf(const char* fmt, ...) {
     va_list arg_ptr;
     char buf[0x1000];
 
@@ -83,7 +83,7 @@ char * alloc_n_sprintf(const char *fmt, ...) {
     vsnprintf(buf, sizeof(buf), fmt, arg_ptr);
     va_end(arg_ptr);
 
-    char * res = safe_alloc(strlen(buf) + 1);
+    char* res = safe_alloc(strlen(buf) + 1);
     strcpy(res, buf);
     return res;
 }
@@ -150,7 +150,7 @@ int unhex(char ch) {
 // man strncpy:
 // If there is no null byte among the first n bytes of src, the string placed in dest will not be null terminated.
 //
-void safe_strcpy(char *dst, const char *src, size_t sz) {
+void safe_strcpy(char* dst, const char* src, size_t sz) {
     strncpy(dst, src, sz);
     dst[sz - 1] = '\0';
 }

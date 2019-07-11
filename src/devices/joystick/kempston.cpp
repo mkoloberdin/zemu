@@ -1,5 +1,3 @@
-// [boo_boo]
-
 #include "kempston.h"
 #include "../../joystick_manager.h"
 
@@ -20,7 +18,7 @@ void C_KempstonStick::SetJoyNum(int num) {
     joy_num = num;
 }
 
-bool C_KempstonStick::OnKeyDown(ZHW_Event &event) {
+bool C_KempstonStick::OnKeyDown(ZHW_Event& event) {
     if (!joyOnKeyb || !ZHW_EVENT_OKKEY(window, event)) {
         return false;
     }
@@ -42,7 +40,7 @@ bool C_KempstonStick::OnKeyDown(ZHW_Event &event) {
             joy_kbd |= 0x01;
             break;
 
-        case ZHW_KEY_RCTRL:
+        case ZHW_KEY_RCTRL: // fallthrough
         case ZHW_KEY_RALT:
             joy_kbd |= 0x10;
             break;
@@ -54,7 +52,7 @@ bool C_KempstonStick::OnKeyDown(ZHW_Event &event) {
     return false;
 }
 
-bool C_KempstonStick::OnKeyUp(ZHW_Event &event) {
+bool C_KempstonStick::OnKeyUp(ZHW_Event& event) {
     if (!joyOnKeyb || !ZHW_EVENT_OKKEY(window, event)) {
         return false;
     }
@@ -76,7 +74,7 @@ bool C_KempstonStick::OnKeyUp(ZHW_Event &event) {
             joy_kbd &= ~0x01;
             break;
 
-        case ZHW_KEY_RCTRL:
+        case ZHW_KEY_RCTRL: // fallthrough
         case ZHW_KEY_RALT:
             joy_kbd &= ~0x10;
             break;
@@ -92,13 +90,13 @@ bool C_KempstonStick::InputByteCheckPort(Z80EX_WORD port) {
     return (!(port & 0x20));
 }
 
-bool C_KempstonStick::OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval) {
+bool C_KempstonStick::OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval) {
     retval = 0;
 
     if (joyOnKeyb) {
         retval = joy_kbd;
     } else if (joy_num >= 0) {
-        JoystickState *jstate = C_JoystickManager::Instance()->GetJoystickState(joy_num);
+        JoystickState* jstate = C_JoystickManager::Instance()->GetJoystickState(joy_num);
 
         if (jstate->right) {
             retval |= 0x01;

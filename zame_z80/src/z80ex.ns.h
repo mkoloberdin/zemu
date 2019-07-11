@@ -24,11 +24,11 @@ typedef enum {
     regIM = 17
 } Z80_REG_T;
 
-typedef Z80EX_BYTE (*z80ex_mread_cb)(Z80EX_WORD addr, int m1_state, void *user_data);
-typedef void (*z80ex_mwrite_cb)(Z80EX_WORD addr, Z80EX_BYTE value, void *user_data);
-typedef Z80EX_BYTE (*z80ex_pread_cb)(Z80EX_WORD port, void *user_data);
-typedef void (*z80ex_pwrite_cb)(Z80EX_WORD port, Z80EX_BYTE value, void *user_data);
-typedef Z80EX_BYTE (*z80ex_intread_cb)(void *user_data);
+typedef Z80EX_BYTE (* z80ex_mread_cb)(Z80EX_WORD addr, int m1_state, void* user_data);
+typedef void (* z80ex_mwrite_cb)(Z80EX_WORD addr, Z80EX_BYTE value, void* user_data);
+typedef Z80EX_BYTE (* z80ex_pread_cb)(Z80EX_WORD port, void* user_data);
+typedef void (* z80ex_pwrite_cb)(Z80EX_WORD port, Z80EX_BYTE value, void* user_data);
+typedef Z80EX_BYTE (* z80ex_intread_cb)(void* user_data);
 
 #ifndef Z80EX_SELF_INCLUDE
 
@@ -47,14 +47,14 @@ struct s_Cpu {
     z80ex_pwrite_cb ptr_out;
     z80ex_intread_cb ptr_read_int;
 
-    void *data_read;
-    void *data_write;
-    void *data_in;
-    void *data_out;
-    void *data_read_int;
+    void* data_read;
+    void* data_write;
+    void* data_in;
+    void* data_out;
+    void* data_read_int;
 
-    unsigned (* tick)(struct s_Cpu *self);
-    void * (* optable)(struct s_Cpu *self);
+    unsigned (* tick)(struct s_Cpu* self);
+    void* (* optable)(struct s_Cpu* self);
     Z80EX_BYTE prefix;
     unsigned long tstate;
 
@@ -78,19 +78,24 @@ typedef struct s_Cpu Z80EX_CONTEXT;
 extern "C" {
 #endif
 
-extern s_Cpu * Cpu::new(
-    z80ex_mread_cb mrcb_fn, void *mrcb_data,
-    z80ex_mwrite_cb mwcb_fn, void *mwcb_data,
-    z80ex_pread_cb prcb_fn, void *prcb_data,
-    z80ex_pwrite_cb pwcb_fn, void *pwcb_data,
-    z80ex_intread_cb ircb_fn, void *ircb_data
+extern s_Cpu* Cpu::new(
+    z80ex_mread_cb mrcb_fn,
+    void* mrcb_data,
+    z80ex_mwrite_cb mwcb_fn,
+    void* mwcb_data,
+    z80ex_pread_cb prcb_fn,
+    void* prcb_data,
+    z80ex_pwrite_cb pwcb_fn,
+    void* pwcb_data,
+    z80ex_intread_cb ircb_fn,
+    void* ircb_data
 );
 
-extern void Cpu::free(s_Cpu *self);
-extern unsigned Cpu::do_int(s_Cpu *self);
-extern void Cpu::reset(s_Cpu *self);
-extern Z80EX_WORD Cpu::get_reg(s_Cpu *self, int reg);
-extern void Cpu::set_reg(s_Cpu *self, int reg, Z80EX_WORD value);
+extern void Cpu::free(s_Cpu* self);
+extern unsigned Cpu::do_int(s_Cpu* self);
+extern void Cpu::reset(s_Cpu* self);
+extern Z80EX_WORD Cpu::get_reg(s_Cpu* self, int reg);
+extern void Cpu::set_reg(s_Cpu* self, int reg, Z80EX_WORD value);
 
 #define z80ex_create Cpu::new
 #define z80ex_destroy Cpu::free
@@ -100,9 +105,9 @@ extern void Cpu::set_reg(s_Cpu *self, int reg, Z80EX_WORD value);
 #define z80ex_last_op_type(cpu) (cpu->prefix)
 #define z80ex_op_tstate(cpu) (cpu->tstate)
 
-extern int z80ex_step(Z80EX_CONTEXT *cpu);
-extern int z80ex_int(Z80EX_CONTEXT *cpu);
-extern bool z80ex_int_possible(Z80EX_CONTEXT *cpu);
+extern int z80ex_step(Z80EX_CONTEXT* cpu);
+extern int z80ex_int(Z80EX_CONTEXT* cpu);
+extern bool z80ex_int_possible(Z80EX_CONTEXT* cpu);
 
 #ifdef __cplusplus
 }

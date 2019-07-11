@@ -19,37 +19,37 @@
 class CSAASoundInternal : public CSAASound
 {
 private:
-	int m_nCurrentSaaReg;
-	bool m_bOutputEnabled;
-	bool m_bSync;
-	int m_uParam, m_uParamRate;
+    int m_nCurrentSaaReg;
+    bool m_bOutputEnabled;
+    bool m_bSync;
+    int m_uParam, m_uParamRate;
 
-	CSAAFreq * Osc[6];
-	CSAANoise * Noise[2];
-	CSAAAmp * Amp[6];
-	CSAAEnv * Env[2];
+    CSAAFreq * Osc[6];
+    CSAANoise * Noise[2];
+    CSAAAmp * Amp[6];
+    CSAAEnv * Env[2];
 
 public:
-	CSAASoundInternal();
-	~CSAASoundInternal();
+    CSAASoundInternal();
+    ~CSAASoundInternal();
 
-	void SetSoundParameters(SAAPARAM uParam);
-	void WriteAddress(BYTE nReg);
-	void WriteData(BYTE nData);
-	void WriteAddressData(BYTE nReg, BYTE nData);
-	void Clear(void);
-	BYTE ReadAddress(void);
+    void SetSoundParameters(SAAPARAM uParam);
+    void WriteAddress(BYTE nReg);
+    void WriteData(BYTE nData);
+    void WriteAddressData(BYTE nReg, BYTE nData);
+    void Clear(void);
+    BYTE ReadAddress(void);
 
-	SAAPARAM GetCurrentSoundParameters(void);
-	unsigned long GetCurrentSampleRate(void);
-	static unsigned long GetSampleRate(SAAPARAM uParam);
-	unsigned short GetCurrentBytesPerSample(void);
-	static unsigned short GetBytesPerSample(SAAPARAM uParam);
+    SAAPARAM GetCurrentSoundParameters(void);
+    unsigned long GetCurrentSampleRate(void);
+    static unsigned long GetSampleRate(SAAPARAM uParam);
+    unsigned short GetCurrentBytesPerSample(void);
+    static unsigned short GetBytesPerSample(SAAPARAM uParam);
 
-	void GenerateMany(BYTE * pBuffer, unsigned long nSamples);
-	void GenerateManyUsingSndRenderer(C_SndRenderer *sr, unsigned devClk);
+    void GenerateMany(BYTE * pBuffer, unsigned long nSamples);
+    void GenerateManyUsingSndRenderer(C_SndRenderer *sr, unsigned devClk);
 
-	int SendCommand(SAACMD nCommandID, long nData);
+    int SendCommand(SAACMD nCommandID, long nData);
 
 };
 

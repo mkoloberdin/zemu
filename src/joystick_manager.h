@@ -1,62 +1,48 @@
 #ifndef _JOYSTICK_MANAGER_H_
 #define _JOYSTICK_MANAGER_H_
 
-// [boo_boo]
-
 #include "zemu.h"
 
 #define MAX_JOYSTICKS 5
-#define DEF_JOY_AXIS_TRESHOLD 3200		// default axis movement treshold (useful for fine-tunung analog sticks)
+#define DEF_JOY_AXIS_TRESHOLD 3200 // default axis movement treshold (useful for fine-tunung analog sticks)
 
-typedef struct
-{
-	int axis_treshold; // for fine-tunung analog sticks
-	bool init_ok;
-	bool up;
-	bool down;
-	bool left;
-	bool right;
-	bool fire;
+typedef struct {
+    int axis_treshold; // for fine-tunung analog sticks
+    bool init_ok;
+    bool up;
+    bool down;
+    bool left;
+    bool right;
+    bool fire;
 } JoystickState;
 
-class C_JoystickManager
-{
-	public:
+class C_JoystickManager {
+    public:
 
-	// get singleton instance
-	static C_JoystickManager* Instance();
+    static C_JoystickManager* Instance();
 
-	void Init();	// [rst]
+    void Init();
+    bool EnableProcessing();
+    bool DisableProcessing();
 
-	// enable processing of joystick events
-	bool EnableProcessing();
+    // initialize joystick [joy_num] and mark it as managed, return true if joystick was added succesfully
+    bool AddJoystick(int joy_num, int axis_treshold = DEF_JOY_AXIS_TRESHOLD);
 
-	// disable processing of joystick events
-	bool DisableProcessing();
+    bool ProcessJoystickEvent(ZHW_Event& event);
+    static bool OnJoystickEvent(ZHW_Event& event);
+    JoystickState* GetJoystickState(int joy_num);
 
-	// initialize joystick [joy_num] and mark it as managed, return true if joystick was added succesfully
-	bool AddJoystick(int joy_num, int axis_treshold=DEF_JOY_AXIS_TRESHOLD);
+    protected:
 
-	// process joystick event
-	bool ProcessJoystickEvent(ZHW_Event &event);
+    JoystickState jstate[MAX_JOYSTICKS];
 
-	// joystick event callback
-	static bool OnJoystickEvent(ZHW_Event &event);
+    C_JoystickManager();
 
-	// get state of joystick [joy_num]
-	JoystickState* GetJoystickState(int joy_num);
+    private:
 
-	protected:
-
-	JoystickState jstate[MAX_JOYSTICKS];
-
-	C_JoystickManager();
-
-	private:
-
-	bool is_enabled;
-	int num_joysticks;
-	static C_JoystickManager* _instance;
+    bool is_enabled;
+    int num_joysticks;
+    static C_JoystickManager* _instance;
 };
 
 #endif

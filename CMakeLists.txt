@@ -114,11 +114,13 @@ if (WIN32)
 endif ()
 
 # Visual Studio file grouping
+
 source_group (zemu src/*)
 source_group (devices src/devices/*)
 source_group (devices/border src/devices/border/*)
 source_group (devices/covox src/devices/covox/*)
 source_group (devices/extport src/devices/extport/*)
+source_group (devices/gsound src/devices/gsound/*)
 source_group (devices/joystick src/devices/joystick/*)
 source_group (devices/keyboard src/devices/keyboard/*)
 source_group (devices/mmanager src/devices/mmanager/*)
@@ -127,13 +129,30 @@ source_group (devices/trdos src/devices/trdos/*)
 source_group (devices/tsfm src/devices/tsfm/*)
 source_group (images src/images/*)
 source_group (lib_ay src/lib_ay/*)
+source_group (lib_saa1099 src/lib_saa1099/*)
+source_group (lib_simpleini src/lib_simpleini/*)
 source_group (lib_wd1793 src/lib_wd1793/*)
 source_group (lib_ym2203 src/lib_ym2203/*)
 source_group (renderer src/renderer/*)
 source_group (sound src/sound/*)
 source_group (tape src/tape/*)
+source_group (windows src/windows/*)
 
 # Install
+
 INSTALL_PROGRAMS (/zemu FILES ./zemu)
-INSTALL_FILES (/zemu FILES ./src/zemu.ini ./src/keys.config ./readme.utf8.text)
-INSTALL_FILES (/zemu/roms FILES ./src/roms/)
+INSTALL_FILES (/zemu/arc FILES ./extras/arc/)
+INSTALL_FILES (/zemu/boot FILES ./extras/boot/)
+INSTALL_FILES (/zemu/roms FILES ./extras/roms/)
+
+INSTALL_FILES (/zemu FILES
+    ./LICENSE
+    ./CHANGELOG.md
+    ./README.md
+    ./extras/keys.config
+    ./extras/zemu.ini
+    ./src/lib_saa1099/LICENCE-SAA1099
+    ./src/lib_simpleini/LICENSE-CONVERTUTF
+    ./src/lib_simpleini/LICENSE-SIMPLEINI
+    ./src/lib_ym2203/LICENSE-YM2203
+)

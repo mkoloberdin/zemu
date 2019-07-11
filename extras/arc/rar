@@ -1,0 +1,30 @@
+#!/bin/bash
+
+list_files() {
+    [ -e "$2" ] && rm "$2" &> /dev/null
+
+    unrar lb "$1" | while read fname ; do
+        ext=`echo ${fname##*.} | tr A-Z a-z`
+
+        if [ "$ext" = "scl" ] || [ "$ext" = "trd" ] || [ "$ext" = "z80" ] || [ "$ext" = "p" ] || [ "$ext" = "tap" ] ; then
+            echo $fname >> $2
+        fi
+    done
+}
+
+extract_files() {
+    unrar e -o+ -p- "$1" "$2" "$3" &> /dev/null
+}
+
+# arc/rar list <rar file> <result file>
+# arc/rar extract <rar file> <file to extract> <result folder>
+
+case "$1" in
+    list)
+        list_files "$2" "$3"
+        ;;
+
+    extract)
+        extract_files "$2" "$3" "$4"
+        ;;
+esac

@@ -52,14 +52,14 @@
     typedef struct {
         int videoSpec;
         bool useFlipSurface;
-        SDL_Surface *surface;
+        SDL_Surface* surface;
     } ZHW_Window;
 #else
     typedef struct {
-        SDL_Window *nativeWindow;
-        SDL_Renderer *renderer;
-        SDL_Texture *texture;
-        SDL_Surface *surface;
+        SDL_Window* nativeWindow;
+        SDL_Renderer* renderer;
+        SDL_Texture* texture;
+        SDL_Surface* surface;
         bool isKeyRepeatEnabled;
     } ZHW_Window;
 #endif
@@ -137,12 +137,12 @@
 
 int ZHW_Core_Init(bool withAudio);
 int ZHW_Joystick_Init();
-ZHW_Window* ZHW_Video_CreateWindow(const char *title, int width, int height, bool isFullscreen, bool useFlipSurface);
-void ZHW_Video_ToggleFullScreen(ZHW_Window *window);
-void ZHW_Video_BlitWindow(ZHW_Window *window);
-void ZHW_Video_CloseWindow(ZHW_Window *window);
-void ZHW_Keyboard_EnableKeyRepeat(ZHW_Window *window);
-void ZHW_Keyboard_DisableKeyRepeat(ZHW_Window *window);
+ZHW_Window* ZHW_Video_CreateWindow(const char* title, int width, int height, bool isFullscreen, bool useFlipSurface);
+void ZHW_Video_ToggleFullScreen(ZHW_Window* window);
+void ZHW_Video_BlitWindow(ZHW_Window* window);
+void ZHW_Video_CloseWindow(ZHW_Window* window);
+void ZHW_Keyboard_EnableKeyRepeat(ZHW_Window* window);
+void ZHW_Keyboard_DisableKeyRepeat(ZHW_Window* window);
 
 /*
  * Constants

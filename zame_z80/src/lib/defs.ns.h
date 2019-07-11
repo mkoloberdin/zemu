@@ -83,13 +83,13 @@ typedef uint32_t dword;
 
 extern char hex_tab[0x10];
 
-void error(const char *fmt, ...);
-void * safe_alloc(size_t size);
-void safe_realloc(void **ptr, size_t size);
-void safe_free(void *ptr);
-char * alloc_n_strcpy(const char *str);
-char * alloc_n_sprintf(const char *fmt, ...);
+void error(const char* fmt, ...);
+void* safe_alloc(size_t size);
+void safe_realloc(void** ptr, size_t size);
+void safe_free(void* ptr);
+char* alloc_n_strcpy(const char* str);
+char* alloc_n_sprintf(const char* fmt, ...);
 int unhex(char ch);
-void safe_strcpy(char *dst, const char *src, size_t sz);
+void safe_strcpy(char* dst, const char* src, size_t sz);
 
-#define ALLOC_MEM(s) ((s*)safe_alloc(sizeof(s)))
+#define ALLOC_MEM(S) ((S*)safe_alloc(sizeof(S)))

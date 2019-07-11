@@ -10,7 +10,7 @@
 #include "devices/tsfm/tsfm.h"
 #include "devices/mouse/mouse.h"
 #include "devices/covox/covox.h"
-#include "devices/joystick/kempston.h"		// [boo_boo]
+#include "devices/joystick/kempston.h"
 #include "devices/gsound/gsound.h"
 
 extern C_Border dev_border;
@@ -21,7 +21,7 @@ extern C_MemoryManager dev_mman;
 extern C_TsFm dev_tsfm;
 extern C_Mouse dev_mouse;
 extern C_Covox dev_covox;
-extern C_KempstonStick dev_kempston;	// [boo_boo]
+extern C_KempstonStick dev_kempston;
 extern C_GSound dev_gsound;
 
 #endif

@@ -3,32 +3,38 @@
 
 #include <stdint.h>
 
-#define align_by(a,b) (((unsigned)(a)+((b)-1)) & ~((b)-1))
-#define WORD4(a,b,c,d) (((unsigned)(a))+((unsigned)(b))*0x100L+((unsigned)(c))*0x10000L+((unsigned)(d))*0x1000000L)
-#define WORD2(a,b) (((unsigned)(a))+((unsigned)(b))*0x100)
+#define align_by(a, b) (((unsigned)(a) + ((b) - 1)) & ~((b) - 1))
+#define WORD4(a, b, c, d) (((unsigned)(a)) + ((unsigned)(b)) * 0x100L + ((unsigned)(c)) * 0x10000L + ((unsigned)(d)) * 0x1000000L)
+#define WORD2(a, b) (((unsigned)(a)) + ((unsigned)(b)) * 0x100)
 
 #ifndef zmax
-	#define zmax(a,b) (((a)>(b))?(a):(b))
+    #define zmax(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
 #ifndef zmin
-	#define zmin(a,b) (((a)<(b))?(a):(b))
+    #define zmin(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
-struct s_SecHdr
-{
-	uint8_t c, s, n, l;
-	uint16_t crc;
-	uint8_t c1, c2; // flags: correct CRCs in address and data
-	uint8_t *data, *id;
-	unsigned datlen;
-	unsigned crcd;        // used to load specific CRC from FDI-file
+struct s_SecHdr {
+    uint8_t c;
+    uint8_t s;
+    uint8_t n;
+    uint8_t l;
+    uint16_t crc;
+
+    // flags: correct CRCs in address and data
+    uint8_t c1;
+    uint8_t c2;
+
+    uint8_t* data;
+    uint8_t* id;
+    unsigned datlen;
+    unsigned crcd; // used to load specific CRC from FDI-file
 };
 
-enum SEEK_MODE
-{
-	JUST_SEEK = 0,
-	LOAD_SECTORS = 1
+enum SEEK_MODE {
+    JUST_SEEK = 0,
+    LOAD_SECTORS = 1
 };
 
 #endif

@@ -19,23 +19,23 @@
 #endif
 
 #ifndef NULL
-#define NULL	0
+#define NULL    0
 #endif
 
 typedef union
 {
-	struct {
-		unsigned short Left;
-		unsigned short Right;
-	} sep;
-	unsigned long dword;
+    struct {
+        unsigned short Left;
+        unsigned short Right;
+    } sep;
+    unsigned long dword;
 } stereolevel;
 
 typedef struct
 {
-	int nNumberOfPhases;
-	bool bLooping;
-	unsigned short nLevels[2][2][16]; // [Resolution][Phase][Withinphase]
+    int nNumberOfPhases;
+    bool bLooping;
+    unsigned short nLevels[2][2][16]; // [Resolution][Phase][Withinphase]
 } ENVDATA;
 
 #ifdef WIN32

@@ -5,13 +5,13 @@
 #include "../../bin.h"
 
 struct s_CfgHostKey {
-    const char *cfgname;
+    const char* cfgname;
     int keysym;
     int keysymadd;
 };
 
 struct s_CfgZxKey {
-    const char *cfgname;
+    const char* cfgname;
     int portnum;
     int bitmask;
     int inum;

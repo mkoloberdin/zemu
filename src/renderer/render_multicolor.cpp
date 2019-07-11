@@ -1,90 +1,74 @@
 #include "render_multicolor.h"
 #include "render_common.h"
 
-void RenderMulticolor(unsigned long nextClk)
-{
-	int ci, cp, bt;
-	#include "render_common_a.h"
+void RenderMulticolor(unsigned long nextClk) {
+    int ci;
+    int cp;
+    int bt;
 
-	zxScreen = ((dev_mman.port7FFD & 8) ^ screensHack) ? RAM_BANK7 : RAM_BANK5;
+    #include "render_common_a.h"
 
-	if (!attributesHack)
-	{
-		bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
-		cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
+    zxScreen = ((dev_mman.port7FFD & 8) ^ screensHack) ? RAM_BANK7 : RAM_BANK5;
 
-		if (flashColor)
-		{
-			ci = colors[((cl & 64) >> 3) | (cl & 7)];
-			cp = (cl >> 3) & 7;
+    if (!attributesHack) {
+        bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
+        cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 
-			if (cp)
-			{
-				cp = colors[cp];
+        if (flashColor) {
+            ci = colors[((cl & 64) >> 3) | (cl & 7)];
+            cp = (cl >> 3) & 7;
 
-				int r = ((unsigned int)ZHW_VIDEO_GETR(ci) + (unsigned int)ZHW_VIDEO_GETR(cp)) >> 1;
-				int g = ((unsigned int)ZHW_VIDEO_GETG(ci) + (unsigned int)ZHW_VIDEO_GETG(cp)) >> 1;
-				int b = ((unsigned int)ZHW_VIDEO_GETB(ci) + (unsigned int)ZHW_VIDEO_GETB(cp)) >> 1;
+            if (cp) {
+                cp = colors[cp];
 
-				ci = ZHW_VIDEO_MAKERGB(r, g, b);
-			}
+                int r = ((unsigned int)ZHW_VIDEO_GETR(ci) + (unsigned int)ZHW_VIDEO_GETR(cp)) >> 1;
+                int g = ((unsigned int)ZHW_VIDEO_GETG(ci) + (unsigned int)ZHW_VIDEO_GETG(cp)) >> 1;
+                int b = ((unsigned int)ZHW_VIDEO_GETB(ci) + (unsigned int)ZHW_VIDEO_GETB(cp)) >> 1;
 
-			cp = ZHW_VIDEO_MAKERGB(0, 0, 0);
-		}
-		else
-		{
-			if ((frames & 32) && (cl & 128))
-			{
-				cp = colors[((cl & 64) >> 3) | (cl & 7)];
-				ci = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
-			}
-			else
-			{
-				ci = colors[((cl & 64) >> 3) | (cl & 7)];
-				cp = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
-			}
-		}
-	}
-	else if (attributesHack == 1)
-	{
-		bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
+                ci = ZHW_VIDEO_MAKERGB(r, g, b);
+            }
 
-		if (((zxLine >> 3) & 1) ^ (pos & 1))
-		{
-			ci = ZHW_VIDEO_MAKERGB(0,0,0);
-			cp = ZHW_VIDEO_MAKERGB(192,192,192);
-		}
-		else
-		{
-			ci = ZHW_VIDEO_MAKERGB(64,64,64);
-			cp = ZHW_VIDEO_MAKERGB(255,255,255);
-		}
-	}
-	else	// attributesHack == 2
-	{
-		bt = 0x3C;
-		cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
+            cp = ZHW_VIDEO_MAKERGB(0, 0, 0);
+        } else {
+            if ((frames & 32) && (cl & 128)) {
+                cp = colors[((cl & 64) >> 3) | (cl & 7)];
+                ci = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
+            } else {
+                ci = colors[((cl & 64) >> 3) | (cl & 7)];
+                cp = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
+            }
+        }
+    } else if (attributesHack == 1) {
+        bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 
-		if ((frames & 32) && (cl & 128))
-		{
-			cp = colors[((cl & 64) >> 3) | (cl & 7)];
-			ci = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
-		}
-		else
-		{
-			ci = colors[((cl & 64) >> 3) | (cl & 7)];
-			cp = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
-		}
-	}
+        if (((zxLine >> 3) & 1) ^ (pos & 1)) {
+            ci = ZHW_VIDEO_MAKERGB(0, 0, 0);
+            cp = ZHW_VIDEO_MAKERGB(192, 192, 192);
+        } else {
+            ci = ZHW_VIDEO_MAKERGB(64, 64, 64);
+            cp = ZHW_VIDEO_MAKERGB(255, 255, 255);
+        }
+    } else { // attributesHack == 2
+        bt = 0x3C;
+        cl = dev_mman.ram[ zxScreen + 0x2000 + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 
-	*(scr++) = (bt & 128 ? ci : cp);
-	*(scr++) = (bt &  64 ? ci : cp);
-	*(scr++) = (bt &  32 ? ci : cp);
-	*(scr++) = (bt &  16 ? ci : cp);
-	*(scr++) = (bt &   8 ? ci : cp);
-	*(scr++) = (bt &   4 ? ci : cp);
-	*(scr++) = (bt &   2 ? ci : cp);
-	*(scr)   = (bt &   1 ? ci : cp);
+        if ((frames & 32) && (cl & 128)) {
+            cp = colors[((cl & 64) >> 3) | (cl & 7)];
+            ci = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
+        } else {
+            ci = colors[((cl & 64) >> 3) | (cl & 7)];
+            cp = colors[((cl & 64) >> 3) | ((cl >> 3) & 7)];
+        }
+    }
 
-	#include "render_common_b.h"
+    *(scr++) = (bt & 128 ? ci : cp);
+    *(scr++) = (bt &  64 ? ci : cp);
+    *(scr++) = (bt &  32 ? ci : cp);
+    *(scr++) = (bt &  16 ? ci : cp);
+    *(scr++) = (bt &   8 ? ci : cp);
+    *(scr++) = (bt &   4 ? ci : cp);
+    *(scr++) = (bt &   2 ? ci : cp);
+    *(scr)   = (bt &   1 ? ci : cp);
+
+    #include "render_common_b.h"
 }

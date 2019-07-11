@@ -3,7 +3,7 @@
 
 #include "zemu.h"
 
-bool DlgConfirm(const char *message);
+bool DlgConfirm(const char* message);
 void FileDialog(void);
 void FileDialogInit(void);
 void RunDebugger(void);

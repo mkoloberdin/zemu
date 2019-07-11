@@ -27,18 +27,18 @@
 #define DASM_MAX_BUFFER 64
 
 typedef struct s_DasmItem {
-    const char *opcode;
-    const struct s_DasmItem *transfer;
+    const char* opcode;
+    const struct s_DasmItem* transfer;
 } s_DasmItem;
 
 #namespace Dasm
-    typedef byte (* ::t_read)(word addr, void *data);
+    typedef byte (* ::t_read)(word addr, void* data);
 
     unsigned ::disassemble(
-        char *buffer,
+        char* buffer,
         unsigned buffer_size,
         word addr,
         ::t_read ptr_read,
-        void *data_read
+        void* data_read
     );
 #end

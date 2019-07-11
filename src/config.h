@@ -1,42 +1,44 @@
 #ifndef _CONFIG_H_INCLUDED_
 #define _CONFIG_H_INCLUDED_
 
-#include "SimpleIni.h"
+#include "lib_simpleini/SimpleIni.h"
 #include <stdint.h>
 #include <string>
 
 using namespace std;
 
 class CConfig {
-public:
-	CConfig();
-	~CConfig();
+    public:
 
-	void Initialize(const char *app_name);
-	int GetInt(const char *section, const char *key, int default_value);
-	void SetInt(const char *section, const char *key, int value);
-	string GetString(const char *section, const char *key, const string &default_value);
-	void SetString(const char *section, const char *key, const string &value);
-	bool GetBool(const char *section, const char *key, bool default_value);
-	void SetBool(const char *section, const char *key, bool value);
+    CConfig();
+    ~CConfig();
 
-	size_t LoadDataFile(const char *prefix, const char *filename, uint8_t *buffer, size_t size, size_t offset = 0);
-	// [not used] bool SaveDataFile(const char *prefix, const char *filename, const uint8_t *buffer, size_t size);
-	string FindDataFile(const char *prefix, const char *filename);
+    void Initialize(const char* app_name);
+    int GetInt(const char* section, const char* key, int default_value);
+    void SetInt(const char* section, const char* key, int value);
+    string GetString(const char* section, const char* key, const string& default_value);
+    void SetString(const char* section, const char* key, const string& value);
+    bool GetBool(const char* section, const char* key, bool default_value);
+    void SetBool(const char* section, const char* key, bool value);
 
-	static char *executableDir;
+    size_t LoadDataFile(const char* prefix, const char* filename, uint8_t* buffer, size_t size, size_t offset = 0);
+    // [not used] bool SaveDataFile(const char* prefix, const char* filename, const uint8_t* buffer, size_t size);
+    string FindDataFile(const char* prefix, const char* filename);
 
-private:
-	bool changed;
-	string ini_name;
-	string user_path;
-	string home_path;
-	CSimpleIni ini;
+    static char* executableDir;
 
-	void EnsurePaths(const char *app_name);
+    private:
 
-	CConfig& operator=(const CConfig &dummy) { return *this; }
-	CConfig(const CConfig &dummy) {}
+    bool changed;
+    string ini_name;
+    string user_path;
+    string home_path;
+    CSimpleIni ini;
+
+    void EnsurePaths(const char* app_name);
+
+    CConfig& operator=(const CConfig& dummy) { return *this; }
+    CConfig(const CConfig& dummy) {}
 };
 
 #endif

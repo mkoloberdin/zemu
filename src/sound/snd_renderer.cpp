@@ -1,10 +1,5 @@
-/*
- * code refactoring
- * restorer
- *
- * sound resampling core for Unreal Speccy project
- * created under public domain license by SMT, jan.2006
-*/
+// Based on sound resampling core for Unreal Speccy project
+// created under public domain license by SMT, jan.2006
 
 #include "snd_renderer.h"
 #include "../zemu.h"
@@ -13,8 +8,7 @@ const unsigned TICK_FF = 6;
 const unsigned TICK_F = (1 << TICK_FF);
 const unsigned MULT_C = 12;
 
-const double filterCoeff[TICK_F*2] =
-{
+const double filterCoeff[TICK_F * 2] = {
    // filter designed with Matlab's DSP toolbox
    0.000797243121022152, 0.000815206499600866, 0.000844792477531490, 0.000886460636664257,
    0.000940630171246217, 0.001007677515787512, 0.001087934129054332, 0.001181684445143001,
@@ -50,160 +44,145 @@ const double filterCoeff[TICK_F*2] =
    0.000886460636664257, 0.000844792477531490, 0.000815206499600866, 0.000797243121022152
 };
 
-static unsigned filterDiff[TICK_F*2];
+static unsigned filterDiff[TICK_F * 2];
 const double filterSumFull = 1.0;
 const double filterSumHalf = 0.5;
 const unsigned filterSumFullU = (unsigned)(filterSumFull * 0x10000);
 const unsigned filterSumHalfU = (unsigned)(filterSumHalf * 0x10000);
 
-C_SndRenderer::C_SndRenderer()
-{
-	static bool diffReady = false;
+C_SndRenderer::C_SndRenderer() {
+    static bool diffReady = false;
 
-	samples = 0;
-	mixL = 0;
-	mixR = 0;
-	SetTimings(SNDR_DEFAULT_SYSTICK_RATE, SNDR_DEFAULT_SAMPLE_RATE);
+    samples = 0;
+    mixL = 0;
+    mixR = 0;
+    SetTimings(SNDR_DEFAULT_SYSTICK_RATE, SNDR_DEFAULT_SAMPLE_RATE);
 
-	if (!diffReady)
-	{
-		double sum = 0;
+    if (!diffReady) {
+        double sum = 0;
 
-		for (unsigned i = 0; i < TICK_F*2; i++)
-		{
-			filterDiff[i] = (int)(sum * 0x10000);
-			sum += filterCoeff[i];
-		}
+        for (unsigned i = 0; i < TICK_F * 2; i++) {
+            filterDiff[i] = (int)(sum * 0x10000);
+            sum += filterCoeff[i];
+        }
 
-		diffReady = true;
-	}
+        diffReady = true;
+    }
 }
 
-void C_SndRenderer::SetTimings(unsigned clockRate, unsigned sampleRate)
-{
-	this->sampleRate = sampleRate;
-	this->clockRate = clockRate;
+void C_SndRenderer::SetTimings(unsigned clockRate, unsigned sampleRate) {
+    this->sampleRate = sampleRate;
+    this->clockRate = clockRate;
 
-	tick = 0;
-	startPos = NULL;
-	currPos = 0;
-	passedSndTicks = 0;
-	passedClkTicks = 0;
+    tick = 0;
+    startPos = NULL;
+    currPos = 0;
+    passedSndTicks = 0;
+    passedClkTicks = 0;
 
-	this->multConst = (unsigned)(((uint64_t)sampleRate << (MULT_C+TICK_FF)) / clockRate);
+    this->multConst = (unsigned)(((uint64_t)sampleRate << (MULT_C + TICK_FF)) / clockRate);
 }
 
-void C_SndRenderer::StartFrame()
-{
-	if (samples > (MIX_BUFFER_SIZE/2))
-	{
-		printf("Sound buffer overflow\n");
-		samples = 0;
-	}
+void C_SndRenderer::StartFrame() {
+    if (samples > (MIX_BUFFER_SIZE / 2)) {
+        printf("Sound buffer overflow\n");
+        samples = 0;
+    }
 
-	startPos = &mixBuffer[samples];
-	currPos = startPos;
-	baseTick = tick;
+    startPos = &mixBuffer[samples];
+    currPos = startPos;
+    baseTick = tick;
 }
 
-void C_SndRenderer::Update(unsigned clk, unsigned left, unsigned right)
-{
-	if (!((left ^ mixL) | (right ^ mixR))) return;
+void C_SndRenderer::Update(unsigned clk, unsigned left, unsigned right) {
+    if (!((left ^ mixL) | (right ^ mixR))) {
+        return;
+    }
 
-	activeCnt = SNDR_ACTIVE_CNT_UPD;
+    activeCnt = SNDR_ACTIVE_CNT_UPD;
 
-	unsigned endTick = (clk * multConst) >> MULT_C;
-	Flush(baseTick + endTick);
+    unsigned endTick = (clk * multConst) >> MULT_C;
+    Flush(baseTick + endTick);
 
-	mixL = left;
-	mixR = right;
+    mixL = left;
+    mixR = right;
 }
 
-void C_SndRenderer::EndFrame(unsigned clk)
-{
-	unsigned prevMixL = mixL;
-	unsigned prevMixR = mixR;
+void C_SndRenderer::EndFrame(unsigned clk) {
+    unsigned prevMixL = mixL;
+    unsigned prevMixR = mixR;
 
-	// don't use "((passedClkTicks + clk) * multConst) >> MULT_C", because it loose precision
-	uint64_t endTick = ((passedClkTicks + clk) * (uint64_t)sampleRate * TICK_F) / clockRate;
+    // don't use "((passedClkTicks + clk) * multConst) >> MULT_C", because it loose precision
+    uint64_t endTick = ((passedClkTicks + clk) * (uint64_t)sampleRate * TICK_F) / clockRate;
 
-	if (!activeCnt)
-	{
-		mixL = 0;
-		mixR = 0;
-	}
+    if (!activeCnt) {
+        mixL = 0;
+        mixR = 0;
+    }
 
-	Flush((unsigned)(endTick - passedSndTicks));
+    Flush((unsigned)(endTick - passedSndTicks));
 
-	if (!activeCnt)
-	{
-		mixL = prevMixL;
-		mixR = prevMixR;
-	}
+    if (!activeCnt) {
+        mixL = prevMixL;
+        mixR = prevMixR;
+    }
 
-	samples += currPos - startPos;
+    samples += currPos - startPos;
 
-	tick -= (samples << TICK_FF);
-	passedSndTicks += (samples << TICK_FF);
-	passedClkTicks += clk;
+    tick -= (samples << TICK_FF);
+    passedSndTicks += (samples << TICK_FF);
+    passedClkTicks += clk;
 }
 
-void C_SndRenderer::Flush(unsigned endTick)
-{
-	unsigned scale;
+void C_SndRenderer::Flush(unsigned endTick) {
+    unsigned scale;
 
-	if (!((endTick ^ tick) & ~(TICK_F-1)))
-	{
-		scale = filterDiff[(endTick & (TICK_F-1)) + TICK_F] - filterDiff[(tick & (TICK_F-1)) + TICK_F];
-		s2l += mixL * scale;
-		s2r += mixR * scale;
+    if (!((endTick ^ tick) & ~(TICK_F - 1))) {
+        scale = filterDiff[(endTick & (TICK_F - 1)) + TICK_F] - filterDiff[(tick & (TICK_F - 1)) + TICK_F];
+        s2l += mixL * scale;
+        s2r += mixR * scale;
 
-		scale = filterDiff[endTick & (TICK_F-1)] - filterDiff[tick & (TICK_F-1)];
-		s1l += mixL * scale;
-		s1r += mixR * scale;
+        scale = filterDiff[endTick & (TICK_F - 1)] - filterDiff[tick & (TICK_F - 1)];
+        s1l += mixL * scale;
+        s1r += mixR * scale;
 
-		tick = endTick;
-	}
-	else
-	{
-		scale = filterSumFullU - filterDiff[(tick & (TICK_F-1)) + TICK_F];
+        tick = endTick;
+    } else {
+        scale = filterSumFullU - filterDiff[(tick & (TICK_F - 1)) + TICK_F];
 
-		currPos->left += (mixL * scale + s2l) >> 16;
-		currPos->right += (mixR * scale + s2r) >> 16;
-		currPos++;
+        currPos->left += (mixL * scale + s2l) >> 16;
+        currPos->right += (mixR * scale + s2r) >> 16;
+        currPos++;
 
-		scale = filterSumHalfU - filterDiff[tick & (TICK_F-1)];
-		s2l = s1l + mixL * scale;
-		s2r = s1r + mixR * scale;
+        scale = filterSumHalfU - filterDiff[tick & (TICK_F - 1)];
+        s2l = s1l + mixL * scale;
+        s2r = s1r + mixR * scale;
 
-		tick = (tick | (TICK_F-1)) + 1;
+        tick = (tick | (TICK_F - 1)) + 1;
 
-		if ((endTick ^ tick) & ~(TICK_F-1))
-		{
-			unsigned valL = mixL * filterSumHalfU;
-			unsigned valR = mixR * filterSumHalfU;
+        if ((endTick ^ tick) & ~(TICK_F - 1)) {
+            unsigned valL = mixL * filterSumHalfU;
+            unsigned valR = mixR * filterSumHalfU;
 
-			do
-			{
-				currPos->left += (s2l + valL) >> 16;
-				currPos->right += (s2r + valR) >> 16;
-				currPos++;
+            do {
+                currPos->left += (s2l + valL) >> 16;
+                currPos->right += (s2r + valR) >> 16;
+                currPos++;
 
-				tick += TICK_F;
-				s2l = valL;
-				s2r = valR;
-			}
-			while ((endTick ^ tick) & ~(TICK_F-1));
-		}
+                tick += TICK_F;
+                s2l = valL;
+                s2r = valR;
+            } while ((endTick ^ tick) & ~(TICK_F - 1));
+        }
 
-		tick = endTick;
+        tick = endTick;
 
-		scale = filterDiff[(endTick & (TICK_F-1)) + TICK_F] - filterSumHalfU;
-		s2l += mixL * scale;
-		s2r += mixR * scale;
+        scale = filterDiff[(endTick & (TICK_F - 1)) + TICK_F] - filterSumHalfU;
+        s2l += mixL * scale;
+        s2r += mixR * scale;
 
-		scale = filterDiff[endTick & (TICK_F-1)];
-		s1l = mixL * scale;
-		s1r = mixR * scale;
-	}
+        scale = filterDiff[endTick & (TICK_F - 1)];
+        s1l = mixL * scale;
+        s1r = mixR * scale;
+    }
 }

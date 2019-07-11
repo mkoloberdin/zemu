@@ -1,6 +1,0 @@
-
-* added functions for getting current drive, its status and current track
-* fixed bug in handling drive after disk ejection
-* fixed motor rotation speed
-
-21.01.2006 -- Initial version

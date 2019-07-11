@@ -45,11 +45,11 @@ class C_Keyboard : public C_Device {
     void Init(void);
     void Close(void);
 
-    static bool OnKeyDown(ZHW_Event &event);
-    static bool OnKeyUp(ZHW_Event &event);
+    static bool OnKeyDown(ZHW_Event& event);
+    static bool OnKeyUp(ZHW_Event& event);
 
     static bool InputByteCheckPort(Z80EX_WORD port);
-    static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE &retval);
+    static bool OnInputByte(Z80EX_WORD port, Z80EX_BYTE& retval);
 };
 
 #endif

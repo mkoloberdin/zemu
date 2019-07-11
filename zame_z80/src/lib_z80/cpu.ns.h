@@ -128,11 +128,11 @@
 
 #define CPU_READ_OFFSET(cpu) ((int8_t)CPU_READ_BYTE(cpu))
 
-#define CPU_TMPL(cpu) (*(((byte*)&(cpu->tmp_word)) + REG_LO))
-#define CPU_TMPH(cpu) (*(((byte*)&(cpu->tmp_word)) + REG_HI))
+#define CPU_TMPL(cpu) (*(((byte*) &(cpu->tmp_word)) + REG_LO))
+#define CPU_TMPH(cpu) (*(((byte*) &(cpu->tmp_word)) + REG_HI))
 
-#define CPU_TMPL_B(cpu) (*(((byte*)&(cpu->tmp_word_b)) + REG_LO))
-#define CPU_TMPH_B(cpu) (*(((byte*)&(cpu->tmp_word_b)) + REG_HI))
+#define CPU_TMPL_B(cpu) (*(((byte*) &(cpu->tmp_word_b)) + REG_LO))
+#define CPU_TMPH_B(cpu) (*(((byte*) &(cpu->tmp_word_b)) + REG_HI))
 
 #define CPU_DO_READ_WORD(cpu) \
     CPU_TMPL(cpu) = CPU_READ_BYTE(cpu); \
@@ -148,12 +148,12 @@
 struct s_Cpu;
 
 #namespace Cpu
-    typedef byte (* ::t_read)(word addr, bool m1, void *data);
-    typedef void (* ::t_write)(word addr, byte val, void *data);
-    typedef byte (* ::t_in)(word port, void *data);
-    typedef void (* ::t_out)(word port, byte val, void *data);
-    typedef byte (* ::t_read_int)(void *data);
-    typedef void (* ::t_opcode)(struct s_Cpu *self);
+    typedef byte (* ::t_read)(word addr, bool m1, void* data);
+    typedef void (* ::t_write)(word addr, byte val, void* data);
+    typedef byte (* ::t_in)(word port, void* data);
+    typedef void (* ::t_out)(word port, byte val, void* data);
+    typedef byte (* ::t_read_int)(void* data);
+    typedef void (* ::t_opcode)(struct s_Cpu* self);
 #end
 
 typedef struct s_Cpu {
@@ -171,14 +171,14 @@ typedef struct s_Cpu {
     Cpu::t_out ptr_out;
     Cpu::t_read_int ptr_read_int;
 
-    void *data_read;
-    void *data_write;
-    void *data_in;
-    void *data_out;
-    void *data_read_int;
+    void* data_read;
+    void* data_write;
+    void* data_in;
+    void* data_out;
+    void* data_read_int;
 
-    unsigned (* tick)(struct s_Cpu *self);
-    Cpu::t_opcode *optable;
+    unsigned (* tick)(struct s_Cpu* self);
+    Cpu::t_opcode* optable;
     byte prefix;
     unsigned long tstate;
 
@@ -196,32 +196,32 @@ typedef struct s_Cpu {
     extern bool ::is_tbl_initialized;
     extern byte ::tbl_parity[0x100];
 
-    s_Cpu * ::new(
+    s_Cpu* ::new(
         ::t_read ptr_read,
-        void *data_read,
+        void* data_read,
         ::t_write ptr_write,
-        void *data_write,
+        void* data_write,
         ::t_in ptr_in,
-        void *data_in,
+        void* data_in,
         ::t_out ptr_out,
-        void *data_out,
+        void* data_out,
         ::t_read_int ptr_read_int,
-        void *data_read_int
+        void* data_read_int
     );
 
     void ::init_tables(void);
-    void ::free(s_Cpu *self);
-    void ::reset(s_Cpu *self);
-    unsigned ::tick_def(s_Cpu *self);
-    unsigned ::tick_int(s_Cpu *self);
-    unsigned ::do_int(s_Cpu *self);
-    unsigned ::do_nmi(s_Cpu *self);
+    void ::free(s_Cpu* self);
+    void ::reset(s_Cpu* self);
+    unsigned ::tick_def(s_Cpu* self);
+    unsigned ::tick_int(s_Cpu* self);
+    unsigned ::do_int(s_Cpu* self);
+    unsigned ::do_nmi(s_Cpu* self);
 
-    bool ::is_int_possible(s_Cpu *self);
-    bool ::is_nmi_possible(s_Cpu *self);
+    bool ::is_int_possible(s_Cpu* self);
+    bool ::is_nmi_possible(s_Cpu* self);
 
-    word ::get_reg(s_Cpu *self, int reg);
-    void ::set_reg(s_Cpu *self, int reg, word val);
+    word ::get_reg(s_Cpu* self, int reg);
+    void ::set_reg(s_Cpu* self, int reg, word val);
 
     #define ::tick(cpu) (cpu->tick(cpu))
 #end
