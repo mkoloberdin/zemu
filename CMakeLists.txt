@@ -15,8 +15,8 @@ endif ()
 
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter")
-set (CMAKE_CXX_FLAGS_DEBUG "-g")
-set (CMAKE_CXX_FLAGS_RELEASE "-O2")
+# set (CMAKE_CXX_FLAGS_DEBUG "-g")
+# set (CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 set (ZEMU_VERSION_MAJOR 1)
 set (ZEMU_VERSION_MINOR 0)
