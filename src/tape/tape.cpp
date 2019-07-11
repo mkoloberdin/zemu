@@ -71,9 +71,9 @@ void C_Tape::Eject(void) {
 }
 
 bool C_Tape::IsTapeFormat(const char* fname) {
-    return (!stricmp(C_DirWork::ExtractExt(fname), "tap")
-        || !stricmp(C_DirWork::ExtractExt(fname), "wav")
-        || !stricmp(C_DirWork::ExtractExt(fname), "voc")
+    return (!strcasecmp(C_DirWork::ExtractExt(fname), "tap")
+        || !strcasecmp(C_DirWork::ExtractExt(fname), "wav")
+        || !strcasecmp(C_DirWork::ExtractExt(fname), "voc")
     );
 }
 
@@ -83,11 +83,11 @@ bool C_Tape::Insert(const char* fname) {
         currentFormat = nullptr;
     }
 
-    if (!stricmp(C_DirWork::ExtractExt(fname), "tap")) {
+    if (!strcasecmp(C_DirWork::ExtractExt(fname), "tap")) {
         currentFormat = new C_TapFormat();
-    } else if (!stricmp(C_DirWork::ExtractExt(fname), "wav")) {
+    } else if (!strcasecmp(C_DirWork::ExtractExt(fname), "wav")) {
         currentFormat = new C_WavFormat();
-    } else if (!stricmp(C_DirWork::ExtractExt(fname), "voc")) {
+    } else if (!strcasecmp(C_DirWork::ExtractExt(fname), "voc")) {
         currentFormat = new C_VocFormat();
     }
 

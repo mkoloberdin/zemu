@@ -60,7 +60,7 @@ void C_Keyboard::ReadKbdConfig(void) {
         ZHW_Keyboard_KeyCode keySymAdd = 0;
 
         for (int i = 0; cfgHostKeys[i].cfgname[0]; i++) {
-            if (!stricmp(p, cfgHostKeys[i].cfgname)) {
+            if (!strcasecmp(p, cfgHostKeys[i].cfgname)) {
                 keySym = cfgHostKeys[i].keysym;
                 keySymAdd = cfgHostKeys[i].keysymadd;
                 break;
@@ -101,7 +101,7 @@ void C_Keyboard::ReadKbdConfig(void) {
             s++;
 
             for (int i = 0; cfgHostKeys[i].cfgname[0]; i++) {
-                if (!stricmp(p, cfgHostKeys[i].cfgname)) {
+                if (!strcasecmp(p, cfgHostKeys[i].cfgname)) {
                     keySym = cfgHostKeys[i].keysym;
                     keySymAdd = cfgHostKeys[i].keysymadd;
                     break;
@@ -156,7 +156,7 @@ void C_Keyboard::ReadKbdConfig(void) {
                 }
 
                 for (int i = 0; cfgActions[i].name[0]; i++) {
-                    if (!stricmp(p, cfgActions[i].name)) {
+                    if (!strcasecmp(p, cfgActions[i].name)) {
                         action = cfgActions[i].action;
                         break;
                     }
@@ -187,7 +187,7 @@ void C_Keyboard::ReadKbdConfig(void) {
             s_CfgZxKey* cfgZxKey = nullptr;
 
             for (int i = 0; cfgZxKeys[i].cfgname[0]; i++) {
-                if (!stricmp(p, cfgZxKeys[i].cfgname)) {
+                if (!strcasecmp(p, cfgZxKeys[i].cfgname)) {
                     cfgZxKey = &cfgZxKeys[i];
                     break;
                 }

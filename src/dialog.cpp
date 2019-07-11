@@ -29,7 +29,7 @@ bool restoreBpVal = false;
 
 int FileNameCmp(int f1, char* s1, int f2, char* s2) {
     if (f1 == f2) {
-        return stricmp(s1, s2);
+        return strcasecmp(s1, s2);
     }
 
     return (f1 ? -1 : 1);

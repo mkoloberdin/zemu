@@ -337,13 +337,13 @@ void StrToLower(char* str) {
 void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr) {
     if (C_Tape::IsTapeFormat(fname)) {
         C_Tape::Insert(fname);
-    } else if (!stricmp(C_DirWork::ExtractExt(fname), "z80")) {
+    } else if (!strcasecmp(C_DirWork::ExtractExt(fname), "z80")) {
         if (load_z80_snap(fname, cpu, dev_mman, dev_border)) {
             dev_tsfm.OnReset();
         } else {
             StrikeMessage("Error loading snapshot");
         }
-    } else if (!stricmp(C_DirWork::ExtractExt(fname), "sna")) {
+    } else if (!strcasecmp(C_DirWork::ExtractExt(fname), "sna")) {
         if (load_sna_snap(fname, cpu, dev_mman, dev_border)) {
             dev_tsfm.OnReset();
         } else {
