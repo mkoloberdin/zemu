@@ -10,6 +10,7 @@
 #ifndef TYPES_H_INCLUDED
 #define TYPES_H_INCLUDED
 
+/*
 #if  defined(__i386__) || defined(WIN32) || \
     (defined(__alpha__) || defined(__alpha)) || \
      defined(__arm__) || \
@@ -17,6 +18,7 @@
 #else
 #define __BIG_ENDIAN
 #endif
+*/
 
 #ifndef NULL
 #define NULL    0
