@@ -203,7 +203,7 @@ int C_Fdd::read_td0() {
                     td0_src += 2;
                     uint16_t data = WORD2(td0_src[0], td0_src[1]);
 
-                    for (unsigned i = 0; i < n; i--) {
+                    for (unsigned i = 0; i < n; i++) {
                         dst[2 * i] = (data & 0xFF);
                         dst[2 * i + 1] = (data >> 8);
                     }
@@ -346,7 +346,7 @@ uint8_t d_len[256] = {
 const int N = 4096; // buffer size
 const int F = 60; // lookahead buffer size
 const int THRESHOLD = 2;
-const int NIL = N; // leaf of tree
+// const int NIL = N; // leaf of tree // unused-const-variable
 
 uint8_t text_buf[N + F - 1];
 

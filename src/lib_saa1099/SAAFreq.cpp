@@ -151,7 +151,7 @@ void CSAAFreq::SetSampleRateMode(int nSampleRateMode)
 	}
 
 	m_nSampleRateMode = nSampleRateMode;
-	m_nSampleRateTimes4K = 44100 << (12-nSampleRateMode);
+	m_nSampleRateTimes4K = 44100L << (12-nSampleRateMode);
 }
 
 unsigned short CSAAFreq::Level(void) const

@@ -124,7 +124,7 @@ void AddLogN(const char* fmt, ...) {
     }
 }
 
-void StrikeError(const char* fmt, ...) {
+[[noreturn]] void StrikeError(const char* fmt, ...) {
     va_list argptr;
     char buf[0x800];
 

@@ -13,7 +13,7 @@ class C_VocFormat : public C_TapeFormat {
     bool active;
     bool currBit;
 
-    unsigned long dataSize;
+    // unsigned long dataSize;
 
     // WORD compression;
     // WORD channels;

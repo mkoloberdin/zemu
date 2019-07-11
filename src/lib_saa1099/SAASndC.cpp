@@ -24,7 +24,7 @@
 
 SAASND SAAAPI newSAASND(void)
 {
-	return (SAASND)(new CSAASoundInternal());
+	return (SAASND)(new CSAASoundInternal()); //-V572
 }
 
 void SAAAPI deleteSAASND(SAASND object)

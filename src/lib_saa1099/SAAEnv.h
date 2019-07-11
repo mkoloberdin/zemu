@@ -21,12 +21,12 @@ private:
     BYTE m_nPhase;
     BYTE m_nPhasePosition;
     bool m_bEnvelopeEnded;
-    char m_nPhaseAdd[2];
-    char m_nCurrentPhaseAdd;
+    // char m_nPhaseAdd[2]; // unused-private-field
+    // char m_nCurrentPhaseAdd; // unused-private-field
     bool m_bLooping;
     char m_nNumberOfPhases;
     char m_nResolution;
-    char m_nInitialLevel;
+    // char m_nInitialLevel; // unused-private-field
     bool m_bNewData;
     BYTE m_nNextData;
     bool m_bOkForNewData;

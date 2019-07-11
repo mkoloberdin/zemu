@@ -59,7 +59,7 @@ int C_Fdd::read_udi() {
 }
 
 int C_Fdd::write_udi(FILE* ff) {
-    memset(snbuf, 0, 0x10);
+    memset(snbuf, 0, 0x10); //-V512
 
     snbuf[0] = 'U';
     snbuf[1] = 'D';
@@ -69,7 +69,7 @@ int C_Fdd::write_udi(FILE* ff) {
     snbuf[9] = cyls - 1;
     snbuf[10] = sides - 1;
     snbuf[11] = 0;
-    *((unsigned *)(snbuf + 12)) = 0;
+    *((unsigned *)(snbuf + 12)) = 0; //-V1032
 
     uint8_t* dst = snbuf + 0x10;
 

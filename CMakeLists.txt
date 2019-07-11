@@ -9,7 +9,14 @@ if (NOT USE_SDL1)
     list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake-sdl2)
 endif ()
 
+if (NOT CMAKE_BUILD_TYPE)
+    set (CMAKE_BUILD_TYPE Release)
+endif ()
+
 set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter")
+set (CMAKE_CXX_FLAGS_DEBUG "-g")
+set (CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 set (ZEMU_VERSION_MAJOR 1)
 set (ZEMU_VERSION_MINOR 0)

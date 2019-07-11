@@ -45,10 +45,6 @@ void error(const char* fmt, ...) {
 }
 
 void* safe_alloc(size_t size) {
-    if (!size) {
-        return NULL;
-    }
-
     void* ptr = malloc(size);
 
     if (!ptr) {
@@ -59,11 +55,13 @@ void* safe_alloc(size_t size) {
 }
 
 void safe_realloc(void** ptr, size_t size) {
-    *ptr = realloc(*ptr, size);
+    void* new_ptr = realloc(*ptr, size);
 
     if (size && !(*ptr)) {
         error("Can't allocate %d bytes", (int)size);
     }
+
+    *ptr = new_ptr;
 }
 
 void safe_free(void* ptr) {

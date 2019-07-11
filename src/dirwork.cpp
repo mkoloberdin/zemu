@@ -33,6 +33,9 @@ using namespace std;
     C_DirWork::C_DirWork() {
         hFile = -1;
         enumMode = 0;
+        name[0] = '\0';
+        attr = 0;
+        size = 0;
     }
 
     C_DirWork::~C_DirWork() {
@@ -177,6 +180,10 @@ using namespace std;
 
     C_DirWork::C_DirWork() {
         hDir = nullptr;
+        name[0] = '\0';
+        attr = 0;
+        size = 0;
+        bpath[0] = '\0';
     }
 
     C_DirWork::~C_DirWork() {
@@ -472,7 +479,9 @@ char* C_DirWork::LastDirName(const char* path) {
 string C_DirWork::Append(const string& p1, const string& p2) {
     if (p1.empty()) {
         return p2;
-    } else if (p2.empty()) {
+    }
+
+    if (p2.empty()) {
         return p1;
     }
 
@@ -484,7 +493,7 @@ string C_DirWork::Append(const string& p1, const string& p2) {
     #else
         size_t offset = 0;
 
-        while (!p2.empty() > 0 && offset < p2.size() && p2[offset] == '/') {
+        while (offset < p2.size() && p2[offset] == '/') {
             offset++;
         }
 

@@ -20,7 +20,7 @@ bool ishex(char c);
 
 void AddLog(const char* fmt, ...);
 void AddLogN(const char* fmt, ...);
-void StrikeError(const char* fmt, ...);
+[[noreturn]] void StrikeError(const char* fmt, ...);
 void StrikeMessage(const char* fmt, ...);
 
 char* AllocNstrcpy(const char* str);

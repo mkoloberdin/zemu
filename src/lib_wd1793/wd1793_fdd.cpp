@@ -135,7 +135,7 @@ void C_Fdd::newdisk(unsigned cyls, unsigned sides) {
     this->sides = sides;
 
     unsigned len = MAX_TRACK_LEN;
-    unsigned len2 = len + (len / 8) + ((len & 7) ? 1 : 0);
+    unsigned len2 = len + (len / 8) + ((len & 7) ? 1 : 0); //-V547
 
     rawsize = align_by(cyls * sides * len2, 4096);
     rawdata = (uint8_t*)malloc(rawsize);

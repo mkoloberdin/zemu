@@ -121,7 +121,7 @@ struct s_InputItem {
 typedef s_WriteItem s_OutputItem;
 
 struct s_HwItem {
-    int eventType;
+    unsigned int eventType;
     bool (* func)(ZHW_Event&);
 };
 

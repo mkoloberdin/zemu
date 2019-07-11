@@ -137,7 +137,7 @@ void C_SndRenderer::EndFrame(unsigned clk) {
     samples += currPos - startPos;
 
     tick -= (samples << TICK_FF);
-    passedSndTicks += (samples << TICK_FF);
+    passedSndTicks += ((uint64_t)samples << TICK_FF);
     passedClkTicks += clk;
 }
 

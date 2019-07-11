@@ -8,6 +8,7 @@
 C_VocFormat::C_VocFormat() {
     allTicks = 0;
     active = false;
+    currBit = false;
 }
 
 C_VocFormat::~C_VocFormat() {

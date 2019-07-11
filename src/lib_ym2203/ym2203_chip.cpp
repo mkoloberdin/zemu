@@ -5,6 +5,7 @@
 
 C_Ym2203Chip::C_Ym2203Chip() {
     chip = YM2203Init(YM2203_CHIP_CLOCK, YM2203_SND_FQ);
+    selectedReg = 0;
 
     for (int i = 0; i < 0x100; i++) {
         regs[i] = 0;

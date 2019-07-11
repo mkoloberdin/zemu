@@ -62,7 +62,6 @@ ZHW_Video_Surface* CopySurfaceX(ZHW_Video_Surface* src) {
 //------------------------------------------------------------------------------------------------------------------------------
 
 C_Font::C_Font() {
-    surf = nullptr;
 }
 
 C_Font::~C_Font() {

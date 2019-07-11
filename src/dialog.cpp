@@ -162,6 +162,15 @@ const char* DlgInputString(const char* message) {
     }
 }
 
+//
+// man strncpy:
+// If there is no null byte among the first n bytes of src, the string placed in dest will not be null terminated.
+//
+void SafeStrcpy(char* dst, const char* src, size_t sz) {
+    strncpy(dst, src, sz);
+    dst[sz - 1] = '\0';
+}
+
 char* SelectFile(char* oldFile) {
     int key;
     ZHW_Event event;
@@ -179,7 +188,7 @@ char* SelectFile(char* oldFile) {
 
     int scrEnd = HEIGHT - font.Height() - 8;
 
-    strcpy(ofl, C_DirWork::ExtractFileName(oldFile));
+    SafeStrcpy(ofl, C_DirWork::ExtractFileName(oldFile), MAX_FNAME);
     strcpy(path, C_DirWork::ExtractPath(oldFile));
     strcpy(path, C_DirWork::Normalize(path));
 
@@ -194,8 +203,8 @@ char* SelectFile(char* oldFile) {
 
         if (dw.EnumFiles(path)) {
             do {
-                if (strcmp(dw.name, ".") && (strcmp(dw.name, "..") || !isRoot)) {
-                    strcpy(fnames[filesCnt], dw.name);
+                if (strcmp(dw.name, ".") != 0 && (strcmp(dw.name, "..") != 0 || !isRoot)) {
+                    SafeStrcpy(fnames[filesCnt], dw.name, MAX_FNAME);
                     folders[filesCnt] = (dw.attr == DW_FOLDER);
                     filesCnt++;
                 }
@@ -350,7 +359,7 @@ char* SelectFile(char* oldFile) {
                     char rname[MAX_PATH];
 
                     if (strcasecmp("trd", C_DirWork::ExtractExt(tname))) {
-                        sprintf(rname, "%s.trd", tname);
+                        snprintf(rname, MAX_PATH, "%s.trd", tname);
                     } else {
                         strcpy(rname, tname);
                     }
@@ -459,7 +468,7 @@ char* SelectFile(char* oldFile) {
         } while (key != keyx);
 
         if (key == ZHW_KEY_BACKSPACE) {
-            strcpy(ofl, C_DirWork::LastDirName(path));
+            SafeStrcpy(ofl, C_DirWork::LastDirName(path), MAX_FNAME);
             strcpy(path, C_DirWork::LevelUp(path));
         } else if (key == ZHW_KEY_RETURN) {
             if (!folders[csr]) {
@@ -468,7 +477,7 @@ char* SelectFile(char* oldFile) {
                 return path;
             }
 
-            strcpy(ofl, C_DirWork::LastDirName(path));
+            SafeStrcpy(ofl, C_DirWork::LastDirName(path), MAX_FNAME);
 
             if (!strcmp(fnames[csr], "..")) {
                 strcpy(path, C_DirWork::LevelUp(path));
@@ -497,9 +506,7 @@ void FileDialog(void) {
 }
 
 void FileDialogInit(void) {
-    string str;
-
-    str = config.GetString("beta128", "diskA", "/");
+    string str = config.GetString("beta128", "diskA", "/");
 
     if (!str.empty()) {
         strcpy(oldFileName[0], str.c_str());
@@ -563,7 +570,7 @@ int DbgAskHexNum(const char* message) {
             }
         } else if ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'F') || (key >= 'a' && key <= 'f')) {
             if (bufferSz < MAX_HEX_NUM_SZ) {
-                buffer[bufferSz++] = ((key >= 'a' && key <= 'f') ? (key - 'a' + 'A') : key);
+                buffer[bufferSz++] = ((key >= 'a' && key <= 'f') ? (key - 'a' + 'A') : key); //-V560 for the great justice
                 buffer[bufferSz] = 0;
             }
         }
@@ -701,7 +708,7 @@ void DebugIt(void) {
                     }
 
                     sprintf(buf, "%02X", ReadByteDasm(tmpAddr, nullptr));
-                    strcat(dispBuf[pos].cmd, buf);
+                    strcat(dispBuf[pos].cmd, buf); //-V512
 
                     sep = true;
                 }

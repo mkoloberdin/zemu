@@ -498,7 +498,7 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 	switch(m_uParam)
 	{
 	case SAAP_NOFILTER | SAAP_MONO | SAAP_8BIT:
-		while (nSamples--)
+		while (nSamples--) //-V1037
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
@@ -517,7 +517,7 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 		break;
 
 	case SAAP_NOFILTER | SAAP_MONO | SAAP_16BIT:
-		while (nSamples--)
+		while (nSamples--) //-V1037
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
@@ -561,7 +561,7 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 
 
 	case SAAP_NOFILTER | SAAP_STEREO | SAAP_16BIT:
-		while (nSamples--)
+		while (nSamples--) //-V1037
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
@@ -587,7 +587,7 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 
 	// FILTER : (high-quality mode + bandpass filter)
 	case SAAP_FILTER | SAAP_MONO | SAAP_8BIT:
-		while (nSamples--)
+		while (nSamples--) //-V1037
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
@@ -606,7 +606,7 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 		break;
 
 	case SAAP_FILTER | SAAP_MONO | SAAP_16BIT:
-		while (nSamples--)
+		while (nSamples--) //-V1037
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();
@@ -651,7 +651,7 @@ void CSAASoundInternal::GenerateMany(BYTE * pBuffer, unsigned long nSamples)
 
 
 	case SAAP_FILTER | SAAP_STEREO | SAAP_16BIT:
-		while (nSamples--)
+		while (nSamples--) //-V1037
 		{
 			Noise[0]->Tick();
 			Noise[1]->Tick();

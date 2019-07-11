@@ -23,12 +23,12 @@ class C_Font {
 
     private:
 
-    int spitch;
-    ZHW_Video_Surface* surf;
-    int off[0x100];
-    int len[0x100];
-    int xoff[0x100];
-    int yoff[0x100];
+    ZHW_Video_Surface* surf = nullptr;
+    int spitch = 0;
+    int off[0x100] = {0};
+    int len[0x100] = {0};
+    int xoff[0x100] = {0};
+    int yoff[0x100] = {0};
 
     void CalcFont(void);
 };

@@ -600,7 +600,7 @@ typedef struct
 } FM_OPN;
 
 /* current chip state */
-static INT32  m2,c1,c2;   /* Phase Modulation input for operators 2,3,4 */
+static INT32  m2,c1,c2;   /* Phase Modulation input for operators 2,3,4 */ //-V707
 static INT32  mem;      /* one sample delay memory */
 
 static INT32  out_fm[8];    /* outputs of working channels */
