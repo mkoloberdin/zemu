@@ -8,7 +8,7 @@
 class C_VocFormat : public C_TapeFormat {
     public:
 
-    C_File fl;
+    C_File* fl;
     uint64_t allTicks;
     bool active;
     bool currBit;

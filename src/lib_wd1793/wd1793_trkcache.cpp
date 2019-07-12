@@ -9,6 +9,7 @@
 
 C_TrkCache::C_TrkCache() {
     clear();
+    memset(&hdr, 0, sizeof(hdr));
 }
 
 void C_TrkCache::set_i(unsigned pos) {
@@ -34,11 +35,20 @@ void C_TrkCache::write(unsigned pos, uint8_t byte, char index) {
 }
 
 void C_TrkCache::clear() {
-    drive = 0;
-    trkd = 0;
+    drive = nullptr;
+    cyl = 0;
+    side = 0;
+    trklen = 0;
+
+    trkd = nullptr;
+    trki = nullptr;
+
+    ts_byte = 0;
+    sf = JUST_SEEK;
+    s = 0;
 }
 
-void C_TrkCache::seek(C_Fdd* d, unsigned cyl, unsigned side, SEEK_MODE fs) {
+void C_TrkCache::seek(C_Fdd* d, unsigned cyl, unsigned side, SEEK_MODE fs) { //-V688
     // if (!( ((int)d - (int)drive) | (sf - fs) | (cyl - this->cyl) | (side - this->side) )) {
     //     return;
     // }
@@ -196,7 +206,7 @@ void C_TrkCache::format() {
 
             unsigned len = (128 << sechdr->l);
 
-            if (sechdr->data && sechdr->data != (uint8_t*)1) {
+            if (sechdr->data != (uint8_t*)1) {
                 memcpy(dst, sechdr->data, len);
             } else {
                 memset(dst, 0, len);

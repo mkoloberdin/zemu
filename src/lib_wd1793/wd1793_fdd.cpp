@@ -4,17 +4,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include "wd1793_fdd.h"
+#include "../defines.h"
 
 uint8_t snbuf[SNBUF_LEN]; // large temporary buffer
 
 C_Fdd::C_Fdd() {
-    trkcache = nullptr;
-    track = 0;
     motor = 0;
+    track = 0;
+
     rawdata = nullptr;
-    set_wprotected(false);
-    appendboot[0] = 0;
+    rawsize = 0;
+    cyls = 0;
+    sides = 0;
+    memset(trklen, 0, sizeof(trklen));
+    memset(trkd, 0, sizeof(trkd));
+    memset(trki, 0, sizeof(trki));
+    optype = 0;
+    snaptype = 0;
+    snapsize = 0;
+    is_wp = false;
     interleave = 1;
+
+    name[0] = 0;
+    dsc[0] = 0;
+    trkcache = nullptr;
+    appendboot[0] = 0;
 }
 
 C_Fdd::~C_Fdd() {
@@ -128,7 +142,7 @@ void C_Fdd::free() {
     t.clear();
 }
 
-void C_Fdd::newdisk(unsigned cyls, unsigned sides) {
+void C_Fdd::newdisk(unsigned cyls, unsigned sides) { //-V688
     free();
 
     this->cyls = cyls;
@@ -139,6 +153,11 @@ void C_Fdd::newdisk(unsigned cyls, unsigned sides) {
 
     rawsize = align_by(cyls * sides * len2, 4096);
     rawdata = (uint8_t*)malloc(rawsize);
+
+    if (!rawdata) {
+        StrikeError("Failed to allocate %zu bytes of memory", rawsize);
+    }
+
     memset(rawdata, 0, rawsize);
 
     for (unsigned i = 0; i < cyls; i++) {

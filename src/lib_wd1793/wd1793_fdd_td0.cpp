@@ -32,7 +32,7 @@ int C_Fdd::write_td0(FILE* ff) {
     }
 
     if (*dsc) {
-        uint8_t inf[0x200] = { 0 };
+        uint8_t inf[0x200 + 10] = { 0 };
         strcpy((char*)inf + 10, dsc);
         unsigned len = strlen(dsc) + 1;
 
@@ -101,14 +101,19 @@ int C_Fdd::write_td0(FILE* ff) {
     return 1;
 }
 
-unsigned unpack_lzh(uint8_t* src, unsigned size, uint8_t* buf);
+unsigned lzh_unpack(uint8_t* src, unsigned size, uint8_t* buf);
 
 int C_Fdd::read_td0() {
     if (WORD2(snbuf[0], snbuf[1]) == WORD2('t', 'd')) {
         // packed disk
         uint8_t* tmp = (uint8_t*)malloc(snapsize);
+
+        if (!tmp) {
+            StrikeError("Failed to allocate %zu bytes of memory", snapsize);
+        }
+
         memcpy(tmp, snbuf + 12, snapsize - 12);
-        snapsize = 12 + unpack_lzh(tmp, snapsize - 12, snbuf + 12);
+        snapsize = 12 + lzh_unpack(tmp, snapsize - 12, snbuf + 12);
         ::free(tmp);
     }
 
@@ -262,18 +267,18 @@ int C_Fdd::read_td0() {
 
 // ------------------------------------------------------ LZH unpacker
 
-uint8_t* packed_ptr;
-uint8_t* packed_end;
+uint8_t* lzh_packed_ptr;
+uint8_t* lzh_packed_end;
 
-int readChar(void) {
-    if (packed_ptr < packed_end) {
-        return (*(packed_ptr++));
+int lzh_read_char(void) {
+    if (lzh_packed_ptr < lzh_packed_end) {
+        return (*(lzh_packed_ptr++));
     }
 
     return -1;
 }
 
-uint8_t d_code[256] = {
+uint8_t lzh_d_code[256] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -308,7 +313,7 @@ uint8_t d_code[256] = {
     0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
 };
 
-uint8_t d_len[256] = {
+uint8_t lzh_d_len[256] = {
     0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
     0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
     0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
@@ -343,265 +348,243 @@ uint8_t d_len[256] = {
     0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
 };
 
-const int N = 4096; // buffer size
-const int F = 60; // lookahead buffer size
-const int THRESHOLD = 2;
-// const int NIL = N; // leaf of tree // unused-const-variable
+const int LZH_BUFFER_SIZE = 4096; // buffer size
+const int LZH_LOOKAHEAD_BUFFER_SIZE = 60; // lookahead buffer size
+const int LZH_THRESHOLD = 2;
+const int LZH_MAX_CHAR = (256 - LZH_THRESHOLD + LZH_LOOKAHEAD_BUFFER_SIZE); // kinds of characters (character code = 0..LZH_MAX_CHAR-1)
+const int LZH_TABLE_SIZE = (LZH_MAX_CHAR * 2 - 1); // size of table
+const int LZH_ROOT_POSITION = (LZH_TABLE_SIZE - 1); // position of root
+const int LZH_MAX_FREQ = 0x8000; // updates tree when the root frequency comes to this value.
 
-uint8_t text_buf[N + F - 1];
-
-const int N_CHAR = (256 - THRESHOLD + F); // kinds of characters (character code = 0..N_CHAR-1)
-const int T = (N_CHAR * 2 - 1); // size of table
-const int R = (T - 1); // position of root
-const int MAX_FREQ = 0x8000; // updates tree when the root frequency comes to this value.
-
-uint16_t freq[T + 1]; // frequency table
+uint8_t lzh_text_buf[LZH_BUFFER_SIZE + LZH_LOOKAHEAD_BUFFER_SIZE - 1];
+uint16_t lzh_freq_tab[LZH_TABLE_SIZE + 1]; // frequency table
 
 // pointers to parent nodes, except for the
-// elements [T..T + N_CHAR - 1] which are used to get
+// elements [LZH_TABLE_SIZE..LZH_TABLE_SIZE + LZH_MAX_CHAR - 1] which are used to get
 // the positions of leaves corresponding to the codes.
-short prnt[T + N_CHAR];
+short lzh_parent_ptrs[LZH_TABLE_SIZE + LZH_MAX_CHAR];
 
-short son[T]; // pointers to child nodes (son[], son[] + 1)
-
-int r;
-
-unsigned getbuf;
-uint8_t getlen;
+short lzh_child_ptrs[LZH_TABLE_SIZE]; // pointers to child nodes (lzh_child_ptrs[], lzh_child_ptrs[] + 1)
+int lzh_unpack_pos;
+unsigned lzh_get_buf;
+uint8_t lzh_get_len;
 
 // get one bit
-int GetBit(void) {
+int lzh_get_bit(void) {
     int i;
 
-    while (getlen <= 8) {
-        if ((i = readChar()) == -1) {
+    while (lzh_get_len <= 8) {
+        if ((i = lzh_read_char()) == -1) {
             i = 0;
         }
 
-        getbuf |= i << (8 - getlen);
-        getlen += 8;
+        lzh_get_buf |= i << (8 - lzh_get_len);
+        lzh_get_len += 8;
     }
 
-    i = getbuf;
-    getbuf <<= 1;
-    getlen--;
+    i = lzh_get_buf;
+    lzh_get_buf <<= 1;
+    lzh_get_len--;
 
     return ((i >> 15) & 1);
 }
 
 // get one byte
-int GetByte(void) {
+int lzh_get_byte(void) {
     unsigned i;
 
-    while (getlen <= 8) {
-        if ((i = readChar()) == ~(unsigned)0) {
+    while (lzh_get_len <= 8) {
+        if ((i = lzh_read_char()) == ~(unsigned)0) {
             i = 0;
         }
 
-        getbuf |= i << (8 - getlen);
-        getlen += 8;
+        lzh_get_buf |= i << (8 - lzh_get_len);
+        lzh_get_len += 8;
     }
 
-    i = getbuf;
-    getbuf <<= 8;
-    getlen -= 8;
+    i = lzh_get_buf;
+    lzh_get_buf <<= 8;
+    lzh_get_len -= 8;
 
     return (i >> 8) & 0xFF;
 }
 
-void StartHuff(void) {
+void lzh_unpack_start_huff(void) {
     int i;
     int j;
 
-    getbuf = 0;
-    getlen = 0;
+    lzh_get_buf = 0;
+    lzh_get_len = 0;
 
-    for (i = 0; i < N_CHAR; i++) {
-        freq[i] = 1;
-        son[i] = i + T;
-        prnt[i + T] = i;
+    for (i = 0; i < LZH_MAX_CHAR; i++) {
+        lzh_freq_tab[i] = 1;
+        lzh_child_ptrs[i] = i + LZH_TABLE_SIZE;
+        lzh_parent_ptrs[i + LZH_TABLE_SIZE] = i;
     }
 
     i = 0;
-    j = N_CHAR;
+    j = LZH_MAX_CHAR;
 
-    while (j <= R) {
-        freq[j] = freq[i] + freq[i + 1];
-        son[j] = i;
-        prnt[i] = prnt[i + 1] = j;
+    while (j <= LZH_ROOT_POSITION) {
+        lzh_freq_tab[j] = lzh_freq_tab[i] + lzh_freq_tab[i + 1];
+        lzh_child_ptrs[j] = i;
+        lzh_parent_ptrs[i] = lzh_parent_ptrs[i + 1] = j;
         i += 2;
         j++;
     }
 
-    freq[T] = 0xffff;
-    prnt[R] = 0;
+    lzh_freq_tab[LZH_TABLE_SIZE] = 0xffff;
+    lzh_parent_ptrs[LZH_ROOT_POSITION] = 0;
 
-    for (i = 0; i < N - F; i++) {
-        text_buf[i] = ' ';
+    for (i = 0; i < LZH_BUFFER_SIZE - LZH_LOOKAHEAD_BUFFER_SIZE; i++) {
+        lzh_text_buf[i] = ' ';
     }
 
-    r = N - F;
+    lzh_unpack_pos = LZH_BUFFER_SIZE - LZH_LOOKAHEAD_BUFFER_SIZE;
 }
 
 // reconstruction of tree
-void reconst(void)
-{
+void lzh_reconst(void) {
     int i;
-    int j;
     int k;
-    int f;
-    int l;
 
     // collect leaf nodes in the first half of the table
     // and replace the freq by (freq + 1) / 2.
-    j = 0;
+    int j = 0;
 
-    for (i = 0; i < T; i++) {
-        if (son[i] >= T) {
-            freq[j] = (freq[i] + 1) / 2;
-            son[j] = son[i];
+    for (i = 0; i < LZH_TABLE_SIZE; i++) {
+        if (lzh_child_ptrs[i] >= LZH_TABLE_SIZE) {
+            lzh_freq_tab[j] = (lzh_freq_tab[i] + 1) / 2;
+            lzh_child_ptrs[j] = lzh_child_ptrs[i];
             j++;
         }
     }
 
-    // begin constructing tree by connecting sons
-    for (i = 0, j = N_CHAR; j < T; i += 2, j++) {
+    // begin constructing tree by connecting children
+    for (i = 0, j = LZH_MAX_CHAR; j < LZH_TABLE_SIZE; i += 2, j++) {
         k = i + 1;
-        f = freq[j] = freq[i] + freq[k];
+        int f = lzh_freq_tab[j] = lzh_freq_tab[i] + lzh_freq_tab[k];
 
-        for (k = j - 1; f < freq[k]; k--);
+        for (k = j - 1; f < lzh_freq_tab[k]; k--);
         k++;
 
-        l = (j - k) * sizeof(*freq);
+        int l = (j - k) * sizeof(*lzh_freq_tab);
 
-        memmove(&freq[k + 1], &freq[k], l);
-        freq[k] = f;
+        memmove(&lzh_freq_tab[k + 1], &lzh_freq_tab[k], l);
+        lzh_freq_tab[k] = f;
 
-        memmove(&son[k + 1], &son[k], l);
-        son[k] = i;
+        memmove(&lzh_child_ptrs[k + 1], &lzh_child_ptrs[k], l);
+        lzh_child_ptrs[k] = i;
     }
 
-    // connect prnt
-    for (i = 0; i < T; i++) {
-        if ((k = son[i]) >= T) {
-            prnt[k] = i;
+    // connect lzh_parent_ptrs
+    for (i = 0; i < LZH_TABLE_SIZE; i++) {
+        if ((k = lzh_child_ptrs[i]) >= LZH_TABLE_SIZE) {
+            lzh_parent_ptrs[k] = i;
         } else {
-            prnt[k] = prnt[k + 1] = i;
+            lzh_parent_ptrs[k] = lzh_parent_ptrs[k + 1] = i;
         }
     }
 }
 
 // increment frequency of given code by one, and update tree
-void update(int c) {
-    int i;
-    int j;
-    int k;
-    int l;
-
-    if (freq[R] == MAX_FREQ) {
-        reconst();
+void lzh_update(int c) {
+    if (lzh_freq_tab[LZH_ROOT_POSITION] == LZH_MAX_FREQ) {
+        lzh_reconst();
     }
 
-    c = prnt[c + T];
+    c = lzh_parent_ptrs[c + LZH_TABLE_SIZE];
 
     do {
-        k = ++freq[c];
+        int k = ++lzh_freq_tab[c];
+        int l = c + 1;
 
         // if the order is disturbed, exchange nodes
-        if (k > freq[l = c + 1]) {
-            while (k > freq[++l]);
+        if (k > lzh_freq_tab[l]) {
+            while (k > lzh_freq_tab[++l]);
             l--;
 
-            freq[c] = freq[l];
-            freq[l] = k;
+            lzh_freq_tab[c] = lzh_freq_tab[l];
+            lzh_freq_tab[l] = k;
 
-            i = son[c];
-            prnt[i] = l;
+            int i = lzh_child_ptrs[c];
+            lzh_parent_ptrs[i] = l;
 
-            if (i < T) {
-                prnt[i + 1] = l;
+            if (i < LZH_TABLE_SIZE) {
+                lzh_parent_ptrs[i + 1] = l;
             }
 
-            j = son[l];
-            son[l] = i;
-            prnt[j] = c;
+            int j = lzh_child_ptrs[l];
+            lzh_child_ptrs[l] = i;
+            lzh_parent_ptrs[j] = c;
 
-            if (j < T) {
-                prnt[j + 1] = c;
+            if (j < LZH_TABLE_SIZE) {
+                lzh_parent_ptrs[j + 1] = c;
             }
 
-            son[c] = j;
+            lzh_child_ptrs[c] = j;
             c = l;
         }
-    } while ((c = prnt[c]) != 0); // repeat up to root
+    } while ((c = lzh_parent_ptrs[c]) != 0); // repeat up to root
 }
 
-int DecodeChar(void) {
-    int c = son[R];
+int lzh_decode_char(void) {
+    int c = lzh_child_ptrs[LZH_ROOT_POSITION];
 
     // travel from root to leaf,
-    // choosing the smaller child node (son[]) if the read bit is 0,
-    // the bigger (son[]+1} if 1
-    while (c < T) {
-        c = son[c + GetBit()];
+    // choosing the smaller child node (lzh_child_ptrs[]) if the read bit is 0,
+    // the bigger (lzh_child_ptrs[]+1} if 1
+    while (c < LZH_TABLE_SIZE) {
+        c = lzh_child_ptrs[c + lzh_get_bit()];
     }
 
-    c -= T;
-    update(c);
+    c -= LZH_TABLE_SIZE;
+    lzh_update(c);
 
     return c;
 }
 
-int DecodePosition(void) {
-    int i;
-    int j;
-    int c;
-
+int lzh_decode_position(void) {
     // recover upper 6 bits from table
-    i = GetByte();
-    c = (int)d_code[i] << 6;
-    j = d_len[i];
+    int i = lzh_get_byte();
+    int c = (int)lzh_d_code[i] << 6;
+    int j = lzh_d_len[i];
 
     // read lower 6 bits verbatim
     j -= 2;
 
     while (j--) {
-        i = (i << 1) + GetBit();
+        i = (i << 1) + lzh_get_bit();
     }
 
     return c | (i & 0x3f);
 }
 
-unsigned unpack_lzh(uint8_t* src, unsigned size, uint8_t* buf) {
-    packed_ptr = src;
-    packed_end = src + size;
+unsigned lzh_unpack(uint8_t* src, unsigned size, uint8_t* buf) {
+    lzh_packed_ptr = src;
+    lzh_packed_end = src + size;
 
-    int i;
-    int j;
-    int k;
-    int c;
+    lzh_unpack_start_huff();
     unsigned count = 0;
 
-    StartHuff();
-
     // while (count < textsize) // textsize - sizeof unpacked data
-    while (packed_ptr < packed_end) {
-        c = DecodeChar();
+    while (lzh_packed_ptr < lzh_packed_end) {
+        int c = lzh_decode_char();
 
         if (c < 256) {
             *(buf++) = c;
-            text_buf[r++] = c;
-            r &= (N - 1);
+            lzh_text_buf[lzh_unpack_pos++] = c;
+            lzh_unpack_pos &= (LZH_BUFFER_SIZE - 1);
             count++;
         } else {
-            i = (r - DecodePosition() - 1) & (N - 1);
-            j = c - 255 + THRESHOLD;
+            int i = (lzh_unpack_pos - lzh_decode_position() - 1) & (LZH_BUFFER_SIZE - 1);
+            int j = c - 255 + LZH_THRESHOLD;
 
-            for (k = 0; k < j; k++) {
-                c = text_buf[(i + k) & (N - 1)];
+            for (int k = 0; k < j; k++) {
+                c = lzh_text_buf[(i + k) & (LZH_BUFFER_SIZE - 1)];
                 *(buf++) = c;
-                text_buf[r++] = c;
-                r &= (N - 1);
+                lzh_text_buf[lzh_unpack_pos++] = c;
+                lzh_unpack_pos &= (LZH_BUFFER_SIZE - 1);
                 count++;
             }
         }

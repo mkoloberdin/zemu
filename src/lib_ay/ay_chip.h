@@ -82,53 +82,53 @@ class C_AyChip {
 
     C_AyChipConfig conf;
 
-    unsigned t;
-    unsigned ta;
-    unsigned tb;
-    unsigned tc;
-    unsigned tn;
-    unsigned te;
-    unsigned env;
-    unsigned denv;
+    unsigned t = 0;
+    unsigned ta = 0;
+    unsigned tb = 0;
+    unsigned tc = 0;
+    unsigned tn = 0;
+    unsigned te = 0;
+    unsigned env = 0;
+    unsigned denv = 0;
 
-    unsigned bitA;
-    unsigned bitB;
-    unsigned bitC;
-    unsigned bitN;
-    unsigned ns;
+    unsigned bitA = 0;
+    unsigned bitB = 0;
+    unsigned bitC = 0;
+    unsigned bitN = 0;
+    unsigned ns = 0;
 
-    unsigned bit0;
-    unsigned bit1;
-    unsigned bit2;
-    unsigned bit3;
-    unsigned bit4;
-    unsigned bit5;
+    unsigned bit0 = 0;
+    unsigned bit1 = 0;
+    unsigned bit2 = 0;
+    unsigned bit3 = 0;
+    unsigned bit4 = 0;
+    unsigned bit5 = 0;
 
-    unsigned ea;
-    unsigned eb;
-    unsigned ec;
-    unsigned va;
-    unsigned vb;
-    unsigned vc;
+    unsigned ea = 0;
+    unsigned eb = 0;
+    unsigned ec = 0;
+    unsigned va = 0;
+    unsigned vb = 0;
+    unsigned vc = 0;
 
-    unsigned fa;
-    unsigned fb;
-    unsigned fc;
-    unsigned fn;
-    unsigned fe;
+    unsigned fa = 0;
+    unsigned fb = 0;
+    unsigned fc = 0;
+    unsigned fn = 0;
+    unsigned fe = 0;
 
-    unsigned multConst;
+    unsigned multConst = 0;
     unsigned vols[6][32];
 
-    uint8_t r13Reloaded;
-    uint8_t selectedReg;
-    uint8_t regs[0x10];
+    uint8_t r13Reloaded = 0;
+    uint8_t selectedReg = 0;
+    uint8_t regs[0x10] = {0};
 
     unsigned chipClockRate;
     unsigned systemClockRate;
 
-    uint64_t passedChipTicks;
-    uint64_t passedClkTicks;
+    uint64_t passedChipTicks = 0;
+    uint64_t passedClkTicks = 0;
 };
 
 #endif

@@ -184,7 +184,7 @@ static unsigned int sin_tab[SIN_LEN];
 /* 0.75, 1.5,  3,    6,    12,   24,   48   (dB)*/
 
 /* 0 - 15: 0, 3, 6, 9,12,15,18,21,24,27,30,33,36,39,42,93 (dB)*/
-#define SC(db) (UINT32) ( db * (4.0/ENV_STEP) )
+#define SC(db) (UINT32) ( (db) * (4.0/ENV_STEP) )
 static const UINT32 sl_table[16]={
  SC( 0),SC( 1),SC( 2),SC(3 ),SC(4 ),SC(5 ),SC(6 ),SC( 7),
  SC( 8),SC( 9),SC(10),SC(11),SC(12),SC(13),SC(14),SC(31)
@@ -221,7 +221,7 @@ static const UINT8 eg_inc[19*RATE_STEPS]={
 /*18 */ 0,0, 0,0, 0,0, 0,0, /* infinity rates for attack and decay(s) */
 };
 
-#define O(a) (a*RATE_STEPS)
+#define O(a) ((a)*RATE_STEPS)
 
 /*note that there is no O(17) in this table - it's directly in the code */
 static const UINT8 eg_rate_select[32+64+32]={ /* Envelope Generator rates (32 + 64 rates + 32 RKS) */
@@ -271,7 +271,7 @@ O(16),O(16),O(16),O(16),O(16),O(16),O(16),O(16)
 /*shift 11,   10,   9,   8,   7,   6,  5,  4,  3,  2, 1,  0,  0,  0,  0,  0 */
 /*mask  2047, 1023, 511, 255, 127, 63, 31, 15, 7,  3, 1,  0,  0,  0,  0,  0 */
 
-#define O(a) (a*1)
+#define O(a) ((a)*1)
 
 static const UINT8 eg_rate_shift[32+64+32]={  /* Envelope Generator counter shifts (32 + 64 rates + 32 RKS) */
 /* 32 infinite time rates */
@@ -455,8 +455,8 @@ static const UINT8 lfo_pm_output[7*8][8]={ /* 7 bits meaningful (of F-NUMBER), 8
 static INT32 lfo_pm_table[128*8*32]; /* 128 combinations of 7 bits meaningful (of F-NUMBER), 8 LFO depths, 32 LFO output levels per one depth */
 
 /* register number to channel number , slot offset */
-#define OPN_CHAN(N) (N&3)
-#define OPN_SLOT(N) ((N>>2)&3)
+#define OPN_CHAN(N) ((N)&3)
+#define OPN_SLOT(N) (((N)>>2)&3)
 
 /* slot number */
 #define SLOT1 0

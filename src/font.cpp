@@ -61,50 +61,39 @@ ZHW_Video_Surface* CopySurfaceX(ZHW_Video_Surface* src) {
 
 //------------------------------------------------------------------------------------------------------------------------------
 
-C_Font::C_Font() {
-}
-
-C_Font::~C_Font() {
-    if (surf) {
-        ZHW_Video_FreeSurface(surf);
-    }
-}
-
-void C_Font::Init(ZHW_Video_Surface* surf) {
-    this->surf = CopySurfaceX(surf);
-    CalcFont();
-}
-
-void C_Font::Init(uint8_t* data) {
+C_Font::C_Font(uint8_t* data) {
     surf = ExtractImage(data);
     CalcFont();
 }
 
+C_Font::C_Font(ZHW_Video_Surface* surf) {
+    this->surf = CopySurfaceX(surf);
+    CalcFont();
+}
+
+C_Font::~C_Font() {
+    ZHW_Video_FreeSurface(surf);
+}
+
 void C_Font::CalcFont(void) {
-    int x;
     int n;
-    int h;
-    int w;
-    int t1;
-    int t2;
 
     if (!ZHW_VIDEO_LOCKSURFACE(surf)) {
         return;
     }
 
     spitch = surf->pitch / 4;
-    h = surf->h;
-    w = surf->w;
+    int w = surf->w;
 
-    t1 = ((int*)surf->pixels)[0];
-    t2 = ((int*)surf->pixels)[1];
+    int t1 = ((int*)surf->pixels)[0];
+    int t2 = ((int*)surf->pixels)[1];
 
     for (n = 0; n < 32; n++) {
         off[n] = 1;
         len[n] = 1;
     }
 
-    x = 0;
+    int x = 0;
 
     do {
         while (x < w) {
@@ -192,7 +181,7 @@ void C_Font::PrintString(int x, int y, const char* str) {
 }
 
 int C_Font::Height(void) {
-    return (surf->h);
+    return surf->h;
 }
 
 int C_Font::StrLenPx(const char* str) {

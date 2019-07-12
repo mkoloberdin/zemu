@@ -70,10 +70,7 @@ const unsigned* C_AyChipConfig::GetPanTab(void) {
     return panTab[panType];
 }
 
-C_AyChip::C_AyChip() {
-    bitA = 0;
-    bitB = 0;
-    bitC = 0;
+C_AyChip::C_AyChip() { //-V730
 }
 
 C_AyChip::~C_AyChip() {
@@ -296,7 +293,7 @@ void C_AyChip::SetVolumes(unsigned globalVol, const unsigned* volTab, const unsi
     }
 }
 
-void C_AyChip::SetTimings(unsigned systemClockRate, unsigned chipClockRate, unsigned sampleRate) {
+void C_AyChip::SetTimings(unsigned systemClockRate, unsigned chipClockRate, unsigned sampleRate) { //-V688
     chipClockRate /= 8;
 
     this->systemClockRate = systemClockRate;

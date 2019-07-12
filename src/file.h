@@ -17,13 +17,16 @@
 class C_File {
     public:
 
-    C_File();
-    ~C_File();
+    static size_t FileSize(const char* filename);
+    static bool FileExists(const char* filename);
+    static bool Unlink(const char* filename);
 
-    void Read(const char* filename);
-    void Write(const char* filename);
-    void Append(const char* filename);
-    void Close(void);
+    // Very very bad API for creating files for read / write,
+    // this will be reworked later.
+    C_File(const char* filename);
+    C_File(const char* filename, bool append);
+
+    ~C_File();
 
     void PrintF(const char* fmt, ...);
     void PutBYTE(uint8_t b);
@@ -40,34 +43,28 @@ class C_File {
     size_t ReadBlock(void* buf, size_t size);
     void WriteBlock(void* buf, size_t size);
 
-    bool IsOpened(void);
     bool Eof(void);
     void UnGetBYTE(uint8_t b);
     void UnGetC(int c);
-
-    static size_t FileSize(const char* filename);
-    static bool FileExists(const char* filename);
 
     size_t GetFilePointer(void);
     void SetFilePointer(size_t fp);
 
     private:
 
-    void TryNClose(void);
-
     uint8_t buffer[FILECACHE_SIZE];
-    int handle;
-    int len;
     int accMode;
-    int un_ch;
+    int handle;
     unsigned long readSize;
     unsigned long readFileSize;
     bool eof;
-    bool un_eof;
     bool isCompressed;
+    int len;
+    int un_ch;
+    bool un_eof;
 
-    C_File& operator=(const C_File& dummy) { return *this; }
-    C_File(const C_File& dummy) {}
+    C_File(const C_File&);
+    C_File& operator=(const C_File&);
 };
 
 #endif

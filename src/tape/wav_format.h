@@ -8,14 +8,14 @@
 class C_WavFormat : public C_TapeFormat {
     public:
 
-    C_File fl;
+    C_File* fl;
     uint64_t allTicks;
-    uint16_t compression;
+    // uint16_t compression;
     uint16_t channels;
     uint32_t rate;
     uint16_t bits;
     uint32_t dataSize;
-    uint32_t dataFp;
+    // uint32_t dataFp;
     uint32_t dataPos;
     unsigned int divider;
     unsigned int sampleSz;

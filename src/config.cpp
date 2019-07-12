@@ -103,13 +103,21 @@ void CConfig::EnsurePaths(const char* app_name) {
             home_path = string(buffer);
         }
     #else
-        if (getenv("XDG_CONFIG_HOME")) {
-            home_path = getenv("XDG_CONFIG_HOME");
-        } else if (getenv("HOME")) {
-            if (C_File::FileExists(C_DirWork::Append(getenv("HOME"), ".config").c_str())) {
-                home_path = C_DirWork::Append(getenv("HOME"), ".config");
-            } else {
-                home_path = string(getenv("HOME"));
+        char* home_path_env = getenv("XDG_CONFIG_HOME");
+
+        if (home_path_env) {
+            home_path = home_path_env;
+        } else {
+            home_path_env = getenv("HOME");
+
+            if (home_path_env) {
+                string home_path_config = C_DirWork::Append(home_path_env, ".config");
+
+                if (C_File::FileExists(home_path_config.c_str())) {
+                    home_path = home_path_config;
+                } else {
+                    home_path = home_path_env;
+                }
             }
         }
     #endif
@@ -188,16 +196,13 @@ size_t CConfig::LoadDataFile(const char* prefix, const char* filename, uint8_t* 
         return 0;
     }
 
-    C_File fl;
-    fl.Read(path.c_str());
+    C_File fl(path.c_str());
 
     if (offset) {
         fl.SetFilePointer(offset);
     }
 
     size_t readed = fl.ReadBlock(buffer, size);
-    fl.Close();
-
     return readed;
 }
 
@@ -213,10 +218,8 @@ bool CConfig::SaveDataFile(const char* prefix, const char* filename, const uint8
         mkdir(folder.c_str(), 0755);
     #endif
 
-    C_File fl;
-    fl.Write(C_DirWork::Append(folder, filename).c_str());
+    C_File fl(C_DirWork::Append(folder, filename).c_str(), false);
     fl.WriteBlock(buffer, size);
-    fl.Close();
 
     return true;
 }

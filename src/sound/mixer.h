@@ -38,9 +38,8 @@ class C_SoundMixer {
     int mixerMode;
     std::vector<C_SndRenderer*> sources;
     uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
-    bool recordWav;
     const char* wavFileName;
-    C_File wavFile;
+    C_File* wavFile;
 };
 
 extern C_SoundMixer soundMixer;

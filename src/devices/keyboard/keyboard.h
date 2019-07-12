@@ -13,7 +13,7 @@ class C_Keyboard : public C_Device {
     public:
 
     struct s_ZxKeys {
-        s_ZxKeys() : count(0) {}
+        s_ZxKeys() : count(0) {} // -V730
 
         int count;
         int portnum[MAX_ZX_KEYS_MAP];
@@ -21,7 +21,7 @@ class C_Keyboard : public C_Device {
     };
 
     struct s_HostKeyMods {
-        s_HostKeyMods() : count(0) {}
+        s_HostKeyMods() : count(0) {} // -V730
 
         int count;
         int keyMod[MAX_HOST_KEY_MODS];

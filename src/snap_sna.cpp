@@ -8,125 +8,117 @@
 #include "file.h"
 
 bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
-    C_File fl;
-    uint8_t border_color;
     bool banks[8];
     uint8_t buffer[16384];
-    uint8_t retval;
-    uint8_t port_7ffd;
-    uint8_t is_trdos;
 
     try {
-        fl.Read(filename);
+        C_File fl(filename);
+
+        z80ex_set_reg(cpu, regI, fl.GetBYTE());
+        z80ex_set_reg(cpu, regHL_, fl.GetWORD());
+        z80ex_set_reg(cpu, regDE_, fl.GetWORD());
+        z80ex_set_reg(cpu, regBC_, fl.GetWORD());
+        z80ex_set_reg(cpu, regAF_, fl.GetWORD());
+        z80ex_set_reg(cpu, regHL, fl.GetWORD());
+        z80ex_set_reg(cpu, regDE, fl.GetWORD());
+        z80ex_set_reg(cpu, regBC, fl.GetWORD());
+        z80ex_set_reg(cpu, regIY, fl.GetWORD());
+        z80ex_set_reg(cpu, regIX, fl.GetWORD());
+
+        uint8_t intm = fl.GetBYTE();
+
+        z80ex_set_reg(cpu, regIFF1, intm & 1);
+        z80ex_set_reg(cpu, regIFF2, (intm >> 1) & 1);
+
+        z80ex_set_reg(cpu, regR, fl.GetBYTE());
+        z80ex_set_reg(cpu, regAF, fl.GetWORD());
+        z80ex_set_reg(cpu, regSP, fl.GetWORD());
+        z80ex_set_reg(cpu, regIM, fl.GetBYTE());
+
+        uint8_t border_color = fl.GetBYTE();
+        mmgr.OnReset();
+
+        for (int i = 0; i < 8; i++) {
+            banks[i] = false;
+        }
+
+        for (int i = 0; i < 16384; i++) {
+            mmgr.OnWriteByte(i + 16384, fl.GetBYTE());
+        }
+
+        banks[5] = true;
+
+        for (int i = 0; i < 16384; i++) {
+            mmgr.OnWriteByte(i + 32768, fl.GetBYTE());
+        }
+
+        banks[2] = true;
+
+        for (int i = 0; i < 16384; i++) {
+            buffer[i] = fl.GetBYTE();
+        }
+
+        if (fl.Eof()) {
+            mmgr.OnOutputByte(0x7ffd, 0x30); // set 48k mode
+
+            for (int i = 0; i < 16384; i++) {
+                mmgr.OnWriteByte(i + 49152, buffer[i]);
+            }
+
+            uint16_t sp = z80ex_get_reg(cpu, regSP);
+
+            uint8_t retval = ReadByteDasm(sp, nullptr);
+            uint16_t pc = retval;
+            mmgr.OnWriteByte(sp, 0);
+            sp++;
+
+            retval = ReadByteDasm(sp, nullptr);
+            pc |= ((uint16_t)retval << 8);
+            mmgr.OnWriteByte(sp, 0);
+            sp++;
+
+            z80ex_set_reg(cpu, regSP, sp);
+            z80ex_set_reg(cpu, regPC, pc);
+        } else {
+            z80ex_set_reg(cpu, regPC, fl.GetWORD());
+            uint8_t port_7ffd = fl.GetBYTE();
+            uint8_t is_trdos = fl.GetBYTE();
+            mmgr.OnOutputByte(0x7ffd, port_7ffd & 7);
+
+            for (int i = 0; i < 16384; i++) {
+                mmgr.OnWriteByte(i + 49152, buffer[i]);
+            }
+
+            banks[port_7ffd & 7] = true;
+
+            for (int k = 0; k < 8; k++) {
+                if (banks[k]) {
+                    continue;
+                }
+
+                mmgr.OnOutputByte(0x7ffd, k);
+
+                for (int i = 0; i < 16384; i++) {
+                    mmgr.OnWriteByte(i + 49152, fl.GetBYTE());
+                }
+            }
+
+            C_TrDos::trdos = (is_trdos != 0);
+            mmgr.OnOutputByte(0x7ffd, port_7ffd);
+        }
+
+        // set border color
+        border.OnOutputByte(0x00FE, border_color);
+
+        return true;
     } catch (C_E &e) {
         return false;
     }
-
-    z80ex_set_reg(cpu, regI, fl.GetBYTE());
-    z80ex_set_reg(cpu, regHL_, fl.GetWORD());
-    z80ex_set_reg(cpu, regDE_, fl.GetWORD());
-    z80ex_set_reg(cpu, regBC_, fl.GetWORD());
-    z80ex_set_reg(cpu, regAF_, fl.GetWORD());
-    z80ex_set_reg(cpu, regHL, fl.GetWORD());
-    z80ex_set_reg(cpu, regDE, fl.GetWORD());
-    z80ex_set_reg(cpu, regBC, fl.GetWORD());
-    z80ex_set_reg(cpu, regIY, fl.GetWORD());
-    z80ex_set_reg(cpu, regIX, fl.GetWORD());
-
-    uint8_t intm = fl.GetBYTE();
-
-    z80ex_set_reg(cpu, regIFF1, intm & 1);
-    z80ex_set_reg(cpu, regIFF2, (intm >> 1) & 1);
-
-    z80ex_set_reg(cpu, regR, fl.GetBYTE());
-    z80ex_set_reg(cpu, regAF, fl.GetWORD());
-    z80ex_set_reg(cpu, regSP, fl.GetWORD());
-    z80ex_set_reg(cpu, regIM, fl.GetBYTE());
-
-    border_color = fl.GetBYTE();
-    mmgr.OnReset();
-
-    for (int i = 0; i < 8; i++) {
-        banks[i] = false;
-    }
-
-    for (int i = 0; i < 16384; i++) {
-        mmgr.OnWriteByte(i + 16384, fl.GetBYTE());
-    }
-
-    banks[5] = true;
-
-    for (int i = 0; i < 16384; i++) {
-        mmgr.OnWriteByte(i + 32768, fl.GetBYTE());
-    }
-
-    banks[2] = true;
-
-    for (int i = 0; i < 16384; i++) {
-        buffer[i] = fl.GetBYTE();
-    }
-
-    if (fl.Eof()) {
-        mmgr.OnOutputByte(0x7ffd, 0x30); // set 48k mode
-
-        for (int i = 0; i < 16384; i++) {
-            mmgr.OnWriteByte(i + 49152, buffer[i]);
-        }
-
-        uint16_t sp = z80ex_get_reg(cpu, regSP);
-
-        retval = ReadByteDasm(sp, nullptr);
-        uint16_t pc = retval;
-        mmgr.OnWriteByte(sp, 0);
-        sp++;
-
-        retval = ReadByteDasm(sp, nullptr);
-        pc |= ((uint16_t)retval << 8);
-        mmgr.OnWriteByte(sp, 0);
-        sp++;
-
-        z80ex_set_reg(cpu, regSP, sp);
-        z80ex_set_reg(cpu, regPC, pc);
-    } else {
-        z80ex_set_reg(cpu, regPC, fl.GetWORD());
-        port_7ffd = fl.GetBYTE();
-        is_trdos = fl.GetBYTE();
-        mmgr.OnOutputByte(0x7ffd, port_7ffd & 7);
-
-        for (int i = 0; i < 16384; i++) {
-            mmgr.OnWriteByte(i + 49152, buffer[i]);
-        }
-
-        banks[port_7ffd & 7] = true;
-
-        for (int k = 0; k < 8; k++) {
-            if (banks[k]) {
-                continue;
-            }
-
-            mmgr.OnOutputByte(0x7ffd, k);
-
-            for (int i = 0; i < 16384; i++) {
-                mmgr.OnWriteByte(i + 49152, fl.GetBYTE());
-            }
-        }
-
-        C_TrDos::trdos = (is_trdos != 0);
-        mmgr.OnOutputByte(0x7ffd, port_7ffd);
-    }
-
-    // set border color
-    border.OnOutputByte(0x00FE, border_color);
-    fl.Close();
-
-    return true;
 }
 
 void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
-    C_File fl;
     bool banks[8];
-
-    fl.Write(filename);
+    C_File fl(filename, false);
 
     fl.PutBYTE(z80ex_get_reg(cpu, regI));
     fl.PutWORD(z80ex_get_reg(cpu, regHL_));
@@ -207,6 +199,4 @@ void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
             fl.WriteBlock(&mmgr.ram[0x4000 * k], 0x4000);
         }
     }
-
-    fl.Close();
 }

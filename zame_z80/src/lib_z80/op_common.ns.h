@@ -68,7 +68,7 @@ extern Cpu::t_opcode optable_FD_CB[0x100];
 //-V:OP_SCF:524
 //-V:OP_LD_A_MNN:524
 //-V:OP_CCF:524
-//-V:OP_DO_A_R:524
+//-V:OP_DO_A_R:524,547
 //-V:OP_DO_A_MHL:524
 //-V:OP_DO_A_ORP:524
 //-V:OP_RET_CC:524

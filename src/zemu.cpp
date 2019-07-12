@@ -58,8 +58,8 @@ int REAL_PITCH;
 bool drawFrame;
 int frames;
 CConfig config;
-C_Font font;
-C_Font fixed_font;
+C_Font* font = nullptr;
+C_Font* fixed_font = nullptr;
 bool disableSound = false;
 bool doCopyOfSurfaces = false;
 ZHW_Window* window;
@@ -306,10 +306,10 @@ int messageTimeout = 0;
 char message[0x100];
 
 void OutputText(char* str) {
-    int x = (WIDTH - font.StrLenPx(str)) / 2;
-    int y = HEIGHT - font.Height() - 4;
+    int x = (WIDTH - font->StrLenPx(str)) / 2;
+    int y = HEIGHT - font->Height() - 4;
 
-    font.PrintString(x, y, str);
+    font->PrintString(x, y, str);
 }
 
 void ShowMessage(void) {
@@ -359,7 +359,6 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
 }
 
 bool TryLoadArcFile(const char* arcName, int drive) {
-    C_File fl;
     char res[MAX_PATH];
     char tmp[MAX_PATH];
     char str[MAX_FNAME];
@@ -381,36 +380,36 @@ bool TryLoadArcFile(const char* arcName, int drive) {
         return false;
     }
 
-    sprintf(tmp, "%s list \"%s\" %s/files.txt", plugin_fn.c_str(), arcName, tempFolderName);
+    snprintf(tmp, sizeof(tmp), "%s list \"%s\" %s/files.txt", plugin_fn.c_str(), arcName, tempFolderName);
 
     if (system(tmp) == -1) {
         DEBUG_MESSAGE("system failed");
     }
 
-    sprintf(tmp, "%s/files.txt", tempFolderName);
+    snprintf(tmp, sizeof(tmp), "%s/files.txt", tempFolderName);
 
     if (!C_File::FileExists(tmp)) {
         return true; // "true" here means ONLY that the file is an archive
     }
 
-    fl.Read(tmp);
+    C_File fl(tmp);
 
     for (filesCount = 0; !fl.Eof();) {
         fl.GetS(str, sizeof(str));
 
-        if (strcmp(str, "")) {
+        if (str[0] != '\0') {
             strcpy(files[filesCount++], str);
         }
     }
 
-    unlink(tmp);
+    C_File::Unlink(tmp);
 
     if (!filesCount) {
         return true; // "true" here means ONLY that the file is an archive
     }
 
     // currently load only first file
-    sprintf(tmp, "%s extract \"%s\" \"%s\" %s", plugin_fn.c_str(), arcName, files[0], tempFolderName);
+    snprintf(tmp, sizeof(tmp), "%s extract \"%s\" \"%s\" %s", plugin_fn.c_str(), arcName, files[0], tempFolderName);
 
     if (system(tmp) == -1) {
         DEBUG_MESSAGE("system failed");
@@ -419,10 +418,10 @@ bool TryLoadArcFile(const char* arcName, int drive) {
     strcpy(tmp, C_DirWork::ExtractFileName(files[0]));
 
     // TODO: check if lresult strlen > sizeof(res)
-    sprintf(res, "%s/%s", tempFolderName, tmp);
+    snprintf(res, sizeof(res), "%s/%s", tempFolderName, tmp);
 
     LoadNormalFile(res, drive, arcName);
-    unlink(res);
+    C_File::Unlink(res);
 
     return true; // "true" here means ONLY that the file is an archive
 }
@@ -798,12 +797,12 @@ void InitSurfaces(void) {
 }
 
 void InitFont(void) {
-    font.Init(ftbos_font_data);
-    font.CopySym('-', '_');
-    font.SetSymOff('_', 0, 4);
-    font.SetSymOff('-', 0, 1);
+    font = new C_Font(ftbos_font_data);
+    font->CopySym('-', '_');
+    font->SetSymOff('_', 0, 4);
+    font->SetSymOff('-', 0, 1);
 
-    fixed_font.Init(font_64_data);
+    fixed_font = new C_Font(font_64_data);
 }
 
 void InitAll(void) {
@@ -1126,28 +1125,28 @@ void DrawIndicators(void) {
     DRIVE_STATE st = dev_trdos.GetIndicatorState();
 
     if (st == DS_READ) {
-        OutputGimpImage(8, 0, (s_GimpImage*) &img_floppyRead);
+        OutputGimpImage(8, 0, (s_GimpImage*)((void*) &img_floppyRead));
     } else if (st == DS_WRITE) {
-        OutputGimpImage(8, 0, (s_GimpImage*) &img_floppyWrite);
+        OutputGimpImage(8, 0, (s_GimpImage*)((void*) &img_floppyWrite));
     } else if (params.showInactiveIcons) {
-        OutputGimpImage(8, 0, (s_GimpImage*) &img_floppy);
+        OutputGimpImage(8, 0, (s_GimpImage*)((void*) &img_floppy));
     }
 
     if (params.maxSpeed) {
-        OutputGimpImage(32, 0, (s_GimpImage*) &img_turboOn);
+        OutputGimpImage(32, 0, (s_GimpImage*)((void*) &img_turboOn));
     } else if (params.showInactiveIcons) {
-        OutputGimpImage(32, 0, (s_GimpImage*) &img_turboOff);
+        OutputGimpImage(32, 0, (s_GimpImage*)((void*) &img_turboOff));
     }
 
     if (C_Tape::IsActive()) {
-        sprintf(buf, "%d%%", C_Tape::GetPosPerc());
-        font.PrintString(WIDTH - 4 - font.StrLenPx(buf), 4, buf);
+        sprintf(buf, "%u%%", C_Tape::GetPosPerc());
+        font->PrintString(WIDTH - 4 - font->StrLenPx(buf), 4, buf);
     }
 
     for (unsigned i = 0; i < watchesCount; i++) {
         uint8_t val = ReadByteDasm(watches[i], nullptr);
         sprintf(buf, "%04X:%02X", watches[i], val);
-        fixed_font.PrintString(WIDTH - 4 - fixed_font.StrLenPx(buf), 4 + fixed_font.Height() * (i + 1), buf);
+        fixed_font->PrintString(WIDTH - 4 - fixed_font->StrLenPx(buf), 4 + fixed_font->Height() * (i + 1), buf);
     }
 }
 
@@ -1401,6 +1400,9 @@ void FreeAll(void) {
             DEBUG_MESSAGE("system() failed");
         }
     #endif
+
+    delete fixed_font;
+    delete font;
 
     ZHW_Video_FreeSurface(scrSurf[0]);
     ZHW_Video_FreeSurface(scrSurf[1]);

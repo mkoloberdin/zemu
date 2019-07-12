@@ -20,8 +20,8 @@
 #define MAX_HEX_NUM_SZ 7
 #define MAX_INSTR_SIZE 80
 
-extern C_Font font;
-extern C_Font fixed_font;
+extern C_Font* font;
+extern C_Font* fixed_font;
 
 char oldFileName[4][MAX_PATH] = {"", "", "" ,""};
 int currentDrive = 0;
@@ -69,14 +69,14 @@ bool DlgConfirm(const char* message) {
     int key;
     ZHW_Event event;
 
-    int wdt = font.StrLenPx(message) + 0x10;
-    int hgt = font.Height() + 0x10;
+    int wdt = font->StrLenPx(message) + 0x10;
+    int hgt = font->Height() + 0x10;
     int x = (WIDTH - wdt) / 2;
     int y = (HEIGHT - hgt) / 2;
 
     DlgClearScreen();
     Bar(x, y, x + wdt - 1, y + hgt - 1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
-    font.PrintString(x + 8, y + 8, message);
+    font->PrintString(x + 8, y + 8, message);
 
     for (;;) {
         UpdateScreen();
@@ -116,14 +116,14 @@ const char* DlgInputString(const char* message) {
     for (;;) {
         sprintf(buf, "%s: %s", message, buffer);
 
-        int wdt = font.StrLenPx(buf) + 0x10;
-        int hgt = font.Height() + 0x10;
+        int wdt = font->StrLenPx(buf) + 0x10;
+        int hgt = font->Height() + 0x10;
         int x = (WIDTH - wdt) / 2;
         int y = (HEIGHT - hgt) / 2;
 
         DlgClearScreen();
         Bar(x, y, x + wdt - 1, y + hgt - 1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
-        font.PrintString(x + 8, y + 8, buf);
+        font->PrintString(x + 8, y + 8, buf);
         UpdateScreen();
 
         do {
@@ -186,15 +186,15 @@ char* SelectFile(char* oldFile) {
     int tmp;
     int keyx;
 
-    int scrEnd = HEIGHT - font.Height() - 8;
+    int scrEnd = HEIGHT - font->Height() - 8;
 
     SafeStrcpy(ofl, C_DirWork::ExtractFileName(oldFile), MAX_FNAME);
     strcpy(path, C_DirWork::ExtractPath(oldFile));
     strcpy(path, C_DirWork::Normalize(path));
 
-    int h = font.Height();
+    int h = font->Height();
     int mx = scrEnd / h;
-    int x = font.StrLenPx("[]");
+    int x = font->StrLenPx("[]");
 
     do
     {
@@ -274,10 +274,10 @@ char* SelectFile(char* oldFile) {
                 Bar(0, scrEnd, WIDTH - 1, HEIGHT - 1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
 
                 Bar(4 + currentDrive * 16, scrEnd + 4, 4 + currentDrive * 16 + 12, scrEnd + 4 + 12, ZHW_VIDEO_MAKERGB(0x40, 0x10, 0x10));
-                font.PrintString(5, scrEnd + 5, "A");
-                font.PrintString(5 + 0x10 + 1, scrEnd + 5, "B");
-                font.PrintString(5 + 0x20 + 1, scrEnd + 5, "C");
-                font.PrintString(5 + 0x30 + 1, scrEnd + 5, "D");
+                font->PrintString(5, scrEnd + 5, "A");
+                font->PrintString(5 + 0x10 + 1, scrEnd + 5, "B");
+                font->PrintString(5 + 0x20 + 1, scrEnd + 5, "C");
+                font->PrintString(5 + 0x30 + 1, scrEnd + 5, "D");
 
                 Bar(
                     4 + 0x50,
@@ -303,9 +303,9 @@ char* SelectFile(char* oldFile) {
                     wd1793_is_disk_changed(currentDrive) ? ZHW_VIDEO_MAKERGB(255,128,32) : ZHW_VIDEO_MAKERGB(0x40,0x10,0x10)
                 );
 
-                font.PrintString(5 + 0x50, scrEnd + 5, "WP");
-                font.PrintString(5 + 0x68, scrEnd + 5, "LD");
-                font.PrintString(5 + 0x80, scrEnd + 5, "CH");
+                font->PrintString(5 + 0x50, scrEnd + 5, "WP");
+                font->PrintString(5 + 0x68, scrEnd + 5, "LD");
+                font->PrintString(5 + 0x80, scrEnd + 5, "CH");
 
                 Bar(
                     4 + 0xB0,
@@ -316,26 +316,26 @@ char* SelectFile(char* oldFile) {
                 );
 
                 if (C_Tape::IsLoaded()) {
-                    sprintf(buf, "TAPE %d%%", C_Tape::GetPosPerc());
+                    sprintf(buf, "TAPE %u%%", C_Tape::GetPosPerc());
                 } else {
                     sprintf(buf, "TAPE NOP");
                 }
 
-                font.PrintString(5 + 0xB0, scrEnd + 5, buf);
+                font->PrintString(5 + 0xB0, scrEnd + 5, buf);
 
                 for (i = 0; i < gl; i++) {
                     if (csr - pos == i) {
-                        Bar(0, i * h, x + font.StrLenPx(fnames[i + pos]) + x, i * h + h - 1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
+                        Bar(0, i * h, x + font->StrLenPx(fnames[i + pos]) + x, i * h + h - 1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
                     }
 
                     if (folders[i + pos]) {
-                        font.PrintString(0, i * h, "[]");
+                        font->PrintString(0, i * h, "[]");
                     }
 
-                    font.PrintString(x, i * h, fnames[i + pos]);
+                    font->PrintString(x, i * h, fnames[i + pos]);
                 }
 
-                OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage*) &img_zemuIco);
+                OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage*)((void*) &img_zemuIco));
                 UpdateScreen();
                 ZHW_Timer_Delay(10);
             } while (key == 0);
@@ -358,10 +358,10 @@ char* SelectFile(char* oldFile) {
 
                     char rname[MAX_PATH];
 
-                    if (strcasecmp("trd", C_DirWork::ExtractExt(tname))) {
-                        snprintf(rname, MAX_PATH, "%s.trd", tname);
-                    } else {
+                    if (!strcasecmp("trd", C_DirWork::ExtractExt(tname))) {
                         strcpy(rname, tname);
+                    } else {
+                        snprintf(rname, MAX_PATH, "%s.trd", tname);
                     }
 
                     if (!wd1793_save_dimage(rname, currentDrive, imgTRD)) {
@@ -525,13 +525,13 @@ int DbgAskHexNum(const char* message) {
     int key;
     ZHW_Event event;
 
-    int scrEnd = HEIGHT - fixed_font.Height() - 8;
+    int scrEnd = HEIGHT - fixed_font->Height() - 8;
 
     for (;;) {
         sprintf(buf, "%s: %s", message, buffer);
 
         Bar(0, scrEnd, WIDTH - 1, HEIGHT - 1, ZHW_VIDEO_MAKERGB(0x80, 0x20, 0x20));
-        fixed_font.PrintString(4, scrEnd + 4, buf);
+        fixed_font->PrintString(4, scrEnd + 4, buf);
         UpdateScreen();
 
         do {
@@ -646,8 +646,8 @@ void DebugIt(void) {
     int keyx;
     ZHW_Event event;
 
-    int scrEnd = HEIGHT - fixed_font.Height() - 8;
-    int h = fixed_font.Height();
+    int scrEnd = HEIGHT - fixed_font->Height() - 8;
+    int h = fixed_font->Height();
     int mx = scrEnd / h;
 
     int t;
@@ -770,10 +770,10 @@ void DebugIt(void) {
                 const char* lbl = (showLabels ? GetLabel(dispBuf[i].addr) : nullptr);
 
                 if (lbl) {
-                    fixed_font.PrintString(4, i * h, lbl);
+                    fixed_font->PrintString(4, i * h, lbl);
                 } else {
                     sprintf(buf, "%04X", dispBuf[i].addr);
-                    fixed_font.PrintString(4, i * h, buf);
+                    fixed_font->PrintString(4, i * h, buf);
                 }
 
                 int xpos = 64;
@@ -781,48 +781,48 @@ void DebugIt(void) {
                 if (hexMode) {
                     for (int j = 0; j < dispBuf[i].size; j++) {
                         sprintf(buf, "%02X", ReadByteDasm(dispBuf[i].addr + j, nullptr));
-                        fixed_font.PrintString(xpos, i*h, buf);
+                        fixed_font->PrintString(xpos, i*h, buf);
                         xpos += 4*3;
                     }
                 } else if (showLabels) {
-                    fixed_font.PrintString(xpos, i * h, ReplaceLabels(dispBuf[i].cmd));
+                    fixed_font->PrintString(xpos, i * h, ReplaceLabels(dispBuf[i].cmd));
                 } else {
-                    fixed_font.PrintString(xpos, i * h, dispBuf[i].cmd);
+                    fixed_font->PrintString(xpos, i * h, dispBuf[i].cmd);
                 }
             }
 
             int x = lx + 8;
             int y = 8;
 
-            sprintf(buf, "AF   %04X", z80ex_get_reg(cpu, regAF));         fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "BC   %04X", z80ex_get_reg(cpu, regBC));         fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "DE   %04X", z80ex_get_reg(cpu, regDE));         fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "HL   %04X", z80ex_get_reg(cpu, regHL));         fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "IX   %04X", z80ex_get_reg(cpu, regIX));         fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "IY   %04X", z80ex_get_reg(cpu, regIY));         fixed_font.PrintString(x, y, buf); y += h;
+            sprintf(buf, "AF   %04X", z80ex_get_reg(cpu, regAF));         fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "BC   %04X", z80ex_get_reg(cpu, regBC));         fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "DE   %04X", z80ex_get_reg(cpu, regDE));         fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "HL   %04X", z80ex_get_reg(cpu, regHL));         fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "IX   %04X", z80ex_get_reg(cpu, regIX));         fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "IY   %04X", z80ex_get_reg(cpu, regIY));         fixed_font->PrintString(x, y, buf); y += h;
             y += h;
-            sprintf(buf, "AF'  %04X", z80ex_get_reg(cpu, regAF_));        fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "BC'  %04X", z80ex_get_reg(cpu, regBC_));        fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "DE'  %04X", z80ex_get_reg(cpu, regDE_));        fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "HL'  %04X", z80ex_get_reg(cpu, regHL_));        fixed_font.PrintString(x, y, buf); y += h;
+            sprintf(buf, "AF'  %04X", z80ex_get_reg(cpu, regAF_));        fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "BC'  %04X", z80ex_get_reg(cpu, regBC_));        fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "DE'  %04X", z80ex_get_reg(cpu, regDE_));        fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "HL'  %04X", z80ex_get_reg(cpu, regHL_));        fixed_font->PrintString(x, y, buf); y += h;
             y += h;
-            sprintf(buf, "SP   %04X", z80ex_get_reg(cpu, regSP));         fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "PC   %04X", z80ex_get_reg(cpu, regPC));         fixed_font.PrintString(x, y, buf); y += h;
+            sprintf(buf, "SP   %04X", z80ex_get_reg(cpu, regSP));         fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "PC   %04X", z80ex_get_reg(cpu, regPC));         fixed_font->PrintString(x, y, buf); y += h;
             y += h;
-            sprintf(buf, "I    %02X", z80ex_get_reg(cpu, regI));          fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "R    %02X", z80ex_get_reg(cpu, regR));          fixed_font.PrintString(x, y, buf); y += h;
+            sprintf(buf, "I    %02X", z80ex_get_reg(cpu, regI));          fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "R    %02X", z80ex_get_reg(cpu, regR));          fixed_font->PrintString(x, y, buf); y += h;
             y += h;
-            sprintf(buf, "IFF1 %02X", z80ex_get_reg(cpu, regIFF1));       fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "IFF2 %02X", z80ex_get_reg(cpu, regIFF2));       fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "IM   %02X", z80ex_get_reg(cpu, regIM));         fixed_font.PrintString(x, y, buf); y += h;
+            sprintf(buf, "IFF1 %02X", z80ex_get_reg(cpu, regIFF1));       fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "IFF2 %02X", z80ex_get_reg(cpu, regIFF2));       fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "IM   %02X", z80ex_get_reg(cpu, regIM));         fixed_font->PrintString(x, y, buf); y += h;
             y += h;
-            sprintf(buf, "7FFD %02X", C_MemoryManager::port7FFD);         fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "EFF7 %02X", C_ExtPort::portEFF7);               fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "DOS  %s", C_TrDos::trdos ? "ON" : "OFF");       fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "INT? %s", z80ex_int_possible(cpu) ? "Y" : "N"); fixed_font.PrintString(x, y, buf); y += h;
-            sprintf(buf, "T    %d", (int)cpuClk);                         fixed_font.PrintString(x, y, buf); y += h;
+            sprintf(buf, "7FFD %02X", C_MemoryManager::port7FFD);         fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "EFF7 %02X", C_ExtPort::portEFF7);               fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "DOS  %s", C_TrDos::trdos ? "ON" : "OFF");       fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "INT? %s", z80ex_int_possible(cpu) ? "Y" : "N"); fixed_font->PrintString(x, y, buf); y += h;
+            sprintf(buf, "T    %d", (int)cpuClk);                         fixed_font->PrintString(x, y, buf); y += h;
 
-            OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage*) &img_zemuIco);
+            OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage*)((void*) &img_zemuIco));
             UpdateScreen();
             ZHW_Timer_Delay(10);
         } while (key == 0);

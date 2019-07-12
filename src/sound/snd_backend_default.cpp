@@ -9,7 +9,7 @@ CSndBackendDefault::CSndBackendDefault(unsigned int bufferSize) {
     Initialize(bufferSize, bufferSize - bufferSize / 3, 8);
 }
 
-CSndBackendDefault::CSndBackendDefault(unsigned int bufferSize, unsigned int preBufferSize) {
+CSndBackendDefault::CSndBackendDefault(unsigned int bufferSize, unsigned int preBufferSize) { //-V688
     Initialize(bufferSize, preBufferSize, 8);
 }
 
@@ -98,7 +98,7 @@ void CSndBackendDefault::Write(uint8_t* data, unsigned len) {
     }
 }
 
-void CSndBackendDefault::Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt) {
+void CSndBackendDefault::Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt) { //-V688
     if (bufferSize < SND_CALLBACK_BUFFER_SIZE * 4) {
         StrikeError("[CSndBackendDefault::Initialize] Buffer size must be >= SND_CALLBACK_BUFFER_SIZE * 4");
     }

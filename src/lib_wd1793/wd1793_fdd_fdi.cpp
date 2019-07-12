@@ -111,7 +111,7 @@ int C_Fdd::write_fdi(FILE* ff) {
             snbuf[2] = ((trkoffs >> 16) & 0xFF);
             snbuf[3] = (trkoffs >> 24);
 
-            *((unsigned*)(snbuf + 4)) = 0;
+            *((unsigned*)(snbuf + 4)) = 0; //-V1032
 
             snbuf[6] = t.s;
 

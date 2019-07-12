@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "wd1793_fdd.h"
+#include "../defines.h"
 
 int C_Fdd::read_udi() {
     free();
@@ -33,7 +34,12 @@ int C_Fdd::read_udi() {
     cyls = snbuf[9] + 1;
     sides = snbuf[10] + 1;
     rawsize = align_by(mem, 4096);
-    rawdata = (uint8_t *)malloc(rawsize);
+    rawdata = (uint8_t*)malloc(rawsize);
+
+    if (!rawdata) {
+        StrikeError("Failed to allocate %zu bytes of memory", rawsize);
+    }
+
     ptr = snbuf + 0x10;
     uint8_t* dst = rawdata;
 

@@ -29,8 +29,7 @@ void C_Keyboard::ReadKbdConfig(void) {
 
     printf("Trying to load keys config from \"%s\" ...\n", fileName);
 
-    C_File fl;
-    fl.Read(fileName);
+    C_File fl(fileName);
 
     while (!fl.Eof()) {
         fl.GetS(buf, sizeof(buf));

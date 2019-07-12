@@ -37,8 +37,8 @@ class CConfig {
 
     void EnsurePaths(const char* app_name);
 
-    CConfig& operator=(const CConfig& dummy) { return *this; }
-    CConfig(const CConfig& dummy) {}
+    CConfig(const CConfig&);
+    CConfig& operator=(const CConfig&);
 };
 
 #endif

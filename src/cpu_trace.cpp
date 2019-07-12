@@ -5,26 +5,34 @@
 #include "file.h"
 #include "devs.h"
 
-static C_File traceFile;
+static C_File* traceFile = nullptr;
 int cpuTrace_dT = 0;
 int cpuTrace_intReq = 0;
 
 void CpuTrace_Init(void) {
+    if (traceFile) {
+        StrikeError("CpuTrace_Init called twice");
+    }
+
     if (params.cpuTraceEnabled && *params.cpuTraceFormat && *params.cpuTraceFileName) {
-        traceFile.Write(params.cpuTraceFileName);
+        traceFile = new C_File(params.cpuTraceFileName, false);
     }
 }
 
 static void CpuTrace_PutByte(uint8_t val) {
-    traceFile.PrintF("%02X", val);
+    if (traceFile) {
+        traceFile->PrintF("%02X", val);
+    }
 }
 
 static void CpuTrace_PutWord(uint16_t val) {
-    traceFile.PrintF("%04X", val);
+    if (traceFile) {
+        traceFile->PrintF("%04X", val);
+    }
 }
 
 void CpuTrace_Log(void) {
-    if (!params.cpuTraceEnabled || !(*params.cpuTraceFormat) || !(*params.cpuTraceFileName)) {
+    if (!traceFile) {
         return;
     }
 
@@ -33,7 +41,7 @@ void CpuTrace_Log(void) {
 
     while (*formatPtr) {
         if (*formatPtr != '[') {
-            traceFile.PutC(*(formatPtr++));
+            traceFile->PutC(*(formatPtr++));
             continue;
         }
 
@@ -47,7 +55,7 @@ void CpuTrace_Log(void) {
         *strPtr = 0;
 
         if (*formatPtr != ']') {
-            traceFile.PrintF("[%s", str);
+            traceFile->PrintF("[%s", str);
             continue;
         }
 
@@ -100,15 +108,16 @@ void CpuTrace_Log(void) {
         } else if (!strcmp(str, "M4")) {
             CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 3, nullptr));
         } else {
-            traceFile.PrintF("[%s]", str);
+            traceFile->PrintF("[%s]", str);
         }
     }
 
-    traceFile.PutC('\n');
+    traceFile->PutC('\n');
 }
 
 void CpuTrace_Close(void) {
-    if (params.cpuTraceEnabled && *params.cpuTraceFormat && *params.cpuTraceFileName) {
-        traceFile.Close();
+    if (traceFile) {
+        delete traceFile;
+        traceFile = nullptr;
     }
 }

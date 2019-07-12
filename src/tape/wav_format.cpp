@@ -5,84 +5,93 @@
 
 #define WAV_THRESHOLD 140
 
-C_WavFormat::C_WavFormat() {
+C_WavFormat::C_WavFormat() { //-V730
+    fl = nullptr;
     allTicks = 0;
     active = false;
 }
 
 C_WavFormat::~C_WavFormat() {
-    if (fl.IsOpened()) {
-        fl.Close();
+    if (fl) {
+        delete fl;
     }
 }
 
 bool C_WavFormat::Load(const char* fname)
 {
-    if (fl.IsOpened()) {
-        fl.Close();
+    if (fl) {
+        delete fl;
     }
 
     active = false;
+    fl = new C_File(fname);
 
-    fl.Read(fname);
     char chunkName[5];
     chunkName[4] = 0;
 
-    fl.ReadBlock(chunkName, 4);
+    fl->ReadBlock(chunkName, 4);
 
-    if (strcmp(chunkName, "RIFF")) {
-        fl.Close();
+    if (strcmp(chunkName, "RIFF") != 0) {
+        delete fl;
+        fl = nullptr;
+
         DEBUG_MESSAGE("RIFF chunk not found");
         return false;
     }
 
-    fl.GetDWORD();  // skip chunk size
-    fl.ReadBlock(chunkName, 4);
+    fl->GetDWORD();  // skip chunk size
+    fl->ReadBlock(chunkName, 4);
 
-    if (strcmp(chunkName, "WAVE")) {
-        fl.Close();
+    if (strcmp(chunkName, "WAVE") != 0) {
+        delete fl;
+        fl = nullptr;
+
         DEBUG_MESSAGE("Invalid RIFF type (must be WAVE)");
         return false;
     }
 
     bool fmtFound = false;
 
-    while (!fl.Eof() && !fmtFound) {
-        fl.ReadBlock(chunkName, 4);
+    while (!fl->Eof() && !fmtFound) {
+        fl->ReadBlock(chunkName, 4);
 
-        if (fl.Eof()) {
+        if (fl->Eof()) {
             break;
         }
 
-        uint32_t size = fl.GetDWORD();
+        uint32_t size = fl->GetDWORD();
 
-        if (fl.Eof()) {
+        if (fl->Eof()) {
             break;
         }
 
-        if (strcmp(chunkName, "fmt ")) {
-            fl.SetFilePointer(fl.GetFilePointer() + size);
+        if (strcmp(chunkName, "fmt ") != 0) {
+            fl->SetFilePointer(fl->GetFilePointer() + size);
             continue;
         }
 
-        compression = fl.GetWORD();
+        uint16_t compression = fl->GetWORD();
 
         if (compression != 1) {
-            fl.Close();
+            delete fl;
+            fl = nullptr;
+
             DEBUG_MESSAGE("Only uncompressed PCM supported");
             return false;
         }
 
-        channels = fl.GetWORD();
-        rate = fl.GetDWORD();
+        channels = fl->GetWORD();
+        rate = fl->GetDWORD();
 
-        fl.GetDWORD(); // skip byte rate
-        fl.GetWORD(); // skip block align
+        fl->GetDWORD(); // skip byte rate
+        fl->GetWORD(); // skip block align
 
-        bits = fl.GetWORD();
+        bits = fl->GetWORD();
 
         if (bits != 8 && bits != 16 && bits != 32) {
-            fl.Close();
+            delete fl;
+            fl = nullptr;
+
             DEBUG_MESSAGE("Unsupported bits per sample. 8, 16 or 32 supported");
             return false;
         }
@@ -91,38 +100,42 @@ bool C_WavFormat::Load(const char* fname)
     }
 
     if (!fmtFound) {
-        fl.Close();
+        delete fl;
+        fl = nullptr;
+
         DEBUG_MESSAGE("fmt subchunk not found");
         return false;
     }
 
     bool dataFound = false;
-    fl.SetFilePointer(12);
+    fl->SetFilePointer(12);
 
-    while (!fl.Eof() && !dataFound) {
-        fl.ReadBlock(chunkName, 4);
+    while (!fl->Eof() && !dataFound) {
+        fl->ReadBlock(chunkName, 4);
 
-        if (fl.Eof()) {
+        if (fl->Eof()) {
             break;
         }
 
-        dataSize = fl.GetDWORD();
+        dataSize = fl->GetDWORD();
 
-        if (fl.Eof()) {
+        if (fl->Eof()) {
             break;
         }
 
-        if (strcmp(chunkName, "data")) {
-            fl.SetFilePointer(fl.GetFilePointer() + dataSize);
+        if (strcmp(chunkName, "data") != 0) {
+            fl->SetFilePointer(fl->GetFilePointer() + dataSize);
             continue;
         }
 
-        dataFp = fl.GetFilePointer();
+        // dataFp = fl->GetFilePointer();
         dataFound = true;
     }
 
     if (!dataFound) {
-        fl.Close();
+        delete fl;
+        fl = nullptr;
+
         DEBUG_MESSAGE("data chunk not found");
         return false;
     }
@@ -159,7 +172,7 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks) {
 
     // while (cnt--)
     // {
-    //     fl.GetBYTE();
+    //     fl->GetBYTE();
     //     dataPos++;
     // }
 
@@ -169,7 +182,7 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks) {
         switch (bits) {
             case 8:
                 for (int i = 0; i < channels; i++) {
-                    res += fl.GetBYTE();
+                    res += fl->GetBYTE();
                 }
 
                 dataPos += channels;
@@ -177,7 +190,7 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks) {
 
             case 16:
                 for (int i = 0; i < channels; i++) {
-                    res += (short)fl.GetWORD();
+                    res += (short)fl->GetWORD();
                 }
 
                 dataPos += channels * 2;
@@ -186,7 +199,7 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks) {
 
             case 32:
                 for (int i = 0; i < channels; i++) {
-                    res += (long)fl.GetDWORD();
+                    res += (long)fl->GetDWORD();
                 }
 
                 dataPos += channels * 4;
@@ -227,8 +240,8 @@ void C_WavFormat::Rewind(void) {
     dataPos = 0;
     allTicks = 0;
 
-    if (fl.IsOpened()) {
-        fl.SetFilePointer(0);
+    if (fl) {
+        fl->SetFilePointer(0);
     }
 }
 

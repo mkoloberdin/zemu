@@ -15,7 +15,30 @@ C_Wd1793::C_Wd1793() {
         fdd[i].set_appendboot(nullptr);
     }
 
+    next = 0;
+    time = 0;
     seldrive = &fdd[0];
+    tshift = 0;
+
+    state = S_IDLE;
+    state2 = S_IDLE;
+    cmd = 0;
+    data = 0;
+    track = 0;
+    sector = 0;
+    rqs = 0;
+    status = 0;
+
+    stepdirection = 0;
+    system = 0;
+    side = 0;
+
+    end_waiting_am = 0;
+    foundid = 0;
+    rwptr = 0;
+    rwlen = 0;
+
+    start_crc = 0;
     wd93_nodelay = 0;
 }
 
@@ -157,7 +180,7 @@ int C_Wd1793::process() {
                 break;
 
             case S_CMD_RW:
-                if (((cmd & 0xE0) == 0xA0 || (cmd & 0xF0) == 0xF0) && fdd[drive].is_wprotected()) {
+                if (((cmd & 0xE0) == 0xA0 || (cmd & 0xF0) == 0xF0) && seldrive->is_wprotected()) {
                     status |= WDS_WRITEP;
                     state = S_IDLE;
                     break;
@@ -510,7 +533,7 @@ read_first_byte:    data = trkcache.trkd[rwptr++];
 
                 rqs = 0;
 
-                if (fdd[drive].is_wprotected()) {
+                if (seldrive->is_wprotected()) {
                     status |= WDS_WRITEP;
                 }
 
@@ -834,9 +857,8 @@ void C_Wd1793::out(uint8_t port, uint8_t val, int64_t ttime, int* err) {
     // system
     if (port & 0x80) {
         system = val;
-        drive = val & 3;
         side = (1 & ~(val >> 4));
-        seldrive = fdd + drive;
+        seldrive = fdd + (unsigned)(val & 3);
         trkcache.clear();
 
         // reset

@@ -23,12 +23,9 @@ class C_Wd1793 {
     uint8_t rqs;
     uint8_t status;
 
-    // update this with changing 'system'
-    unsigned drive;
-    unsigned side;
-
     int8_t stepdirection;
     uint8_t system; // beta128 system register
+    unsigned side; // update this with changing 'system'
 
     // read/write sector(s) data
     int64_t end_waiting_am;

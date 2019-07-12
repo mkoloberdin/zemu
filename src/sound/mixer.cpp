@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include "mixer.h"
+#include "../exceptions.h"
 
 C_SoundMixer soundMixer;
 
@@ -10,10 +11,10 @@ C_SoundMixer soundMixer;
 #define MIXER_FULL_VOL_MASK 1
 #define MIXER_SMART_MASK 2
 
-C_SoundMixer::C_SoundMixer() {
+C_SoundMixer::C_SoundMixer() { //-V730
     initialized = false;
     sndBackend = nullptr;
-    recordWav = false;
+    wavFile = nullptr;
 }
 
 void C_SoundMixer::InitBackendDefault(int bufferSize) {
@@ -35,57 +36,57 @@ void C_SoundMixer::InitBackendDefault(int bufferSize) {
     }
 #endif
 
-void C_SoundMixer::Init(int mixerModePtr, bool recordWav, const char* wavFileName) {
+void C_SoundMixer::Init(int mixerMode, bool recordWav, const char* wavFileName) { //-V688
     assert(sndBackend != nullptr);
 
-    this->mixerMode = mixerModePtr;
-    this->recordWav = recordWav;
+    this->mixerMode = mixerMode;
     this->wavFileName = wavFileName;
 
     if (recordWav) {
-        wavFile.Write("output.wav.tmp");
+        wavFile = new C_File("output.wav.tmp", false);
     }
 
     initialized = true;
 }
 
 C_SoundMixer::~C_SoundMixer() {
-    if (!initialized) {
+    if (!initialized || !wavFile) {
         return;
     }
 
-    if (recordWav) {
-        wavFile.Close();
+    try {
+        delete wavFile;
 
         // TODO: use appropriate library for writing wave files where available
         long wavSz = C_File::FileSize("output.wav.tmp");
 
-        wavFile.Write(wavFileName);
-        wavFile.PutDWORD(0x46464952);
-        wavFile.PutDWORD(wavSz + 0x40 - 8);
-        wavFile.PutDWORD(0x45564157);
-        wavFile.PutDWORD(0x20746D66);
-        wavFile.PutDWORD(0x10);
-        wavFile.PutWORD(1);
-        wavFile.PutWORD(2);
-        wavFile.PutDWORD(SOUND_FREQ);
-        wavFile.PutDWORD(SOUND_FREQ * 4);
-        wavFile.PutWORD(4);
-        wavFile.PutWORD(16);
-        wavFile.PutDWORD(0x61746164);
-        wavFile.PutDWORD(wavSz);
+        wavFile = new C_File(wavFileName, false);
+        wavFile->PutDWORD(0x46464952);
+        wavFile->PutDWORD(wavSz + 0x40 - 8);
+        wavFile->PutDWORD(0x45564157);
+        wavFile->PutDWORD(0x20746D66);
+        wavFile->PutDWORD(0x10);
+        wavFile->PutWORD(1);
+        wavFile->PutWORD(2);
+        wavFile->PutDWORD(SOUND_FREQ);
+        wavFile->PutDWORD(SOUND_FREQ * 4);
+        wavFile->PutWORD(4);
+        wavFile->PutWORD(16);
+        wavFile->PutDWORD(0x61746164);
+        wavFile->PutDWORD(wavSz);
 
-        C_File wavTmp;
-        wavTmp.Read("output.wav.tmp");
+        C_File wavTmp("output.wav.tmp");
 
         while (!wavTmp.Eof()) {
-            wavFile.PutBYTE(wavTmp.GetBYTE());
+            wavFile->PutBYTE(wavTmp.GetBYTE());
         }
 
-        wavTmp.Close();
-        wavFile.Close();
-
-        unlink("output.wav.tmp");
+        delete wavFile;
+        C_File::Unlink("output.wav.tmp");
+    } catch (C_E &e) {
+        printf("Error occurred while finishing .wav - \"%s\"\n", e.Descr());
+    } catch (...) {
+        printf("Unknown error occurred while finishing .wav\n");
     }
 }
 
@@ -168,12 +169,12 @@ void C_SoundMixer::FlushFrame(bool soundEnabled) {
             }
         }
 
-        if (recordWav) {
+        if (wavFile) {
             o = audioBuffer;
 
             for (int i = minSamples; i--;) {
-                wavFile.PutWORD(*(o++));
-                wavFile.PutWORD(*(o++));
+                wavFile->PutWORD(*(o++));
+                wavFile->PutWORD(*(o++));
             }
         }
 

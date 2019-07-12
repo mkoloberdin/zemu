@@ -37,8 +37,8 @@ class CSndBackendDefault : public CSndBackend {
 
     private:
 
-    CSndBackendDefault(const CSndBackendDefault& f);
-    CSndBackendDefault& operator=(const CSndBackendDefault& f);
+    CSndBackendDefault(const CSndBackendDefault&);
+    CSndBackendDefault& operator=(const CSndBackendDefault&);
 };
 
 #endif

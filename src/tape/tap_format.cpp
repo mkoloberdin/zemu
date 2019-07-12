@@ -54,10 +54,8 @@ bool C_TapFormat::Load(const char* fname) {
 
     data = new uint8_t[size];
 
-    C_File fl;
-    fl.Read(fname);
+    C_File fl(fname);
     fl.ReadBlock(data, size);
-    fl.Close();
 
     blockPos = 0;
     blockSize = 0;

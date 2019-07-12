@@ -49,25 +49,6 @@
     #endif
 #endif
 
-C_File::C_File() {
-    accMode = ACC_NONE;
-    un_ch = -1;
-}
-
-C_File::~C_File() {
-    TryNClose();
-}
-
-void C_File::TryNClose(void) {
-    if (accMode != ACC_NONE) {
-        Close();
-    }
-}
-
-bool C_File::IsOpened(void) {
-    return (accMode != ACC_NONE);
-}
-
 size_t C_File::FileSize(const char* filename) {
     int h = _open(filename, _O_BINARY | _O_RDONLY);
 
@@ -92,11 +73,11 @@ bool C_File::FileExists(const char* filename) {
     return true;
 }
 
-void C_File::Read(const char* filename) {
-    #ifdef AUTO_DEHRUST
-        uint8_t *tmp;
-    #endif
+bool C_File::Unlink(const char* filename) {
+    return (unlink(filename) == 0);
+}
 
+C_File::C_File(const char* filename) {
     if (!strlen(filename)) {
         throw C_E(E_EmptyFileName);
     }
@@ -111,7 +92,6 @@ void C_File::Read(const char* filename) {
     _lseek(handle, 0L, SEEK_SET);
 
     eof = (readSize == 0);
-    len = 0;
 
     if (!eof) {
         if ((unsigned)_read(handle, buffer, FILECACHE_SIZE) != std::min((unsigned)readSize, (unsigned)FILECACHE_SIZE)) {
@@ -121,16 +101,12 @@ void C_File::Read(const char* filename) {
         #ifdef AUTO_DEHRUST
             C_Dehrust dh;
 
-            if (readSize >= 10) {
-                if (buffer[0] == 'H' && buffer[1] == 'R') {
-                    tmp = new uint8_t[0x10000];
-                    readSize = dh.Extract(buffer, tmp);
-                    memcpy(buffer, tmp, readSize);
-                    delete[] tmp;
-                    isCompressed = true;
-                } else {
-                    isCompressed = false;
-                }
+            if (readSize >= 10 && buffer[0] == 'H' && buffer[1] == 'R') {
+                uint8_t* tmp = new uint8_t[0x10000];
+                readSize = dh.Extract(buffer, tmp);
+                memcpy(buffer, tmp, readSize);
+                delete[] tmp;
+                isCompressed = true;
             } else {
                 isCompressed = false;
             }
@@ -139,14 +115,20 @@ void C_File::Read(const char* filename) {
         #endif
     }
 
-    readFileSize = readSize;
     accMode = ACC_READ;
+    len = 0;
     un_ch = -1;
+    un_eof = false;
+    readFileSize = readSize;
 }
 
-void C_File::Write(const char* filename) {
+C_File::C_File(const char* filename, bool append) { //-V730
     if (!strlen(filename)) {
         throw C_E(E_EmptyFileName);
+    }
+
+    if (append) {
+        throw C_E(E_NotImplemented);
     }
 
     handle = _open(filename, _O_CREAT | _O_BINARY | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
@@ -155,33 +137,30 @@ void C_File::Write(const char* filename) {
         throw C_E(E_WriteError, filename);
     }
 
-    len = 0;
     accMode = ACC_WRITE;
+    readSize = 0;
+    readFileSize = 0;
+    eof = false;
+    isCompressed = false;
+    len = 0;
+    un_ch = -1;
+    un_eof = false;
 }
 
-void C_File::Append(const char* filename) {
-    throw C_E(E_NotImplemented);
-}
-
-void C_File::Close(void) {
-    if (accMode == ACC_NONE) {
-        throw C_E(E_FileNotOpened);
-    }
-
-    if (accMode != ACC_READ && len != 0 && _write(handle, buffer, len) != len) {
+C_File::~C_File() {
+    if ((accMode == ACC_WRITE || accMode == ACC_APPEND) && len != 0 && _write(handle, buffer, len) != len) {
         DEBUG_MESSAGE("_write failed");
     }
 
     _close(handle);
-    accMode = ACC_NONE;
 }
 
 uint8_t C_File::GetBYTE(void) {
-    uint8_t c;
-
     if (accMode != ACC_READ) {
         throw C_E(E_IncorrectAccMode);
     }
+
+    uint8_t c;
 
     if (un_ch != -1) {
         c = un_ch;
@@ -212,7 +191,7 @@ uint8_t C_File::GetBYTE(void) {
 }
 
 void C_File::PutBYTE(uint8_t b) {
-    if (accMode != ACC_WRITE) {
+    if (accMode != ACC_WRITE && accMode != ACC_APPEND) {
         throw C_E(E_IncorrectAccMode);
     }
 
@@ -250,54 +229,80 @@ bool C_File::Eof(void) {
 }
 
 int C_File::GetC(void) {
+    if (accMode != ACC_READ) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     return (int)GetBYTE();
 }
 
 void C_File::UnGetC(int c) {
+    if (accMode != ACC_READ) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     UnGetBYTE((uint8_t)c);
 }
 
 void C_File::PutC(int c) {
+    if (accMode != ACC_WRITE && accMode != ACC_APPEND) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     PutBYTE((uint8_t)c);
 }
 
 void C_File::PutWORD(uint16_t w) {
+    if (accMode != ACC_WRITE && accMode != ACC_APPEND) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     PutBYTE((uint8_t)(w & 0xFF));
     PutBYTE((uint8_t)(w >> 8));
 }
 
 void C_File::PutDWORD(uint32_t d) {
+    if (accMode != ACC_WRITE && accMode != ACC_APPEND) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     PutWORD((uint16_t)(d & (uint32_t)0xFFFF));
     PutWORD((uint16_t)(d >> 0x10));
 }
 
 uint16_t C_File::GetWORD(void) {
+    if (accMode != ACC_READ) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     int l = GetBYTE();
     int h = GetBYTE();
     return (uint16_t)(l + 0x100 * h);
 }
 
 uint32_t C_File::GetDWORD(void) {
+    if (accMode != ACC_READ) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     uint32_t l = GetWORD();
     uint32_t h = GetWORD();
     return (uint32_t)(l + (uint32_t)0x10000 * h);
 }
 
 void C_File::PrintF(const char* fmt, ...) {
-    char buf[0x1000];
-    int sz;
-    int i;
-    va_list argptr;
-
-    if (accMode != ACC_WRITE) {
+    if (accMode != ACC_WRITE && accMode != ACC_APPEND) {
         throw C_E(E_IncorrectAccMode);
     }
 
+    char buf[0x1000];
+    va_list argptr;
+
     va_start(argptr, fmt);
-    sz = _vsnprintf(buf, sizeof(buf), fmt, argptr);
+    int sz = _vsnprintf(buf, sizeof(buf), fmt, argptr);
     va_end(argptr);
 
-    for (i = 0; i < sz; i++) {
+    for (int i = 0; i < sz; i++) {
         PutBYTE(buf[i]);
     }
 }
@@ -378,6 +383,10 @@ void C_File::SetFilePointer(size_t fp) {
 }
 
 size_t C_File::ReadBlock(void* buf, size_t size) {
+    if (accMode != ACC_READ) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     uint8_t* bf = (uint8_t*)buf;
     size_t act = 0;
 
@@ -389,6 +398,10 @@ size_t C_File::ReadBlock(void* buf, size_t size) {
 }
 
 void C_File::WriteBlock(void* buf, size_t size) {
+    if (accMode != ACC_WRITE && accMode != ACC_APPEND) {
+        throw C_E(E_IncorrectAccMode);
+    }
+
     uint8_t* bf = (uint8_t*)buf;
 
     if (!size) {
