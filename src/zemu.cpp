@@ -3,6 +3,11 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <cctype>
+#include <algorithm>
+#include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
+#include "zemu_env.h"
 #include "zemu.h"
 #include "exceptions.h"
 #include "lib_wd1793/wd1793_chip.h"
@@ -22,9 +27,6 @@
 #include "snap_sna.h"
 #include "ftbos_font.h"
 #include "font_64.h"
-#include "file.h"
-#include <cctype>
-#include <algorithm>
 #include "images/floppy.h"
 #include "images/floppy_read.h"
 #include "images/floppy_write.h"
@@ -359,69 +361,57 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
 }
 
 bool TryLoadArcFile(const char* arcName, int drive) {
-    char res[MAX_PATH];
-    char tmp[MAX_PATH];
-    char str[MAX_FNAME];
-    char files[MAX_FILES][MAX_FNAME];
-    int filesCount;
-    string plugin_fn;
+    auto fileSystem = hostEnv->fileSystem();
+    auto arcPath = fileSystem->path(arcName);
+    auto arcExtension = arcPath->extension();
 
-    strcpy(tmp, C_DirWork::ExtractExt(arcName));
-
-    if (!strlen(tmp)) {
+    if (arcExtension.empty()) {
         return false;
     }
 
-    StrToLower(tmp);
+    boost::algorithm::to_lower(arcExtension);
+    auto pluginFn = config.FindDataFile("arc", arcExtension.c_str());
 
-    plugin_fn = config.FindDataFile("arc", tmp);
-
-    if (plugin_fn.empty()) {
+    if (pluginFn.empty()) {
         return false;
     }
 
-    snprintf(tmp, sizeof(tmp), "%s list \"%s\" %s/files.txt", plugin_fn.c_str(), arcName, tempFolderName);
+    auto tempFolderPath = fileSystem->path(tempFolderName);
+    auto tempFilesPath = tempFolderPath->append("files.txt");
 
-    if (system(tmp) == -1) {
+    if (system((boost::format("%s list \"%s\" %s") % pluginFn % arcName % tempFilesPath).str().c_str()) == -1) {
         DEBUG_MESSAGE("system failed");
     }
 
-    snprintf(tmp, sizeof(tmp), "%s/files.txt", tempFolderName);
-
-    if (!C_File::FileExists(tmp)) {
+    if (!tempFilesPath->fileExists()) {
         return true; // "true" here means ONLY that the file is an archive
     }
 
-    C_File fl(tmp);
+    std::list<std::string> files;
+    auto tempFilesReader = tempFilesPath->fileReader();
 
-    for (filesCount = 0; !fl.Eof();) {
-        fl.GetS(str, sizeof(str));
+    while (!tempFilesReader->isEof()) {
+        std::string str = tempFilesReader->readLine();
 
-        if (str[0] != '\0') {
-            strcpy(files[filesCount++], str);
+        if (!str.empty()) {
+            files.push_back(str);
         }
     }
 
-    C_File::Unlink(tmp);
+    tempFilesPath->remove();
 
-    if (!filesCount) {
+    if (files.empty()) {
         return true; // "true" here means ONLY that the file is an archive
     }
 
     // currently load only first file
-    snprintf(tmp, sizeof(tmp), "%s extract \"%s\" \"%s\" %s", plugin_fn.c_str(), arcName, files[0], tempFolderName);
-
-    if (system(tmp) == -1) {
+    if (system((boost::format("%s extract \"%s\" \"%s\" %s") % pluginFn % arcName % files.front() % tempFolderName).str().c_str()) == -1) {
         DEBUG_MESSAGE("system failed");
     }
 
-    strcpy(tmp, C_DirWork::ExtractFileName(files[0]));
-
-    // TODO: check if lresult strlen > sizeof(res)
-    snprintf(res, sizeof(res), "%s/%s", tempFolderName, tmp);
-
-    LoadNormalFile(res, drive, arcName);
-    C_File::Unlink(res);
+    auto resultPath = tempFolderPath->append(fileSystem->path(files.front())->fileName());
+    LoadNormalFile(resultPath->string().c_str(), drive, arcName);
+    resultPath->remove();
 
     return true; // "true" here means ONLY that the file is an archive
 }

@@ -15,8 +15,6 @@ endif ()
 
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter")
-# set (CMAKE_CXX_FLAGS_DEBUG "-g")
-# set (CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 set (ZEMU_VERSION_MAJOR 1)
 set (ZEMU_VERSION_MINOR 0)
@@ -50,6 +48,9 @@ else ()
     add_subdirectory (${ZAME_Z80_PATH} ${ZAME_Z80_BINARY_DIR})
     link_directories (${ZAME_Z80_BINARY_DIR})
 endif ()
+
+find_package (Boost REQUIRED COMPONENTS filesystem)
+include_directories (${Boost_INCLUDE_DIR})
 
 if (USE_SDL1)
     if (WIN32 AND NOT CMAKE_COMPILER_IS_GNUCC)
@@ -111,6 +112,8 @@ if (USE_Z80EX)
 else ()
     target_link_libraries (zemu z80ex_wrapper)
 endif ()
+
+target_link_libraries (zemu ${Boost_LIBRARIES})
 
 if (USE_SDL1)
     target_link_libraries (zemu ${SDL_LIBRARY})

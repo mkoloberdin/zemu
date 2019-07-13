@@ -1,38 +1,38 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+#include "zemu_env.h"
 #include "cpu_trace.h"
-#include "file.h"
 #include "devs.h"
 
-static C_File* traceFile = nullptr;
+static std::unique_ptr<FileWriter> traceWriter;
 int cpuTrace_dT = 0;
 int cpuTrace_intReq = 0;
 
 void CpuTrace_Init(void) {
-    if (traceFile) {
+    if (traceWriter) {
         StrikeError("CpuTrace_Init called twice");
     }
 
     if (params.cpuTraceEnabled && *params.cpuTraceFormat && *params.cpuTraceFileName) {
-        traceFile = new C_File(params.cpuTraceFileName, false);
+        traceWriter = hostEnv->fileSystem()->path(params.cpuTraceFileName)->fileWriter();
     }
 }
 
 static void CpuTrace_PutByte(uint8_t val) {
-    if (traceFile) {
-        traceFile->PrintF("%02X", val);
+    if (traceWriter) {
+        traceWriter->writeFmt("%02X", val);
     }
 }
 
 static void CpuTrace_PutWord(uint16_t val) {
-    if (traceFile) {
-        traceFile->PrintF("%04X", val);
+    if (traceWriter) {
+        traceWriter->writeFmt("%04X", val);
     }
 }
 
 void CpuTrace_Log(void) {
-    if (!traceFile) {
+    if (!traceWriter) {
         return;
     }
 
@@ -41,7 +41,7 @@ void CpuTrace_Log(void) {
 
     while (*formatPtr) {
         if (*formatPtr != '[') {
-            traceFile->PutC(*(formatPtr++));
+            traceWriter->writeChar(*(formatPtr++));
             continue;
         }
 
@@ -55,7 +55,7 @@ void CpuTrace_Log(void) {
         *strPtr = 0;
 
         if (*formatPtr != ']') {
-            traceFile->PrintF("[%s", str);
+            traceWriter->writeFmt("[%s", str);
             continue;
         }
 
@@ -108,16 +108,15 @@ void CpuTrace_Log(void) {
         } else if (!strcmp(str, "M4")) {
             CpuTrace_PutByte(ReadByteDasm(z80ex_get_reg(cpu, regPC) + 3, nullptr));
         } else {
-            traceFile->PrintF("[%s]", str);
+            traceWriter->writeFmt("[%s]", str);
         }
     }
 
-    traceFile->PutC('\n');
+    traceWriter->writeChar('\n');
 }
 
 void CpuTrace_Close(void) {
-    if (traceFile) {
-        delete traceFile;
-        traceFile = nullptr;
+    if (traceWriter) {
+        traceWriter = nullptr;
     }
 }

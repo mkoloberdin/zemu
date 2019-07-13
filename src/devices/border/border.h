@@ -2,8 +2,8 @@
 #define _BORDER_H_INCLUDED_
 
 #include "../../zemu.h"
+#include "../../sound/mixer.h"
 #include "../device.h"
-#include "sound/mixer.h"
 
 #define MAX_SPK_VOL 0x3FFF
 #define MAX_TAPE_SAVE_VOL 0x0FFF

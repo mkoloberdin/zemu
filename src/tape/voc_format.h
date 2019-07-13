@@ -1,17 +1,16 @@
 #ifndef _VOC_FORMAT_H_INCLUDED_
 #define _VOC_FORMAT_H_INCLUDED_
 
-#include "../zemu.h"
-#include "../file.h"
+#include "../zemu_env.h"
 #include "tape_format.h"
 
 class C_VocFormat : public C_TapeFormat {
     public:
 
-    C_File* fl;
-    uint64_t allTicks;
-    bool active;
-    bool currBit;
+    std::unique_ptr<FileReader> reader;
+    uint64_t allTicks = 0;
+    bool active = false;
+    bool currBit = false;
 
     // unsigned long dataSize;
 
@@ -25,8 +24,8 @@ class C_VocFormat : public C_TapeFormat {
     // unsigned int divider;
     // unsigned int sampleSz;
 
-    C_VocFormat();
-    virtual ~C_VocFormat();
+    C_VocFormat() {}
+    virtual ~C_VocFormat() {}
 
     bool Load(const char* fname);
     bool ProcessTicks(uint64_t ticks);

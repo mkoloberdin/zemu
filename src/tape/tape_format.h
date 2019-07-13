@@ -1,6 +1,8 @@
 #ifndef _TAPE_FORMAT_H_INCLUDED_
 #define _TAPE_FORMAT_H_INCLUDED_
 
+#include <cstdint>
+
 class C_TapeFormat {
     public:
 

@@ -2,7 +2,7 @@
 #define _AY_CHIP_H_INCLUDED_
 
 #include "../zemu.h"
-#include "sound/mixer.h"
+#include "../sound/mixer.h"
 
 const unsigned SNDR_DEFAULT_AY_RATE = 1774400; // original ZX-Spectrum soundchip clock fq
 

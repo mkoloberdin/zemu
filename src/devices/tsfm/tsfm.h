@@ -1,12 +1,12 @@
 #ifndef _TSFM_H_INCLUDED_
 #define _TSFM_H_INCLUDED_
 
-#include "zemu.h"
+#include "../../zemu.h"
+#include "../../sound/mixer.h"
+#include "../../lib_ay/ay_chip.h"
+#include "../../lib_ym2203/ym2203_chip.h"
+#include "../../lib_saa1099/saa1099_chip.h"
 #include "../device.h"
-#include "sound/mixer.h"
-#include "lib_ay/ay_chip.h"
-#include "lib_ym2203/ym2203_chip.h"
-#include "lib_saa1099/saa1099_chip.h"
 
 #define TSFM_CHIPS_COUNT 2
 

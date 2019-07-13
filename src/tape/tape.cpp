@@ -2,6 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "tape.h"
+#include "../zemu.h"
 #include "../dirwork.h"
 #include "tap_format.h"
 #include "wav_format.h"

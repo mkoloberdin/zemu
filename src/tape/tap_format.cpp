@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "tap_format.h"
-#include "../file.h"
+#include "../zemu_env.h"
 
 #define TAPE_STATE_STOP 0
 #define TAPE_STATE_PLAY 1
@@ -19,16 +19,6 @@
 
 C_TapFormat::C_TapFormat() {
     state = TAPE_STATE_STOP;
-    tapeBit = 1;
-    counter = 0;
-    data = nullptr;
-    size = 0;
-
-    blockPos = 0;
-    blockSize = 0;
-    posInBlock = 0;
-    currentByte = 0;
-    delay = 0;
 }
 
 C_TapFormat::~C_TapFormat() {
@@ -42,20 +32,24 @@ uint8_t C_TapFormat::Data(long pos) {
 }
 
 bool C_TapFormat::Load(const char* fname) {
-    if (!C_File::FileExists(fname)) {
+    auto fpath = hostEnv->fileSystem()->path(fname);
+
+    if (!fpath->fileExists()) {
         return false;
     }
 
-    size = C_File::FileSize(fname);
+    try {
+        size = fpath->fileSize();
+    } catch (...) {
+        return false;
+    }
 
     if (data != nullptr) {
         delete[] data;
     }
 
     data = new uint8_t[size];
-
-    C_File fl(fname);
-    fl.ReadBlock(data, size);
+    hostEnv->fileSystem()->path(fname)->fileReader()->readBlock(data, size);
 
     blockPos = 0;
     blockSize = 0;

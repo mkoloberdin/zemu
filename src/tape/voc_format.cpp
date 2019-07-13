@@ -2,51 +2,31 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "voc_format.h"
+#include "../defines.h"
 
 #define VOC_THRESHOLD 140
 
-C_VocFormat::C_VocFormat() {
-    fl = nullptr;
-    allTicks = 0;
-    active = false;
-    currBit = false;
-}
-
-C_VocFormat::~C_VocFormat() {
-    if (fl) {
-        delete fl;
-    }
-}
-
 bool C_VocFormat::Load(const char* fname) {
-    if (fl) {
-        delete fl;
-    }
-
     active = false;
-    fl = new C_File(fname);
+    reader = hostEnv->fileSystem()->path(fname)->fileReader();
 
     char buf[21];
     buf[20] = 0;
 
-    fl->ReadBlock(buf, 20);
+    reader->readBlock(buf, 20);
 
     if (strcmp(buf, "Creative Voice File\032") != 0) {
-        delete fl;
-        fl = nullptr;
-
+        reader = nullptr;
         DEBUG_MESSAGE("\"Creative Voice File\" string not found");
         return false;
     }
 
-    uint16_t dataOffset = fl->GetWORD();
-    uint16_t verNum = fl->GetWORD();
-    uint16_t verChk = fl->GetWORD();
+    uint16_t dataOffset = reader->readWord();
+    uint16_t verNum = reader->readWord();
+    uint16_t verChk = reader->readWord();
 
     if ((uint16_t)((0xFFFF - verNum) + 0x1234) != verChk) {
-        delete fl;
-        fl = nullptr;
-
+        reader = nullptr;
         DEBUG_MESSAGE("Invalid voc file");
         return false;
     }
@@ -54,39 +34,39 @@ bool C_VocFormat::Load(const char* fname) {
     long maxRate = 0;
     long rate;
 
-    fl->SetFilePointer(dataOffset);
+    reader->setPosition(dataOffset);
 
-    while (!fl->Eof()) {
-        uint8_t type = fl->GetBYTE();
+    while (!reader->isEof()) {
+        uint8_t type = reader->readByte();
 
         if (type == 0) {
             break; // Terminator
         }
 
-        long size = (long)fl->GetBYTE() + (long)0x100 * (long)fl->GetWORD();
-        long pos = fl->GetFilePointer();
+        long size = (long)reader->readByte() + (long)0x100 * (long)reader->readWord();
+        long pos = reader->getPosition();
 
         if (type == 1) { // Sound data
-            long sr = fl->GetBYTE();
+            long sr = reader->readByte();
             rate = 1000000 / (256 - sr);
 
             if (rate > maxRate) {
                 maxRate = rate;
             }
         } else if (type == 3) { // Silence
-            fl->GetWORD(); // skip Lenght of silence
-            long sr = fl->GetBYTE();
+            reader->readWord(); // skip Lenght of silence
+            long sr = reader->readByte();
             rate = 1000000 / (256 - sr);
 
             if (rate > maxRate) {
                 maxRate = rate;
             }
         } else if (type == 8) { // Extended
-            long tc = fl->GetWORD();
-            fl->GetBYTE(); // skip Pack
+            long tc = reader->readWord();
+            reader->readByte(); // skip Pack
             rate = 256000000 / (65536 - tc);
 
-            if (fl->GetBYTE()) {
+            if (reader->readByte()) {
                 rate /= 2; // Stereo
             }
 
@@ -94,18 +74,18 @@ bool C_VocFormat::Load(const char* fname) {
                 maxRate = rate;
             }
         } else if (type == 9) {
-            rate = fl->GetDWORD();
+            rate = reader->readWord();
 
             if (rate > maxRate) {
                 maxRate = rate;
             }
         }
 
-        fl->SetFilePointer(pos + size);
+        reader->setPosition(pos + size);
     }
 
     // dataSize = sz * rate
-    fl->SetFilePointer(dataOffset);
+    reader->setPosition(dataOffset);
 
     // dataPos = 0;
     // allTicks = 0;
@@ -139,7 +119,7 @@ bool C_VocFormat::ProcessTicks(uint64_t ticks)
     }
 
     while (cnt--) {
-        fl->GetBYTE();
+        reader->readByte();
         dataPos++;
     }
 
@@ -148,21 +128,21 @@ bool C_VocFormat::ProcessTicks(uint64_t ticks)
     switch (bits) {
         case 8:
             for (int i = 0; i < channels; i++) {
-                res += fl->GetBYTE();
+                res += reader->readByte();
             }
 
             break;
 
         case 16:
             for (int i = 0; i < channels; i++) {
-                res += (short)fl->GetWORD();
+                res += (short)reader->readWord();
             }
 
             break;
 
         case 32:
             for (int i = 0; i < channels; i++) {
-                res += (long)fl->GetDWORD();
+                res += (long)reader->readWord();
             }
 
             break;

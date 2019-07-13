@@ -2,96 +2,74 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "wav_format.h"
+#include "../defines.h"
+#include "../params.h"
 
 #define WAV_THRESHOLD 140
 
-C_WavFormat::C_WavFormat() { //-V730
-    fl = nullptr;
-    allTicks = 0;
-    active = false;
-}
-
-C_WavFormat::~C_WavFormat() {
-    if (fl) {
-        delete fl;
-    }
-}
-
 bool C_WavFormat::Load(const char* fname)
 {
-    if (fl) {
-        delete fl;
-    }
-
     active = false;
-    fl = new C_File(fname);
+    reader = hostEnv->fileSystem()->path(fname)->fileReader();
 
     char chunkName[5];
     chunkName[4] = 0;
 
-    fl->ReadBlock(chunkName, 4);
+    reader->readBlock(chunkName, 4);
 
     if (strcmp(chunkName, "RIFF") != 0) {
-        delete fl;
-        fl = nullptr;
-
+        reader = nullptr;
         DEBUG_MESSAGE("RIFF chunk not found");
         return false;
     }
 
-    fl->GetDWORD();  // skip chunk size
-    fl->ReadBlock(chunkName, 4);
+    reader->readDword();  // skip chunk size
+    reader->readBlock(chunkName, 4);
 
     if (strcmp(chunkName, "WAVE") != 0) {
-        delete fl;
-        fl = nullptr;
-
+        reader = nullptr;
         DEBUG_MESSAGE("Invalid RIFF type (must be WAVE)");
         return false;
     }
 
     bool fmtFound = false;
 
-    while (!fl->Eof() && !fmtFound) {
-        fl->ReadBlock(chunkName, 4);
+    while (!reader->isEof() && !fmtFound) {
+        reader->readBlock(chunkName, 4);
 
-        if (fl->Eof()) {
+        if (reader->isEof()) {
             break;
         }
 
-        uint32_t size = fl->GetDWORD();
+        uint32_t size = reader->readDword();
 
-        if (fl->Eof()) {
+        if (reader->isEof()) {
             break;
         }
 
         if (strcmp(chunkName, "fmt ") != 0) {
-            fl->SetFilePointer(fl->GetFilePointer() + size);
+            reader->setPosition(reader->getPosition() + size);
             continue;
         }
 
-        uint16_t compression = fl->GetWORD();
+        uint16_t compression = reader->readWord();
 
         if (compression != 1) {
-            delete fl;
-            fl = nullptr;
-
+            reader = nullptr;
             DEBUG_MESSAGE("Only uncompressed PCM supported");
             return false;
         }
 
-        channels = fl->GetWORD();
-        rate = fl->GetDWORD();
+        channels = reader->readWord();
+        rate = reader->readDword();
 
-        fl->GetDWORD(); // skip byte rate
-        fl->GetWORD(); // skip block align
+        reader->readDword(); // skip byte rate
+        reader->readWord(); // skip block align
 
-        bits = fl->GetWORD();
+        bits = reader->readWord();
 
         if (bits != 8 && bits != 16 && bits != 32) {
-            delete fl;
-            fl = nullptr;
-
+            reader = nullptr;
             DEBUG_MESSAGE("Unsupported bits per sample. 8, 16 or 32 supported");
             return false;
         }
@@ -100,42 +78,38 @@ bool C_WavFormat::Load(const char* fname)
     }
 
     if (!fmtFound) {
-        delete fl;
-        fl = nullptr;
-
+        reader = nullptr;
         DEBUG_MESSAGE("fmt subchunk not found");
         return false;
     }
 
     bool dataFound = false;
-    fl->SetFilePointer(12);
+    reader->setPosition(12);
 
-    while (!fl->Eof() && !dataFound) {
-        fl->ReadBlock(chunkName, 4);
+    while (!reader->isEof() && !dataFound) {
+        reader->readBlock(chunkName, 4);
 
-        if (fl->Eof()) {
+        if (reader->isEof()) {
             break;
         }
 
-        dataSize = fl->GetDWORD();
+        dataSize = reader->readDword();
 
-        if (fl->Eof()) {
+        if (reader->isEof()) {
             break;
         }
 
         if (strcmp(chunkName, "data") != 0) {
-            fl->SetFilePointer(fl->GetFilePointer() + dataSize);
+            reader->setPosition(reader->getPosition() + dataSize);
             continue;
         }
 
-        // dataFp = fl->GetFilePointer();
+        // dataFp = reader->getPosition();
         dataFound = true;
     }
 
     if (!dataFound) {
-        delete fl;
-        fl = nullptr;
-
+        reader = nullptr;
         DEBUG_MESSAGE("data chunk not found");
         return false;
     }
@@ -172,7 +146,7 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks) {
 
     // while (cnt--)
     // {
-    //     fl->GetBYTE();
+    //     reader->readByte();
     //     dataPos++;
     // }
 
@@ -182,7 +156,7 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks) {
         switch (bits) {
             case 8:
                 for (int i = 0; i < channels; i++) {
-                    res += fl->GetBYTE();
+                    res += reader->readByte();
                 }
 
                 dataPos += channels;
@@ -190,7 +164,7 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks) {
 
             case 16:
                 for (int i = 0; i < channels; i++) {
-                    res += (short)fl->GetWORD();
+                    res += (short)reader->readWord();
                 }
 
                 dataPos += channels * 2;
@@ -199,7 +173,7 @@ bool C_WavFormat::ProcessTicks(uint64_t ticks) {
 
             case 32:
                 for (int i = 0; i < channels; i++) {
-                    res += (long)fl->GetDWORD();
+                    res += (long)reader->readDword();
                 }
 
                 dataPos += channels * 4;
@@ -240,8 +214,8 @@ void C_WavFormat::Rewind(void) {
     dataPos = 0;
     allTicks = 0;
 
-    if (fl) {
-        fl->SetFilePointer(0);
+    if (reader) {
+        reader->setPosition(0);
     }
 }
 

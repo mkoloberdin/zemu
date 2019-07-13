@@ -2,7 +2,7 @@
 #define _MIXER_H_INCLUDED_
 
 #include <vector>
-#include "../file.h"
+#include "../zemu_env.h"
 #include "snd_backend.h"
 #include "snd_backend_default.h"
 #include "snd_backend_oss.h"
@@ -14,7 +14,7 @@
 class C_SoundMixer {
     public:
 
-    C_SoundMixer();
+    C_SoundMixer() {} //-V730
     ~C_SoundMixer();
     void InitBackendDefault(int bufferSize);
 
@@ -33,13 +33,14 @@ class C_SoundMixer {
 
     private:
 
-    bool initialized;
-    CSndBackend* sndBackend;
+    bool initialized = false;
+    CSndBackend* sndBackend = nullptr;
     int mixerMode;
     std::vector<C_SndRenderer*> sources;
     uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
-    const char* wavFileName;
-    C_File* wavFile;
+    std::unique_ptr<Path> wavFilePath;
+    std::unique_ptr<Path> wavFileTempPath;
+    std::unique_ptr<FileWriter> wavFileWriter;
 };
 
 extern C_SoundMixer soundMixer;

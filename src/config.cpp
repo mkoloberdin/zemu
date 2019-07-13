@@ -4,10 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include "zemu_env.h"
 #include "platform.h"
 #include "dirwork.h"
-#include "file.h"
 #include "config.h"
 
 #ifdef _WIN32
@@ -113,7 +112,7 @@ void CConfig::EnsurePaths(const char* app_name) {
             if (home_path_env) {
                 string home_path_config = C_DirWork::Append(home_path_env, ".config");
 
-                if (C_File::FileExists(home_path_config.c_str())) {
+                if (boost::filesystem::exists(home_path_config)) {
                     home_path = home_path_config;
                 } else {
                     home_path = home_path_env;
@@ -196,30 +195,23 @@ size_t CConfig::LoadDataFile(const char* prefix, const char* filename, uint8_t* 
         return 0;
     }
 
-    C_File fl(path.c_str());
+    auto reader = hostEnv->fileSystem()->path(path)->fileReader();
 
     if (offset) {
-        fl.SetFilePointer(offset);
+        reader->setPosition(offset);
     }
 
-    size_t readed = fl.ReadBlock(buffer, size);
-    return readed;
+    return reader->readBlock(buffer, size);
 }
 
 /*
  * Not used
  *
 bool CConfig::SaveDataFile(const char* prefix, const char* filename, const uint8_t* buffer, size_t size) {
-    string folder = C_DirWork::Append(user_path, prefix);
+    auto folderPath = hostEnv->fileSystem()->path(user_path)->append(prefix);
 
-    #ifdef _WIN32
-        mkdir(folder.c_str());
-    #else
-        mkdir(folder.c_str(), 0755);
-    #endif
-
-    C_File fl(C_DirWork::Append(folder, filename).c_str(), false);
-    fl.WriteBlock(buffer, size);
+    folderPath->createFolder();
+    folderPath->append(filename)->fileWriter()->writeBlock(buffer, size);
 
     return true;
 }
@@ -230,7 +222,7 @@ string CConfig::FindDataFile(const char* prefix, const char* filename) {
     string append_path = C_DirWork::Append(prefix, filename);
 
     // 1. try in current folder (allow use custom-configs for folder)
-    if (C_File::FileExists(append_path.c_str())) {
+    if (boost::filesystem::exists(append_path)) {
         return append_path;
     }
 
@@ -238,7 +230,7 @@ string CConfig::FindDataFile(const char* prefix, const char* filename) {
         // 2. try in executable dir (useful for debug version && file associations)
         path = C_DirWork::Append(executableDir, append_path);
 
-        if (C_File::FileExists(path.c_str())) {
+        if (boost::filesystem::exists(path)) {
             return path;
         }
     }
@@ -246,7 +238,7 @@ string CConfig::FindDataFile(const char* prefix, const char* filename) {
     // 3. try in home folder
     path = C_DirWork::Append(home_path, append_path);
 
-    if (C_File::FileExists(path.c_str())) {
+    if (boost::filesystem::exists(path)) {
         return path;
     }
 
@@ -254,7 +246,7 @@ string CConfig::FindDataFile(const char* prefix, const char* filename) {
         // 4. try in shared folder
         path = C_DirWork::Append(SHARE_PATH, append_path);
 
-        if (C_File::FileExists(path.c_str())) {
+        if (boost::filesystem::exists(path)) {
             return path;
         }
     #endif

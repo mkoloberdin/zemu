@@ -2,20 +2,19 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include <string.h>
-
-#include "keys.h"
-#include "keyboard.h"
-#include "../../file.h"
-#include "../../exceptions.h"
+#include "../../zemu_env.h"
 #include "../../tape/tape.h"
+#include "../../exceptions.h"
+#include "keyboard.h"
+#include "keys.h"
 
 std::set<ZHW_Keyboard_KeyCode> C_Keyboard::hostKeyPressed;
 std::map<ZHW_Keyboard_KeyCode, C_Keyboard::s_HostKey> C_Keyboard::hostKeys;
 int C_Keyboard::keyboard[8];
 
 void C_Keyboard::ReadKbdConfig(void) {
+    char buf[0x1000];
     s_ZxKeys zxKeys;
-    char buf[0x100];
 
     string value = config.GetString("input", "keymap", "keys.config");
     string keysConfigPath = config.FindDataFile("", value.c_str());
@@ -28,11 +27,10 @@ void C_Keyboard::ReadKbdConfig(void) {
     const char* fileName = keysConfigPath.c_str();
 
     printf("Trying to load keys config from \"%s\" ...\n", fileName);
+    auto reader = hostEnv->fileSystem()->path(keysConfigPath)->fileReader();
 
-    C_File fl(fileName);
-
-    while (!fl.Eof()) {
-        fl.GetS(buf, sizeof(buf));
+    while (!reader->isEof()) {
+        strcpy(buf, reader->readLine().c_str());
         lineNum++;
 
         char* s = buf;
