@@ -2,7 +2,7 @@
 #define _MIXER_H_INCLUDED_
 
 #include <vector>
-#include "../zemu_env.h"
+#include "zemu_env.h"
 #include "snd_backend.h"
 #include "snd_backend_default.h"
 #include "snd_backend_oss.h"

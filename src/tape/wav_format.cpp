@@ -2,8 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "wav_format.h"
-#include "../defines.h"
-#include "../params.h"
+#include "defines.h"
+#include "params.h"
 
 #define WAV_THRESHOLD 140
 

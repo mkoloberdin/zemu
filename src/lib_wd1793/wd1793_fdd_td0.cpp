@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
-#include "../defines.h"
+#include "defines.h"
 #include "wd1793_fdd.h"
 
 int C_Fdd::write_td0(FILE* ff) {

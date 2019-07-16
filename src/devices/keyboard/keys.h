@@ -1,7 +1,7 @@
 #ifndef _KEYS_H_INCLUDED_
 #define _KEYS_H_INCLUDED_
 
-#include "../../platform_hardware.h"
+#include "platform_hardware.h"
 
 struct s_CfgHostKey {
     const char* cfgname;

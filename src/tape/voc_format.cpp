@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "voc_format.h"
-#include "../defines.h"
+#include "defines.h"
 
 #define VOC_THRESHOLD 140
 

@@ -3,7 +3,7 @@
 
 #ifdef _WIN32
 
-#include "../defines.h"
+#include "defines.h"
 #include "snd_backend_win32.h"
 
 CSndBackendWIN32::CSndBackendWIN32(unsigned queue_size, unsigned frag_size) {

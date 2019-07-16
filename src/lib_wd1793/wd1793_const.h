@@ -1,7 +1,7 @@
 #ifndef _WD1793_CONST_H_INCLUDED_
 #define _WD1793_CONST_H_INCLUDED_
 
-#include "../params.h"
+#include "params.h"
 
 const int64_t Z80FQ = MAX_FRAME_TACTS * 50;
 

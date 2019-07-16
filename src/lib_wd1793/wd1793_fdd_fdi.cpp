@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "../defines.h"
+#include "defines.h"
 #include "wd1793_fdd.h"
 
 int C_Fdd::read_fdi() {

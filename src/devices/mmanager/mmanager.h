@@ -1,7 +1,7 @@
 #ifndef _MMANAGER_H_INCLDUED_
 #define _MMANAGER_H_INCLDUED_
 
-#include "../../zemu.h"
+#include "zemu.h"
 #include "../device.h"
 
 #define RAM_BANK2 (0x4000 * 2)

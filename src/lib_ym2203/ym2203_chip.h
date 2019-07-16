@@ -2,7 +2,7 @@
 #define _YM2203_CHIP_H_INCLUDED_
 
 #include "ym2203_emu.h"
-#include "../params.h"
+#include "params.h"
 
 #define YM2203_SND_FQ SOUND_FREQ
 #define YM2203_CHIP_CLOCK (MAX_FRAME_TACTS * 50)

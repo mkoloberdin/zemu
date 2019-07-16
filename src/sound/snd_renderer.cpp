@@ -9,7 +9,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "snd_renderer.h"
-#include "../zemu.h"
+#include "zemu.h"
 
 const unsigned TICK_FF = 6;
 const unsigned TICK_F = (1 << TICK_FF);

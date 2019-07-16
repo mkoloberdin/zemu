@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "kempston.h"
-#include "../../joystick_manager.h"
+#include "joystick_manager.h"
 
 int C_KempstonStick::joy_num = -1;
 uint8_t C_KempstonStick::joy_kbd = 0;

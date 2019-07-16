@@ -1,7 +1,7 @@
 #ifndef _VOC_FORMAT_H_INCLUDED_
 #define _VOC_FORMAT_H_INCLUDED_
 
-#include "../zemu_env.h"
+#include "zemu_env.h"
 #include "tape_format.h"
 
 class C_VocFormat : public C_TapeFormat {

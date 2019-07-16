@@ -1,8 +1,8 @@
 #ifndef _COVOX_H_INCLUDED_
 #define _COVOX_H_INCLUDED_
 
-#include "../../zemu.h"
-#include "../../sound/mixer.h"
+#include "zemu.h"
+#include "sound/mixer.h"
 #include "../device.h"
 
 class C_Covox : public C_Device {

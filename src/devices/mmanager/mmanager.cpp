@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "mmanager.h"
-#include "../../exceptions.h"
+#include "exceptions.h"
 #include "../extport/extport.h"
 
 #include <stdlib.h>

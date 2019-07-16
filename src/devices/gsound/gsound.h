@@ -1,8 +1,8 @@
 #ifndef _GSOUND_H_INCLUDED_
 #define _GSOUND_H_INCLUDED_
 
-#include "../../zemu.h"
-#include "../../sound/mixer.h"
+#include "zemu.h"
+#include "sound/mixer.h"
 #include "../device.h"
 
 // 16 pages for 512mb (classic GS)

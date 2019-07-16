@@ -3,7 +3,7 @@
 
 #ifdef __unix__
 
-#include "../defines.h"
+#include "defines.h"
 #include "snd_backend_oss.h"
 
 #include <sys/ioctl.h>

@@ -1,7 +1,7 @@
 #ifndef _MOUSE_H_INCLUDED_
 #define _MOUSE_H_INCLUDED_
 
-#include "../../zemu.h"
+#include "zemu.h"
 #include "../device.h"
 
 class C_Mouse : public C_Device {

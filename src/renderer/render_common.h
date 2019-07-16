@@ -1,8 +1,8 @@
 #ifndef _RENDER_COMMON_H_INCLUDED_
 #define _RENDER_COMMON_H_INCLUDED_
 
-#include "../zemu.h"
-#include "../devs.h"
+#include "zemu.h"
+#include "devs.h"
 
 // TODO: add scorpion support (http://www.worldofspectrum.org/rusfaq/index.html)
 

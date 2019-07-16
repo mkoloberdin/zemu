@@ -1,7 +1,7 @@
 #ifndef _WAV_FORMAT_H_INCLUDED_
 #define _WAV_FORMAT_H_INCLUDED_
 
-#include "../zemu_env.h"
+#include "zemu_env.h"
 #include "tape_format.h"
 
 class C_WavFormat : public C_TapeFormat {

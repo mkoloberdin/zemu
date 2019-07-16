@@ -1,7 +1,7 @@
 #ifndef _KEYBOARD_H_INCLUDED_
 #define _KEYBOARD_H_INCLUDED_
 
-#include "../../zemu.h"
+#include "zemu.h"
 #include "../device.h"
 #include <set>
 #include <map>

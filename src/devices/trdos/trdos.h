@@ -1,8 +1,8 @@
 #ifndef _TRDOS_H_INCLUDED_
 #define _TRDOS_H_INCLUDED_
 
-#include "../../zemu.h"
-#include "../../lib_wd1793/wd1793_chip.h"
+#include "zemu.h"
+#include "lib_wd1793/wd1793_chip.h"
 #include "../device.h"
 
 class C_TrDos : public C_Device {

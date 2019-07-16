@@ -1,8 +1,8 @@
 #ifndef _BORDER_H_INCLUDED_
 #define _BORDER_H_INCLUDED_
 
-#include "../../zemu.h"
-#include "../../sound/mixer.h"
+#include "zemu.h"
+#include "sound/mixer.h"
 #include "../device.h"
 
 #define MAX_SPK_VOL 0x3FFF

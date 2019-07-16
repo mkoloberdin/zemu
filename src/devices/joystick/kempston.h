@@ -1,7 +1,7 @@
 #ifndef _KEMPSTON_H_INCLUDED_
 #define _KEMPSTON_H_INCLUDED_
 
-#include "../../zemu.h"
+#include "zemu.h"
 #include "../device.h"
 
 class C_KempstonStick : public C_Device {

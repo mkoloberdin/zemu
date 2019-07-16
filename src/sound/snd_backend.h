@@ -1,7 +1,7 @@
 #ifndef _SND_BACKEND_H_INCLUDED_
 #define _SND_BACKEND_H_INCLUDED_
 
-#include "../params.h"
+#include "params.h"
 
 class CSndBackend {
 public:

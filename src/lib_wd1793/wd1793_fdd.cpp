@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "wd1793_fdd.h"
-#include "../defines.h"
+#include "defines.h"
 
 uint8_t snbuf[SNBUF_LEN]; // large temporary buffer
 

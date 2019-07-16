@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "tap_format.h"
-#include "../zemu_env.h"
+#include "zemu_env.h"
 
 #define TAPE_STATE_STOP 0
 #define TAPE_STATE_PLAY 1

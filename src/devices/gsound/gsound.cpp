@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "gsound.h"
-#include "../../exceptions.h"
+#include "exceptions.h"
 #include "../mmanager/mmanager.h"
 
 C_SndRenderer C_GSound::sndRenderer;

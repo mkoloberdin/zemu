@@ -17,8 +17,8 @@
     #define HANDLE_PRAGMA_PACK_PUSH_POP
 #endif
 
-#include "../defines.h"
-#include "../params.h"
+#include "defines.h"
+#include "params.h"
 
 const unsigned SNDR_DEFAULT_SYSTICK_RATE = MAX_FRAME_TACTS * 50; // ZX-Spectrum Z80 clock
 const unsigned SNDR_DEFAULT_SAMPLE_RATE = SOUND_FREQ;
