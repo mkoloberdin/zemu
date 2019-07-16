@@ -78,7 +78,7 @@ class C_Fdd {
     bool is_wprotected();
     void set_wprotected(bool wp);
     int load_dimage(const char* filename); // load disk image
-    int save_dimage(char* filename, enum DIMAGE_TYPE type);
+    int save_dimage(const char* filename, enum DIMAGE_TYPE type);
     char is_changed(); // whether disk in drive has been changed
     void set_appendboot(const char* boot_name); // name for file with boot, or nullptr
     char* get_appendboot(void);

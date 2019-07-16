@@ -38,9 +38,9 @@ class C_SoundMixer {
     int mixerMode;
     std::vector<C_SndRenderer*> sources;
     uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
-    std::unique_ptr<Path> wavFilePath;
-    std::unique_ptr<Path> wavFileTempPath;
-    std::unique_ptr<FileWriter> wavFileWriter;
+    PathPtr wavFilePath;
+    PathPtr wavFileTempPath;
+    FileWriterPtr wavFileWriter;
 };
 
 extern C_SoundMixer soundMixer;

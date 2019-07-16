@@ -23,8 +23,10 @@ bool C_ExtPort::useEFF7Turbo;
 bool C_ExtPort::enabled;
 
 void C_ExtPort::Init(void) {
+    auto config = hostEnv->config();
+
     portEFF7 = 0;
-    enabled = config.GetBool("core", "enableEFF7", false);
+    enabled = config->getBool("core", "enableEFF7", false);
 
     if (!enabled) {
         return;
@@ -33,8 +35,8 @@ void C_ExtPort::Init(void) {
     AttachZ80OutputHandler(OutputByteCheckPort, OnOutputByte);
     AttachResetHandler(OnReset);
 
-    oldEFF7Mode = config.GetBool("core", "oldEFF7mode", false);
-    useEFF7Turbo = config.GetBool("core", "useEFF7turbo", false);
+    oldEFF7Mode = config->getBool("core", "oldEFF7mode", false);
+    useEFF7Turbo = config->getBool("core", "useEFF7turbo", false);
 
     if (useEFF7Turbo) {
         // disable turbo by default

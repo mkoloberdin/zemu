@@ -17,12 +17,12 @@ uint8_t* C_MemoryManager::ram_map;
 bool C_MemoryManager::enable512;
 bool C_MemoryManager::enable1024;
 
-string split_romname(string& romname, size_t* offset) {
+std::string split_romname(std::string& romname, size_t* offset) {
     size_t pos;
     *offset = 0;
 
-    if ((pos = romname.rfind(':')) != string::npos) {
-        string str_offset = romname.substr(pos + 1);
+    if ((pos = romname.rfind(':')) != std::string::npos) {
+        std::string str_offset = romname.substr(pos + 1);
 
         if (!str_offset.empty()) {
             *offset = atoi(str_offset.c_str());
@@ -39,25 +39,26 @@ string split_romname(string& romname, size_t* offset) {
 }
 
 void C_MemoryManager::ReadFile(void) {
-    string filename;
+    std::string filename;
     size_t offset;
+    auto config = hostEnv->config();
 
-    filename = config.GetString("core", "rom_48", "pentagon.rom:1");
+    filename = config->getString("core", "rom_48", "pentagon.rom:1");
     filename = split_romname(filename, &offset);
 
-    if (config.LoadDataFile("roms", filename.c_str(), &rom[0x4000], 0x4000, offset) != 0x4000) {
+    if (hostEnv->loadDataFile("roms", filename, &rom[0x4000], 0x4000, offset) != 0x4000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 
-    filename = config.GetString("core", "rom_128", "pentagon.rom:0");
+    filename = config->getString("core", "rom_128", "pentagon.rom:0");
     filename = split_romname(filename, &offset);
 
-    if (config.LoadDataFile("roms", filename.c_str(), rom, 0x4000, offset) != 0x4000) {
+    if (hostEnv->loadDataFile("roms", filename, rom, 0x4000, offset) != 0x4000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 
-    enable512 = config.GetBool("core", "enable512", false);
-    enable1024 = config.GetBool("core", "enable1024",  false);
+    enable512 = config->getBool("core", "enable512", false);
+    enable1024 = config->getBool("core", "enable1024",  false);
 
     if (!enable512) {
         enable1024 = false;

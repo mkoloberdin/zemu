@@ -7,7 +7,7 @@ C_SndRenderer C_Covox::sndRenderer;
 bool C_Covox::enabled = false;
 
 void C_Covox::Init(void) {
-    enabled = config.GetBool("sound", "enablecovox", false);
+    enabled = hostEnv->config()->getBool("sound", "enablecovox", false);
 
     if (enabled) {
         AttachZ80OutputHandler(OutputByteCheckPort, OnOutputByte);

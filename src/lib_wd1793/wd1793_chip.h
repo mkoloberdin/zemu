@@ -72,7 +72,7 @@ bool wd1793_is_disk_changed(int drive);
 /*
 wd1793_save_dimage: save disk in <drive> to <filename>, in format <type>
 */
-int wd1793_save_dimage(char* filename, int drive, enum DIMAGE_TYPE type);
+int wd1793_save_dimage(const char* filename, int drive, enum DIMAGE_TYPE type);
 
 /*
 wd1793_is_disk_loaded: returns 1 if there's disk in <drive>

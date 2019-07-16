@@ -4,7 +4,6 @@
 #include "defines.h"
 #include "platform_hardware.h"
 #include <z80ex.h>
-#include "config.h"
 #include "sound/mixer.h"
 
 #ifndef Z80EX_ZAME_WRAPPER
@@ -44,7 +43,6 @@ struct s_Params {
     int kempstonAxisTreshold;
 };
 
-extern CConfig config;
 extern Z80EX_CONTEXT* cpu;
 extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;

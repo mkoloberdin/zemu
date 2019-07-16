@@ -26,7 +26,8 @@ uint8_t* C_GSound::writeMap[4];
 #define GS_INT_PERIOD (384)
 
 void C_GSound::Init(void) {
-    enabled = config.GetBool("sound", "enablegs", false);
+    auto config = hostEnv->config();
+    enabled = config->getBool("sound", "enablegs", false);
 
     if (!enabled) {
         return;
@@ -43,10 +44,10 @@ void C_GSound::Init(void) {
     string filename;
     size_t offset;
 
-    filename = config.GetString("sound", "gsrom", "gs105a.rom");
+    filename = config->getString("sound", "gsrom", "gs105a.rom");
     filename = split_romname(filename, &offset);
 
-    if (config.LoadDataFile("roms", filename.c_str(), mem, 0x8000, offset) != 0x8000) {
+    if (hostEnv->loadDataFile("roms", filename, mem, 0x8000, offset) != 0x8000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 

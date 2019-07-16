@@ -3,7 +3,6 @@
 
 #include "tape.h"
 #include "../zemu.h"
-#include "../dirwork.h"
 #include "tap_format.h"
 #include "wav_format.h"
 #include "voc_format.h"
@@ -75,10 +74,8 @@ void C_Tape::Eject(void) {
 }
 
 bool C_Tape::IsTapeFormat(const char* fname) {
-    return (!strcasecmp(C_DirWork::ExtractExt(fname), "tap")
-        || !strcasecmp(C_DirWork::ExtractExt(fname), "wav")
-        || !strcasecmp(C_DirWork::ExtractExt(fname), "voc")
-    );
+    auto ext = hostEnv->fileSystem()->path(fname)->extensionLc();
+    return (ext == "tap" || ext == "wav" || ext == "voc");
 }
 
 bool C_Tape::Insert(const char* fname) {
@@ -87,11 +84,13 @@ bool C_Tape::Insert(const char* fname) {
         currentFormat = nullptr;
     }
 
-    if (!strcasecmp(C_DirWork::ExtractExt(fname), "tap")) {
+    auto ext = hostEnv->fileSystem()->path(fname)->extensionLc();
+
+    if (ext == "tap") {
         currentFormat = new C_TapFormat();
-    } else if (!strcasecmp(C_DirWork::ExtractExt(fname), "wav")) {
+    } else if (ext == "wav") {
         currentFormat = new C_WavFormat();
-    } else if (!strcasecmp(C_DirWork::ExtractExt(fname), "voc")) {
+    } else if (ext == "voc") {
         currentFormat = new C_VocFormat();
     }
 

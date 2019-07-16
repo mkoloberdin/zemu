@@ -5,7 +5,7 @@
 #include "cpu_trace.h"
 #include "devs.h"
 
-static std::unique_ptr<FileWriter> traceWriter;
+static FileWriterPtr traceWriter;
 int cpuTrace_dT = 0;
 int cpuTrace_intReq = 0;
 

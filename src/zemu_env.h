@@ -3,6 +3,6 @@
 
 #include "platform/hostenv.h"
 
-extern std::unique_ptr<HostEnv> hostEnv;
+extern HostEnvPtr hostEnv;
 
 #endif

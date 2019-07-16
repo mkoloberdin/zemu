@@ -131,7 +131,7 @@ class C_Wd1793 {
 
     void set_appendboot(const char* boot_name);
     void set_trd_interleave(int iv);
-    int save_dimage(char* filename, int drive, enum DIMAGE_TYPE type);
+    int save_dimage(const char* filename, int drive, enum DIMAGE_TYPE type);
     int is_disk_loaded(int drive);
     void set_disk_wprotected(int drive, bool wp);
     bool is_disk_wprotected(int drive);

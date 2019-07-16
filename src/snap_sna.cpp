@@ -9,7 +9,7 @@
 bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
     bool banks[8];
     uint8_t buffer[16384];
-    std::unique_ptr<FileReader> reader;
+    FileReaderPtr reader;
 
     try {
         reader = hostEnv->fileSystem()->path(filename)->fileReader();

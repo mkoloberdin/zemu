@@ -38,3 +38,5 @@ if [ "$USE_ANALYZE" = "yes" ] ; then
 
     [ "$?" != "0" ] && exit "$?"
 fi
+
+exit 0

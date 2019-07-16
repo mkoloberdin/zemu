@@ -74,7 +74,7 @@ void C_Wd1793::set_trd_interleave(int iv) {
     }
 }
 
-int C_Wd1793::save_dimage(char* filename, int drive, enum DIMAGE_TYPE type) {
+int C_Wd1793::save_dimage(const char* filename, int drive, enum DIMAGE_TYPE type) {
     return fdd[drive].save_dimage(filename, type);
 }
 

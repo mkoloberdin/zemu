@@ -16,8 +16,8 @@ void C_Keyboard::ReadKbdConfig(void) {
     char buf[0x1000];
     s_ZxKeys zxKeys;
 
-    string value = config.GetString("input", "keymap", "keys.config");
-    string keysConfigPath = config.FindDataFile("", value.c_str());
+    string value = hostEnv->config()->getString("input", "keymap", "keys.config");
+    string keysConfigPath = hostEnv->finder()->find(value)->string();
 
     if (keysConfigPath.empty()) {
         throw C_E(E_FileNotFound, value.c_str());

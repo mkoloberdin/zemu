@@ -42,7 +42,7 @@ bool wd1793_is_disk_changed(int drive) {
     return wd.is_disk_changed(drive);
 }
 
-int wd1793_save_dimage(char* filename, int drive, enum DIMAGE_TYPE type) {
+int wd1793_save_dimage(const char* filename, int drive, enum DIMAGE_TYPE type) {
     return wd.save_dimage(filename, drive, type);
 }
 

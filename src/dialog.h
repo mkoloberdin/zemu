@@ -8,6 +8,6 @@ void FileDialog(void);
 void FileDialogInit(void);
 void RunDebugger(void);
 
-extern char oldFileName[4][MAX_PATH];
+extern std::string oldFileName[4];
 
 #endif

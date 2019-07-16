@@ -7,7 +7,7 @@
 class C_VocFormat : public C_TapeFormat {
     public:
 
-    std::unique_ptr<FileReader> reader;
+    FileReaderPtr reader;
     uint64_t allTicks = 0;
     bool active = false;
     bool currBit = false;

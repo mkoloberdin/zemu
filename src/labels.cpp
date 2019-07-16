@@ -8,7 +8,7 @@
 std::list<s_LabelItem> labels;
 
 void Labels_Load(const char* fname) {
-    std::unique_ptr<FileReader> reader;
+    FileReaderPtr reader;
 
     try {
         reader = hostEnv->fileSystem()->path(fname)->fileReader();

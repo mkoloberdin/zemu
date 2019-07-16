@@ -6,12 +6,10 @@
 #include <cctype>
 #include <algorithm>
 #include <boost/format.hpp>
-#include <boost/algorithm/string.hpp>
 #include "zemu_env.h"
 #include "zemu.h"
 #include "exceptions.h"
 #include "lib_wd1793/wd1793_chip.h"
-#include "dirwork.h"
 #include "font.h"
 #include "dialog.h"
 #include "graphics.h"
@@ -32,6 +30,7 @@
 #include "images/floppy_write.h"
 #include "images/turbo_off.h"
 #include "images/turbo_on.h"
+#include "platform_impl/hostenv_impl.h"
 
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
@@ -39,6 +38,7 @@
 #define MAX_FNAME 256
 #define INT_LENGTH 32
 
+HostEnvPtr hostEnv;
 unsigned turboMultiplier = 1;
 unsigned turboMultiplierNx = 1;
 bool unturbo = false;
@@ -59,7 +59,6 @@ int PITCH;
 int REAL_PITCH;
 bool drawFrame;
 int frames;
-CConfig config;
 C_Font* font = nullptr;
 C_Font* fixed_font = nullptr;
 bool disableSound = false;
@@ -342,44 +341,54 @@ void StrToLower(char* str) {
 void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr) {
     if (C_Tape::IsTapeFormat(fname)) {
         C_Tape::Insert(fname);
-    } else if (!strcasecmp(C_DirWork::ExtractExt(fname), "z80")) {
+        return;
+    }
+
+    auto ext = hostEnv->fileSystem()->path(fname)->extensionLc();
+
+    if (ext == "z80") {
         if (load_z80_snap(fname, cpu, dev_mman, dev_border)) {
             dev_tsfm.OnReset();
         } else {
             StrikeMessage("Error loading snapshot");
         }
-    } else if (!strcasecmp(C_DirWork::ExtractExt(fname), "sna")) {
+
+        return;
+    }
+
+    if (ext == "sna") {
         if (load_sna_snap(fname, cpu, dev_mman, dev_border)) {
             dev_tsfm.OnReset();
         } else {
             StrikeMessage("Error loading snapshot");
         }
-    } else {
-        wd1793_load_dimage(fname, drive);
-        strcpy(oldFileName[drive], C_DirWork::Normalize(arcName ? arcName : fname, true));
+
+        return;
     }
+
+    wd1793_load_dimage(fname, drive);
+    oldFileName[drive] = hostEnv->fileSystem()->path(arcName ? arcName : fname)->canonical()->string();
 }
 
 bool TryLoadArcFile(const char* arcName, int drive) {
     auto fileSystem = hostEnv->fileSystem();
     auto arcPath = fileSystem->path(arcName);
-    auto arcExtension = arcPath->extension();
+    auto arcExtension = arcPath->extensionLc();
 
     if (arcExtension.empty()) {
         return false;
     }
 
-    boost::algorithm::to_lower(arcExtension);
-    auto pluginFn = config.FindDataFile("arc", arcExtension.c_str());
+    auto pluginFn = hostEnv->finder()->find("arc", arcExtension.c_str());
 
-    if (pluginFn.empty()) {
+    if (pluginFn->isEmpty()) {
         return false;
     }
 
     auto tempFolderPath = fileSystem->path(tempFolderName);
     auto tempFilesPath = tempFolderPath->append("files.txt");
 
-    if (system((boost::format("%s list \"%s\" %s") % pluginFn % arcName % tempFilesPath).str().c_str()) == -1) {
+    if (system((boost::format("%s list \"%s\" %s") % pluginFn->string() % arcName % tempFilesPath).str().c_str()) == -1) {
         DEBUG_MESSAGE("system failed");
     }
 
@@ -1403,13 +1412,9 @@ void FreeAll(void) {
 
     ZHW_Video_CloseWindow(window);
     z80ex_destroy(cpu);
-
-    if (CConfig::executableDir) {
-        free(CConfig::executableDir);
-    }
 }
 
-void ParseCmdLine(int argc, char *argv[]) {
+void ParseCmdLine(int argc, const char *argv[]) {
     argv++;
     argc--;
 
@@ -1488,22 +1493,17 @@ void windows_cleanup() {
 
 #endif // _WIN32
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
     OutputLogo();
 
-    if (argc > 0) { // just for case
-        CConfig::executableDir = AllocNstrcpy(C_DirWork::ExtractPath(argv[0]));
-    } else {
-        CConfig::executableDir = AllocNstrcpy(".");
-    }
-
-    config.Initialize("zemu");
+    hostEnv = HostEnvPtr(new HostEnvImpl(argc, argv, "zemu"));
+    auto config = hostEnv->config();
 
     try {
         string str;
 
         // core
-        str = config.GetString("core", "snapformat", "sna");
+        str = config->getString("core", "snapformat", "sna");
         transform(str.begin(), str.end(), str.begin(), (int (*)(int))tolower);
 
         if (str == "sna") {
@@ -1513,49 +1513,48 @@ int main(int argc, char *argv[]) {
         }
 
         // beta128
-        str = config.GetString("beta128", "diskA", "");
+        str = config->getString("beta128", "diskA", "");
 
         if (!str.empty()) {
             wd1793_load_dimage(str.c_str(), 0);
         }
 
-        str = config.GetString("beta128", "diskB", "");
+        str = config->getString("beta128", "diskB", "");
 
         if (!str.empty()) {
             wd1793_load_dimage(str.c_str(), 1);
         }
 
-        str = config.GetString("beta128", "diskC", "");
+        str = config->getString("beta128", "diskC", "");
 
         if (!str.empty()) {
             wd1793_load_dimage(str.c_str(), 2);
         }
 
-        str = config.GetString("beta128", "diskD", "");
+        str = config->getString("beta128", "diskD", "");
 
         if (!str.empty()) {
             wd1793_load_dimage(str.c_str(), 3);
         }
 
-        wd1793_set_nodelay(config.GetBool("beta128", "nodelay", false));
+        wd1793_set_nodelay(config->getBool("beta128", "nodelay", false));
 
-        str = config.GetString("beta128", "sclboot", "boot.$b");
-        str = config.FindDataFile("boot", str.c_str());
+        str = hostEnv->finder()->find("boot", config->getString("beta128", "sclboot", "boot.$b"))->string();
 
         if (!str.empty()) {
             wd1793_set_appendboot(str.c_str());
         }
 
         // display
-        params.fullscreen = config.GetBool("display", "fullscreen", false);
-        params.scale2x = config.GetBool("display", "scale2x", true);
-        params.scanlines = config.GetBool("display", "scanlines", false);
-        params.useFlipSurface = config.GetBool("display", "sdl_useflipsurface", false);
-        params.antiFlicker = config.GetBool("display", "antiflicker", false);
-        params.showInactiveIcons = config.GetBool("display", "showinactiveicons", false);
+        params.fullscreen = config->getBool("display", "fullscreen", false);
+        params.scale2x = config->getBool("display", "scale2x", true);
+        params.scanlines = config->getBool("display", "scanlines", false);
+        params.useFlipSurface = config->getBool("display", "sdl_useflipsurface", false);
+        params.antiFlicker = config->getBool("display", "antiflicker", false);
+        params.showInactiveIcons = config->getBool("display", "showinactiveicons", false);
 
         // input
-        params.mouseDiv = config.GetInt("input", "mousediv", 1);
+        params.mouseDiv = config->getInt("input", "mousediv", 1);
 
         if (params.mouseDiv <= 0) {
             params.mouseDiv = 1;
@@ -1564,8 +1563,8 @@ int main(int argc, char *argv[]) {
         }
 
         // sound
-        params.sound = config.GetBool("sound", "enable", true);
-        params.mixerMode = config.GetInt("sound", "mixermode", 1);
+        params.sound = config->getBool("sound", "enable", true);
+        params.mixerMode = config->getInt("sound", "mixermode", 1);
 
         #ifdef _WIN32
             eSndBackend default_snd_backend = SND_BACKEND_WIN32;
@@ -1573,7 +1572,7 @@ int main(int argc, char *argv[]) {
             eSndBackend default_snd_backend = SND_BACKEND_DEFAULT;
         #endif
 
-        str = config.GetString("sound", "sound_backend", "auto");
+        str = config->getString("sound", "sound_backend", "auto");
         transform(str.begin(), str.end(), str.begin(), (int (*)(int))tolower);
 
         if (str == "sdl") {
@@ -1593,25 +1592,25 @@ int main(int argc, char *argv[]) {
             params.sndBackend = default_snd_backend;
         }
 
-        params.audioBufferSize = config.GetInt("sound", "sdlbuffersize", 4);
+        params.audioBufferSize = config->getInt("sound", "sdlbuffersize", 4);
 
         #ifndef _WIN32
-            params.soundParam = config.GetInt("sound", "ossfragnum", 8);
+            params.soundParam = config->getInt("sound", "ossfragnum", 8);
         #else
-            params.soundParam = config.GetInt("sound", "wqsize", 4);
+            params.soundParam = config->getInt("sound", "wqsize", 4);
         #endif
 
         // cputrace
-        params.cpuTraceEnabled = config.GetBool("cputrace", "enable", false);
+        params.cpuTraceEnabled = config->getBool("cputrace", "enable", false);
 
-        str = config.GetString(
+        str = config->getString(
             "cputrace",
             "format",
             "[PC]> [M1]:[M2] dT=[DT] AF=[AF] BC=[BC] DE=[DE] HL=[HL] IX=[IX] IY=[IY] SP=[SP] I=[I] R=[R] AF'=[AF'] BC'=[BC'] DE'=[DE'] HL'=[HL'] IFF1=[IFF1] IFF2=[IFF2] IM=[IM] INTR=[INTR]"
         );
 
         strcpy(params.cpuTraceFormat, str.c_str());
-        str = config.GetString("cputrace", "filename", "cputrace.log");
+        str = config->getString("cputrace", "filename", "cputrace.log");
         strcpy(params.cpuTraceFileName, str.c_str());
 
         if (ZHW_Core_Init(params.sound && params.sndBackend == SND_BACKEND_DEFAULT) < 0) {
@@ -1673,7 +1672,7 @@ int main(int argc, char *argv[]) {
         InitAll();
         ResetSequence();
 
-        if (config.GetBool("core", "trdos_at_start", false)) {
+        if (config->getBool("core", "trdos_at_start", false)) {
             dev_mman.OnOutputByte(0x7FFD, 0x10);
             dev_trdos.Enable();
         }

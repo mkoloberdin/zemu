@@ -63,7 +63,7 @@ void C_Fdd::eject() {
     free();
 }
 
-int C_Fdd::save_dimage(char* filename, enum DIMAGE_TYPE type) {
+int C_Fdd::save_dimage(const char* filename, enum DIMAGE_TYPE type) {
     FILE* fp;
     int ret = 0;
 

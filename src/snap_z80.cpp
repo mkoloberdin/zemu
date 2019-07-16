@@ -58,7 +58,7 @@ struct Z80_snap_header {
 
 #pragma pack(pop)
 
-bool block_read(std::unique_ptr<FileReader>& reader, C_MemoryManager& mmgr, uint16_t mem_offset, uint16_t len, int is_compressed) {
+bool block_read(FileReaderPtr& reader, C_MemoryManager& mmgr, uint16_t mem_offset, uint16_t len, int is_compressed) {
     uint8_t b = 0;
     uint8_t b_prev = 0;
 
@@ -97,7 +97,7 @@ bool block_read(std::unique_ptr<FileReader>& reader, C_MemoryManager& mmgr, uint
 }
 
 bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
-    std::unique_ptr<FileReader> reader;
+    FileReaderPtr reader;
 
     try {
         reader = hostEnv->fileSystem()->path(filename)->fileReader();
