@@ -5,7 +5,7 @@
 #include "zemu_env.h"
 #include "labels.h"
 
-std::list<s_LabelItem> labels;
+std::map<uint16_t, std::string> labels;
 
 void Labels_Load(const char* fname) {
     FileReaderPtr reader;
@@ -75,11 +75,7 @@ void Labels_Load(const char* fname) {
                 label = label.substr(0, 11) + "...";
             }
 
-            s_LabelItem item;
-            item.addr = addr;
-            item.label.assign(label);
-
-            labels.push_back(item);
+            labels[addr] = label;
         }
     }
 }

@@ -6,6 +6,7 @@
 #include <cctype>
 #include <algorithm>
 #include <boost/format.hpp>
+#include <list>
 #include "zemu_env.h"
 #include "zemu.h"
 #include "exceptions.h"

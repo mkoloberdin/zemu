@@ -3,14 +3,9 @@
 
 #include "zemu.h"
 #include <string>
-#include <list>
+#include <map>
 
-struct s_LabelItem {
-    uint16_t addr;
-    std::string label;
-};
-
-extern std::list<s_LabelItem> labels;
+extern std::map<uint16_t, std::string> labels;
 void Labels_Load(const char* fname);
 
 #endif

@@ -549,15 +549,8 @@ bool IsWatched(uint16_t addr) {
 }
 
 const char* GetLabel(uint16_t addr) {
-    std::list<s_LabelItem>::iterator it;
-
-    for (it = labels.begin(); it != labels.end(); it++) {
-        if (it->addr == addr) {
-            return it->label.c_str();
-        }
-    }
-
-    return nullptr;
+    auto it = labels.find(addr);
+    return (it == labels.end() ? nullptr : it->second.c_str());
 }
 
 const char* ReplaceLabels(const char* cmd) {
