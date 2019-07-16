@@ -7,7 +7,7 @@
 #define MAX_TAPE_VOL 0x03FF
 
 class C_Tape {
-    public:
+public:
 
     static C_SndRenderer sndRenderer;
     static uint64_t prevDevClkCounter;

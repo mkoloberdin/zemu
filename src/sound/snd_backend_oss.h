@@ -8,14 +8,14 @@
 const unsigned SND_FQ = SOUND_FREQ;
 
 class CSndBackendOSS : public CSndBackend {
-    public:
+public:
 
     CSndBackendOSS(unsigned frag_num, unsigned frag_size);
     ~CSndBackendOSS();
     void Init(void);
     void Write(uint8_t* data, unsigned len);
 
-    private:
+private:
 
     int audio;
     int frag;

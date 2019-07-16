@@ -10,14 +10,14 @@ const unsigned MAXWQSIZE = 32;
 const unsigned MAXDSPIECE = (40000 * 4 / 20);
 
 class CSndBackendWIN32 : public CSndBackend {
-    public:
+public:
 
     CSndBackendWIN32(unsigned queue_size, unsigned frag_size);
     ~CSndBackendWIN32();
     void Init(void);
     void Write(uint8_t* data, unsigned len);
 
-    private:
+private:
 
     unsigned WQSIZE;
     HWAVEOUT hwo;

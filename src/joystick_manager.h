@@ -17,7 +17,7 @@ typedef struct {
 } JoystickState;
 
 class C_JoystickManager {
-    public:
+public:
 
     static C_JoystickManager* Instance();
 
@@ -32,13 +32,13 @@ class C_JoystickManager {
     static bool OnJoystickEvent(ZHW_Event& event);
     JoystickState* GetJoystickState(int joy_num);
 
-    protected:
+protected:
 
     JoystickState jstate[MAX_JOYSTICKS];
 
     C_JoystickManager();
 
-    private:
+private:
 
     bool is_enabled;
     int num_joysticks;

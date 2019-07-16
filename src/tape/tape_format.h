@@ -4,7 +4,7 @@
 #include <cstdint>
 
 class C_TapeFormat {
-    public:
+public:
 
     C_TapeFormat() {}
     virtual ~C_TapeFormat() {}

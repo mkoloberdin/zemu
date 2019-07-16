@@ -6,7 +6,7 @@
 #include "../device.h"
 
 class C_Covox : public C_Device {
-    public:
+public:
 
     static C_SndRenderer sndRenderer;
     static bool enabled;

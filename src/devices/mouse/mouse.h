@@ -5,7 +5,7 @@
 #include "../device.h"
 
 class C_Mouse : public C_Device {
-    public:
+public:
 
     static uint8_t portFBDF;
     static uint8_t portFFDF;

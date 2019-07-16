@@ -5,7 +5,7 @@
 #include <string>
 
 class Config {
-    public:
+public:
 
     Config() {}
     virtual ~Config() {}
@@ -17,7 +17,7 @@ class Config {
     virtual bool getBool(const char* section, const char* key, bool defaultValue) = 0;
     virtual void setBool(const char* section, const char* key, bool value) = 0;
 
-    private:
+private:
 
     Config(const Config&);
     Config& operator=(const Config&);

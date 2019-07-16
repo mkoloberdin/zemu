@@ -7,7 +7,7 @@
 #include "lib_simpleini/SimpleIni.h"
 
 class ConfigImpl : public Config {
-    public:
+public:
 
     ConfigImpl(const std::string& applicationId, const FinderPtr& finder, const LoggerPtr& logger);
     ~ConfigImpl();
@@ -19,7 +19,7 @@ class ConfigImpl : public Config {
     bool getBool(const char* section, const char* key, bool defaultValue);
     void setBool(const char* section, const char* key, bool value);
 
-    private:
+private:
 
     std::string applicationId;
     FinderPtr finder;

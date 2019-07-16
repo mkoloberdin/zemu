@@ -12,7 +12,7 @@
 #define MIX_BUFFER_SIZE 1024
 
 class C_SoundMixer {
-    public:
+public:
 
     C_SoundMixer() {} //-V730
     ~C_SoundMixer();
@@ -31,7 +31,7 @@ class C_SoundMixer {
     void FlushFrame(bool soundEnabled);
     s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
 
-    private:
+private:
 
     bool initialized = false;
     CSndBackend* sndBackend = nullptr;

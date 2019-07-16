@@ -9,7 +9,7 @@
 #define MAX_TAPE_SAVE_VOL 0x0FFF
 
 class C_Border : public C_Device {
-    public:
+public:
 
     static C_SndRenderer sndRenderer;
     static uint8_t portFB;

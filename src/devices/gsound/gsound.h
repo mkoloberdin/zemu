@@ -12,7 +12,7 @@
 #define GS_MEMPAGE_MASK (15)
 
 class C_GSound : public C_Device {
-    public:
+public:
 
     static C_SndRenderer sndRenderer;
     static bool enabled;
@@ -28,7 +28,7 @@ class C_GSound : public C_Device {
     static void OnAfterFrameRender(void);
     static void Reset(void);
 
-    private:
+private:
 
     static void UpdateMaps();
     static void Update(unsigned clk);

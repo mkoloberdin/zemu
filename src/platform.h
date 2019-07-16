@@ -24,6 +24,4 @@
     #endif
 #endif
 
-// #define AUTO_DEHRUST
-
 #endif

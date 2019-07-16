@@ -4,7 +4,7 @@
 #include "SAASound.h"
 
 class C_Saa1099Chip {
-    public:
+public:
 
     C_SndRenderer sndRenderer;
 
@@ -17,7 +17,7 @@ class C_Saa1099Chip {
     void Reset(void);
     void Render(unsigned devClk);
 
-    protected:
+protected:
 
     LPCSAASOUND chip;
 };

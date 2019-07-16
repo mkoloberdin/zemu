@@ -5,14 +5,14 @@
 #include "platform/finder.h"
 
 class FinderImpl : public Finder {
-    public:
+public:
 
     FinderImpl(const FileSystemPtr& fileSystem, const PathPtr& executableDirPath);
 
     PathPtr find(const std::string& fileName);
     PathPtr find(const std::string& directory, const std::string& fileName);
 
-    private:
+private:
 
     FileSystemPtr fileSystem;
     PathPtr executableDirPath;

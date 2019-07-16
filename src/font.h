@@ -4,7 +4,7 @@
 #include "zemu.h"
 
 class C_Font {
-    public:
+public:
 
     C_Font(uint8_t* data);
     C_Font(ZHW_Video_Surface* surf);
@@ -19,7 +19,7 @@ class C_Font {
     void CopySym(char from, char to);
     void SetSymOff(char c, int x, int y);
 
-    private:
+private:
 
     ZHW_Video_Surface* surf;
     int spitch;

@@ -8,7 +8,7 @@
 #define YM2203_CHIP_CLOCK (MAX_FRAME_TACTS * 50)
 
 class C_Ym2203Chip {
-    public:
+public:
 
     C_SndRenderer sndRenderer;
 
@@ -23,7 +23,7 @@ class C_Ym2203Chip {
     void Reset(void);
     void Render(unsigned devClk);
 
-    protected:
+protected:
 
     void* chip;
     int selectedReg;

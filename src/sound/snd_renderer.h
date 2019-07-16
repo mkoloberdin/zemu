@@ -30,7 +30,7 @@ struct s_Sample {
 };
 
 class C_SndRenderer {
-    public:
+public:
 
     unsigned int samples;
     unsigned int activeCnt;
@@ -44,7 +44,7 @@ class C_SndRenderer {
     void Update(unsigned clk, unsigned left, unsigned right);
     void EndFrame(unsigned clk);
 
-    protected:
+protected:
 
     void Flush(unsigned endTick);
 

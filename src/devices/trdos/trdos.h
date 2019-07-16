@@ -6,7 +6,7 @@
 #include "../device.h"
 
 class C_TrDos : public C_Device {
-    public:
+public:
 
     static bool trdos;
     static uint8_t rom[0x4000];

@@ -2,7 +2,7 @@
 #define _DEVICE_H_INCLUDED_
 
 class C_Device {
-    public:
+public:
 
     virtual ~C_Device() {};
     virtual void Init(void) = 0;

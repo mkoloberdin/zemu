@@ -6,21 +6,21 @@
 #include "platform/filesystem.h"
 
 class FileSystemImpl : public FileSystem {
-    public:
+public:
 
     FileSystemImpl(const std::string& applicationId) : applicationId(applicationId) {}
 
     PathPtr path(const std::string& path);
     PathPtr appDataPath();
 
-    private:
+private:
 
     std::string applicationId;
     PathPtr appDataPathPtr;
 };
 
 class PathImpl : public Path {
-    public:
+public:
 
     bool isEmpty();
     bool isRoot();
@@ -41,7 +41,7 @@ class PathImpl : public Path {
     FileWriterPtr fileWriter();
     void listEntries(std::vector<PathPtr>& into);
 
-    private:
+private:
 
     #ifdef _WIN32
         boost::filesystem::path platformPath;
@@ -70,7 +70,7 @@ class PathImpl : public Path {
 };
 
 class FileReaderImpl : public FileReader {
-    public:
+public:
 
     ~FileReaderImpl();
 
@@ -84,7 +84,7 @@ class FileReaderImpl : public FileReader {
     uintmax_t getPosition();
     void setPosition(uintmax_t position);
 
-    private:
+private:
 
     std::ifstream ifs;
 
@@ -93,7 +93,7 @@ class FileReaderImpl : public FileReader {
 };
 
 class FileWriterImpl : public FileWriter {
-    public:
+public:
 
     ~FileWriterImpl();
 
@@ -104,7 +104,7 @@ class FileWriterImpl : public FileWriter {
     void writeDword(uint32_t value);
     void writeBlock(void* buf, uintmax_t size);
 
-    private:
+private:
 
     std::ofstream ofs;
     char fmtBuffer[0x400];

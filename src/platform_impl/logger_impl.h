@@ -4,13 +4,13 @@
 #include "platform/logger.h"
 
 class LoggerImpl : public Logger {
-    public:
+public:
 
     LoggerImpl();
 
     void log(const char* fmt, ...);
 
-    private:
+private:
 
     char buffer[0x1000];
 };

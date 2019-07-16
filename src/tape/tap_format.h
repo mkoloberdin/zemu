@@ -4,7 +4,7 @@
 #include "tape_format.h"
 
 class C_TapFormat : public C_TapeFormat {
-    public:
+public:
 
     int state;
     int tapeBit = 1;

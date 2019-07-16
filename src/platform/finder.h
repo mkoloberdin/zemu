@@ -6,7 +6,7 @@
 #include "filesystem.h"
 
 class Finder {
-    public:
+public:
 
     Finder() {}
     virtual ~Finder() {}
@@ -14,7 +14,7 @@ class Finder {
     virtual PathPtr find(const std::string& fileName) = 0;
     virtual PathPtr find(const std::string& directory, const std::string& fileName) = 0;
 
-    private:
+private:
 
     Finder(const Finder&);
     Finder& operator=(const Finder&);

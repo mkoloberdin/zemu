@@ -6,7 +6,7 @@
 #define SND_CALLBACK_BUFFER_SIZE 4096
 
 class CSndBackendDefault : public CSndBackend {
-    public:
+public:
 
     CSndBackendDefault(unsigned int bufferSize);
     CSndBackendDefault(unsigned int bufferSize, unsigned int preBufferSize);
@@ -15,7 +15,7 @@ class CSndBackendDefault : public CSndBackend {
     void Init(void);
     void Write(uint8_t* data, unsigned len);
 
-    protected:
+protected:
 
     void Initialize(unsigned int bufferSize, unsigned int preBufferSize, unsigned int preAgainCnt);
     unsigned int CalcDist(void);
@@ -35,7 +35,7 @@ class CSndBackendDefault : public CSndBackend {
 
     uint8_t* ringBuffer;
 
-    private:
+private:
 
     CSndBackendDefault(const CSndBackendDefault&);
     CSndBackendDefault& operator=(const CSndBackendDefault&);

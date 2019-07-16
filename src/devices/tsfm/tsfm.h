@@ -16,7 +16,7 @@
 #define TSFM_MODE_ZXM 4
 
 class C_TsFm : public C_Device {
-    public:
+public:
 
     static C_Saa1099Chip saa1099Chip;
     static C_Ym2203Chip ym2203Chip[TSFM_CHIPS_COUNT];

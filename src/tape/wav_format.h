@@ -5,7 +5,7 @@
 #include "tape_format.h"
 
 class C_WavFormat : public C_TapeFormat {
-    public:
+public:
 
     FileReaderPtr reader;
     uint64_t allTicks = 0;

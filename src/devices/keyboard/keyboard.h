@@ -10,7 +10,7 @@
 #define MAX_ZX_KEYS_MAP 5
 
 class C_Keyboard : public C_Device {
-    public:
+public:
 
     struct s_ZxKeys {
         s_ZxKeys() : count(0) {} // -V730

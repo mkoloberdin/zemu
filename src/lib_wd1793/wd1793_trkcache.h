@@ -7,7 +7,7 @@
 class C_Fdd;
 
 class C_TrkCache {
-    public:
+public:
 
     // cached track position
     C_Fdd* drive;

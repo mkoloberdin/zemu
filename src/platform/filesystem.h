@@ -16,7 +16,7 @@ typedef std::unique_ptr<FileReader> FileReaderPtr;
 typedef std::unique_ptr<FileWriter> FileWriterPtr;
 
 class FileSystem {
-    public:
+public:
 
     FileSystem() {}
     virtual ~FileSystem() {}
@@ -24,14 +24,14 @@ class FileSystem {
     virtual PathPtr path(const std::string& path) = 0;
     virtual PathPtr appDataPath() = 0;
 
-    private:
+private:
 
     FileSystem(const FileSystem&);
     FileSystem& operator=(const FileSystem&);
 };
 
 class Path {
-    public:
+public:
 
     Path() {}
     virtual ~Path() {}
@@ -57,14 +57,14 @@ class Path {
 
     std::string extensionLc();
 
-    private:
+private:
 
     Path(const Path&);
     Path& operator=(const Path&);
 };
 
 class FileReader {
-    public:
+public:
 
     FileReader() {}
     virtual ~FileReader() {}
@@ -79,14 +79,14 @@ class FileReader {
     virtual uintmax_t getPosition() = 0;
     virtual void setPosition(uintmax_t position) = 0;
 
-    private:
+private:
 
     FileReader(const FileReader&);
     FileReader& operator=(const FileReader&);
 };
 
 class FileWriter {
-    public:
+public:
 
     FileWriter() {}
     virtual ~FileWriter() {}
@@ -98,7 +98,7 @@ class FileWriter {
     virtual void writeDword(uint32_t value) = 0;
     virtual void writeBlock(void* buffer, uintmax_t size) = 0;
 
-    private:
+private:
 
     FileWriter(const FileWriter&);
     FileWriter& operator=(const FileWriter&);

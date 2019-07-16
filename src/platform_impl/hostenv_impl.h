@@ -5,7 +5,7 @@
 #include "platform/hostenv.h"
 
 class HostEnvImpl : public HostEnv {
-    public:
+public:
 
     HostEnvImpl(int argc, const char** argv, const std::string& applicationId);
 
@@ -22,7 +22,7 @@ class HostEnvImpl : public HostEnv {
         uintmax_t offset = 0
     );
 
-    private:
+private:
 
     std::string applicationId;
     PathPtr executableDirPath;

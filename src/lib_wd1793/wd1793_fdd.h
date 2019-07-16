@@ -22,7 +22,7 @@ enum DISKSNAP {
 extern uint8_t snbuf[SNBUF_LEN]; // large temporary buffer
 
 class C_Fdd {
-    public:
+public:
 
     // drive data
 

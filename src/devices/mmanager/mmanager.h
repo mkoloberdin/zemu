@@ -14,7 +14,7 @@
 std::string split_romname(std::string& romname, size_t* offset);
 
 class C_MemoryManager : public C_Device {
-    public:
+public:
 
     static uint8_t port7FFD;
     static uint8_t rom[0x8000];

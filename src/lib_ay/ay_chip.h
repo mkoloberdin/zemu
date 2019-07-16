@@ -20,7 +20,7 @@ const unsigned SNDR_DEFAULT_AY_RATE = 1774400; // original ZX-Spectrum soundchip
 #define AYREG_portB     (15)    // byte
 
 class C_AyChipConfig {
-    public:
+public:
 
     enum ChipType {
         TypeAy = 0,
@@ -55,7 +55,7 @@ class C_AyChipConfig {
 };
 
 class C_AyChip {
-    public:
+public:
 
     C_SndRenderer sndRenderer;
 
@@ -73,7 +73,7 @@ class C_AyChip {
 
     void Reset(unsigned devClk = 0); // call with default parameter, when context outside StartFrame/EndFrame block
 
-    protected:
+protected:
 
     void Flush(unsigned tick);
     void ApplyRegs(unsigned devClk = 0);

@@ -7,7 +7,7 @@
 #include "wd1793_chip.h"
 
 class C_Wd1793 {
-    private:
+private:
 
     int64_t next;
     int64_t time;
@@ -81,7 +81,7 @@ class C_Wd1793 {
     C_TrkCache trkcache;
     C_Fdd fdd[4];
 
-    public:
+public:
 
     enum WDSTATE {
         S_IDLE = 0,

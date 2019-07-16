@@ -5,7 +5,7 @@
 #include "../device.h"
 
 class C_KempstonStick : public C_Device {
-    public:
+public:
 
     static uint8_t joy_kbd;
 
@@ -19,7 +19,7 @@ class C_KempstonStick : public C_Device {
     static bool OnInputByte(uint16_t port, uint8_t& retval);
     static void SetJoyNum(int num);
 
-    private:
+private:
 
     static int joy_num;
 };

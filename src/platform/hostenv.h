@@ -9,7 +9,7 @@
 #include "config.h"
 
 class HostEnv {
-    public:
+public:
 
     HostEnv() {}
     virtual ~HostEnv() {}
@@ -27,7 +27,7 @@ class HostEnv {
         uintmax_t offset = 0
     ) = 0;
 
-    private:
+private:
 
     HostEnv(const HostEnv&);
     HostEnv& operator=(const HostEnv&);

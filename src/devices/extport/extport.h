@@ -5,7 +5,7 @@
 #include "../device.h"
 
 class C_ExtPort : public C_Device {
-    public:
+public:
 
     static uint8_t portEFF7;
     static bool oldEFF7Mode;

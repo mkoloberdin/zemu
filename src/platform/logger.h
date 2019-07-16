@@ -4,14 +4,14 @@
 #include <memory>
 
 class Logger {
-    public:
+public:
 
     Logger() {}
     virtual ~Logger() {}
 
     virtual void log(const char* fmt, ...) = 0;
 
-    private:
+private:
 
     Logger(const Logger&);
     Logger& operator=(const Logger&);

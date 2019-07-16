@@ -4,7 +4,7 @@
 #include "../params.h"
 
 class CSndBackend {
-    public:
+public:
 
     virtual void Init() = 0;
     virtual void Write(uint8_t* data, unsigned len) = 0;
