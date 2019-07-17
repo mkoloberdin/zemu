@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <stdexcept>
 
 class Storage;
 class Path;
@@ -13,6 +14,12 @@ class DataWriter;
 typedef std::shared_ptr<Path> PathPtr;
 typedef std::unique_ptr<DataReader> DataReaderPtr;
 typedef std::unique_ptr<DataWriter> DataWriterPtr;
+
+class DataReaderException : public std::runtime_error {
+public:
+    DataReaderException(const std::string& whatArg) : std::runtime_error(whatArg) {};
+    DataReaderException(const char* whatArg) : std::runtime_error(whatArg) {};
+};
 
 class Storage {
 public:
@@ -60,7 +67,7 @@ public:
     virtual PathPtr canonical() = 0;
 
     virtual bool isExists() = 0;
-    virtual bool isFileExists() = 0;
+    virtual bool isFile() = 0;
     virtual bool isDirectory() = 0;
     virtual uintmax_t fileSize() = 0;
     virtual void listEntries(std::vector<PathPtr>& into) = 0;
@@ -68,7 +75,8 @@ public:
     virtual DataReaderPtr dataReader() = 0;
 
     virtual bool remove() = 0;
-    virtual bool createDirectory() = 0;
+    virtual bool removeAll() = 0;
+    virtual bool createDirectories() = 0;
     virtual DataWriterPtr dataWriter() = 0;
 
     std::string extensionLc();

@@ -1,30 +1,52 @@
 #!/bin/bash
 
+UNRAR="$(which unrar 2> /dev/null)" || UNRAR="$(which rar 2> /dev/null)"
+
+## v     Verbosely list archive contents
+## p     Print file to stdout
+##
+## -c-   Disable comments show
+## -cfg- Disable read configuration
+## -p-   Do not query password
+## -inul Disable all messages
+
 list_files() {
-    [ -e "$2" ] && rm "$2" &> /dev/null
+    [ "$UNRAR" = "" ] && return
+    INSIDE="0"
 
-    unrar lb "$1" | while read fname ; do
-        ext=`echo ${fname##*.} | tr A-Z a-z`
+    "$UNRAR" v -c- -cfg- -p- "$1" | while read ATTS SIZE _ _ _ _ _ NAME ; do
+        if [ "${ATTS:0:4}" = "----" ] && [ "$INSIDE" = "1" ] ; then
+            INSIDE="0"
+            continue
+        fi
 
-        if [ "$ext" = "scl" ] || [ "$ext" = "trd" ] || [ "$ext" = "z80" ] || [ "$ext" = "p" ] || [ "$ext" = "tap" ] ; then
-            echo $fname >> $2
+        if [ "$INSIDE" = "1" ] ; then
+            if [ "${ATTS:3:1}" = "D" ] ; then
+                echo "- $NAME"
+            else
+                echo "$SIZE $NAME"
+            fi
+        fi
+
+        if [ "${ATTS:0:4}" = "----" ] && [ "$INSIDE" = "0" ] ; then
+            INSIDE="1"
         fi
     done
 }
 
 extract_files() {
-    unrar e -o+ -p- "$1" "$2" "$3" &> /dev/null
+    [ "$UNRAR" != "" ] && "$UNRAR" p -c- -cfg- -p- -inul "$1" "$2" > "$3"
 }
 
-# arc/rar list <rar file> <result file>
-# arc/rar extract <rar file> <file to extract> <result folder>
+# arc/rar l <archive>
+# arc/rar x <archive> <path> <destination>
 
 case "$1" in
-    list)
-        list_files "$2" "$3"
+    l)
+        list_files "$2"
         ;;
 
-    extract)
+    x)
         extract_files "$2" "$3" "$4"
         ;;
 esac

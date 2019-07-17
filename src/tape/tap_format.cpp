@@ -34,7 +34,7 @@ uint8_t C_TapFormat::Data(long pos) {
 bool C_TapFormat::Load(const char* fname) {
     auto fpath = hostEnv->storage()->path(fname);
 
-    if (!fpath->isFileExists()) {
+    if (!fpath->isFile()) {
         return false;
     }
 

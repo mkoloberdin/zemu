@@ -67,7 +67,6 @@ bool doCopyOfSurfaces = false;
 ZHW_Window* window;
 int actualWidth;
 int actualHeight;
-char tempFolderName[MAX_PATH];
 bool recordWav = false;
 const char* wavFileName = "output.wav"; // TODO: make configurable + full filepath
 int attributesHack = 0;
@@ -347,7 +346,7 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
 
     auto ext = hostEnv->storage()->path(fname)->extensionLc();
 
-    if (ext == "z80") {
+    if (ext == ".z80") {
         if (load_z80_snap(fname, cpu, dev_mman, dev_border)) {
             dev_tsfm.OnReset();
         } else {
@@ -357,7 +356,7 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
         return;
     }
 
-    if (ext == "sna") {
+    if (ext == ".sna") {
         if (load_sna_snap(fname, cpu, dev_mman, dev_border)) {
             dev_tsfm.OnReset();
         } else {
@@ -369,61 +368,6 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
 
     wd1793_load_dimage(fname, drive);
     oldFileName[drive] = hostEnv->storage()->path(arcName ? arcName : fname)->canonical()->string();
-}
-
-bool TryLoadArcFile(const char* arcName, int drive) {
-    auto storage = hostEnv->storage();
-    auto arcPath = storage->path(arcName);
-    auto arcExtension = arcPath->extensionLc();
-
-    if (arcExtension.empty()) {
-        return false;
-    }
-
-    auto pluginFn = hostEnv->storage()->findExtras("arc", arcExtension.c_str());
-
-    if (pluginFn->isEmpty()) {
-        return false;
-    }
-
-    auto tempFolderPath = storage->path(tempFolderName);
-    auto tempFilesPath = tempFolderPath->append("files.txt");
-
-    if (system((boost::format("%s list \"%s\" %s") % pluginFn->string() % arcName % tempFilesPath).str().c_str()) == -1) {
-        DEBUG_MESSAGE("system failed");
-    }
-
-    if (!tempFilesPath->isFileExists()) {
-        return true; // "true" here means ONLY that the file is an archive
-    }
-
-    std::list<std::string> files;
-    auto tempFilesReader = tempFilesPath->dataReader();
-
-    while (!tempFilesReader->isEof()) {
-        std::string str = tempFilesReader->readLine();
-
-        if (!str.empty()) {
-            files.push_back(str);
-        }
-    }
-
-    tempFilesPath->remove();
-
-    if (files.empty()) {
-        return true; // "true" here means ONLY that the file is an archive
-    }
-
-    // currently load only first file
-    if (system((boost::format("%s extract \"%s\" \"%s\" %s") % pluginFn % arcName % files.front() % tempFolderName).str().c_str()) == -1) {
-        DEBUG_MESSAGE("system failed");
-    }
-
-    auto resultPath = tempFolderPath->append(storage->path(files.front())->fileName());
-    LoadNormalFile(resultPath->string().c_str(), drive, arcName);
-    resultPath->remove();
-
-    return true; // "true" here means ONLY that the file is an archive
 }
 
 void TryNLoadFile(const char* fname, int drive) {
@@ -451,10 +395,7 @@ void TryNLoadFile(const char* fname, int drive) {
 
     if (tname[0] != 0) {
         printf("Trying to load \"%s\" ...\n", tname);
-
-        if (!TryLoadArcFile(tname, drive)) {
-            LoadNormalFile(tname, drive);
-        }
+        LoadNormalFile(tname, drive);
     }
 }
 
@@ -1390,17 +1331,6 @@ void FreeAll(void) {
         ZHW_Thread_Wait(upadteScreenThread, nullptr);
     }
 
-    #ifndef _WIN32
-        // TODO: do in in more portable way
-        char cmd[MAX_PATH];
-        strcpy(cmd, "rm -rf ");
-        strcat(cmd, tempFolderName);
-
-        if (system(cmd) == -1) {
-            DEBUG_MESSAGE("system() failed");
-        }
-    #endif
-
     delete fixed_font;
     delete font;
 
@@ -1656,16 +1586,6 @@ int main(int argc, const char *argv[]) {
             screen = realScreen;
             PITCH = REAL_PITCH;
         }
-
-        #ifdef _WIN32
-            strcpy(tempFolderName, "./_temp");
-        #else
-            strcpy(tempFolderName, "/tmp/zemu-XXXXXX");
-
-            if (!mkdtemp(tempFolderName)) {
-                DEBUG_MESSAGE("mkdtemp failed");
-            }
-        #endif
 
         atexit(FreeAll);
 

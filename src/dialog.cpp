@@ -326,7 +326,7 @@ std::string SelectFile(std::string oldFileArg) {
 
                     auto path = hostEnv->storage()->path(oldFileName[currentDrive]);
 
-                    if (path->extensionLc() != "trd") {
+                    if (path->extensionLc() != ".trd") {
                         path = path->concat(".trd");
                     }
 

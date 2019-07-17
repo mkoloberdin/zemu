@@ -21,7 +21,7 @@ if [ "$1" = "--analyze" ] || [ "$2" = "--analyze" ] || [ "$3" = "--analyze" ] ; 
 fi
 
 cmake $CMAKE_PARAMS -D CMAKE_FIND_FRAMEWORK=LAST -D CMAKE_EXPORT_COMPILE_COMMANDS=On -B build . && cmake --build build
-[ "$?" != "0" ] && exit "$?"
+STATUS="$?" ; [ "$STATUS" != "0" ] && exit "$STATUS"
 
 if [ "$USE_SDL1" = "yes" ] && [ "$(uname -s)" = "Darwin" ] && [ -e build/zemu ] ; then
     ruby osx-mojave-fix.rb build/zemu
@@ -36,7 +36,7 @@ if [ "$USE_ANALYZE" = "yes" ] ; then
     pvs-studio-analyzer analyze -o analyze.log -i -j 2 -f ../build/compile_commands.json \
     && plog-converter -a "GA;64;OP;CS;MISRA" -t fullhtml -o result analyze.log
 
-    [ "$?" != "0" ] && exit "$?"
+    STATUS="$?" ; [ "$STATUS" != "0" ] && exit "$STATUS"
 fi
 
 exit 0
