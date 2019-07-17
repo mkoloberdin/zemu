@@ -26,7 +26,7 @@ public:
         void InitBackendOSS(int soundParam);
     #endif
 
-    void Init(int mixerMode, bool recordWav, const char* wavFileName);
+    void Init(int mixerMode, bool recordWav, const char* wavName);
     void AddSource(C_SndRenderer* source);
     void FlushFrame(bool soundEnabled);
     s_Sample mixBuffer[MIX_BUFFER_SIZE * 2];
@@ -38,9 +38,9 @@ private:
     int mixerMode;
     std::vector<C_SndRenderer*> sources;
     uint16_t audioBuffer[MIX_BUFFER_SIZE * 2];
-    PathPtr wavFilePath;
-    PathPtr wavFileTempPath;
-    FileWriterPtr wavFileWriter;
+    PathPtr wavPath;
+    PathPtr wavTempPath;
+    DataWriterPtr wavDataWriter;
 };
 
 extern C_SoundMixer soundMixer;

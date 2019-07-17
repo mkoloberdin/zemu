@@ -47,7 +47,7 @@ void C_GSound::Init(void) {
     filename = config->getString("sound", "gsrom", "gs105a.rom");
     filename = split_romname(filename, &offset);
 
-    if (hostEnv->loadDataFile("roms", filename, mem, 0x8000, offset) != 0x8000) {
+    if (hostEnv->storage()->readExtras("roms", filename, mem, 0x8000, offset) != 0x8000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 

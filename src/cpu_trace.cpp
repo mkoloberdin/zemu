@@ -5,7 +5,7 @@
 #include "cpu_trace.h"
 #include "devs.h"
 
-static FileWriterPtr traceWriter;
+static DataWriterPtr traceWriter;
 int cpuTrace_dT = 0;
 int cpuTrace_intReq = 0;
 
@@ -15,7 +15,7 @@ void CpuTrace_Init(void) {
     }
 
     if (params.cpuTraceEnabled && *params.cpuTraceFormat && *params.cpuTraceFileName) {
-        traceWriter = hostEnv->fileSystem()->path(params.cpuTraceFileName)->fileWriter();
+        traceWriter = hostEnv->storage()->path(params.cpuTraceFileName)->dataWriter();
     }
 }
 

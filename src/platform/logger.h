@@ -17,6 +17,4 @@ private:
     Logger& operator=(const Logger&);
 };
 
-typedef std::shared_ptr<Logger> LoggerPtr;
-
 #endif

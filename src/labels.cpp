@@ -8,10 +8,10 @@
 std::map<uint16_t, std::string> labels;
 
 void Labels_Load(const char* fname) {
-    FileReaderPtr reader;
+    DataReaderPtr reader;
 
     try {
-        reader = hostEnv->fileSystem()->path(fname)->fileReader();
+        reader = hostEnv->storage()->path(fname)->dataReader();
     } catch (...) {
         printf("Error loading labels from \"%s\"\n", fname);
         return;

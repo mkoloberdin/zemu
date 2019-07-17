@@ -3,15 +3,12 @@
 
 #include "config_impl.h"
 
-ConfigImpl::ConfigImpl(const std::string& applicationId, const FinderPtr& finder, const LoggerPtr& logger) : applicationId(applicationId),
-    finder(finder),
-    logger(logger)
-{
-    auto path = finder->find(applicationId + ".ini");
+ConfigImpl::ConfigImpl(const std::string& applicationId, Storage* storage, Logger* logger) {
+    auto path = storage->findExtras(applicationId + ".ini");
 
     if (!ini.LoadFile(path->string().c_str())) {
         logger->log("Config loaded successfully from \"%s\"", path->string().c_str());
-        configPath = std::move(path);
+        configPath = path;
     } else {
         logger->log("Failed to find config");
     }

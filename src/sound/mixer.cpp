@@ -11,39 +11,39 @@
 C_SoundMixer soundMixer;
 
 C_SoundMixer::~C_SoundMixer() {
-    if (!initialized || !wavFileWriter) {
+    if (!initialized || !wavDataWriter) {
         return;
     }
 
     try {
-        wavFileWriter = nullptr;
+        wavDataWriter = nullptr;
 
         // TODO: use appropriate library for writing wave files where available
-        long wavSz = (long)wavFileTempPath->fileSize();
+        long wavSz = (long)wavTempPath->fileSize();
 
-        wavFileWriter = wavFilePath->fileWriter();
-        wavFileWriter->writeDword(0x46464952);
-        wavFileWriter->writeDword(wavSz + 0x40 - 8);
-        wavFileWriter->writeDword(0x45564157);
-        wavFileWriter->writeDword(0x20746D66);
-        wavFileWriter->writeDword(0x10);
-        wavFileWriter->writeWord(1);
-        wavFileWriter->writeWord(2);
-        wavFileWriter->writeDword(SOUND_FREQ);
-        wavFileWriter->writeDword(SOUND_FREQ * 4);
-        wavFileWriter->writeWord(4);
-        wavFileWriter->writeWord(16);
-        wavFileWriter->writeDword(0x61746164);
-        wavFileWriter->writeDword(wavSz);
+        wavDataWriter = wavPath->dataWriter();
+        wavDataWriter->writeDword(0x46464952);
+        wavDataWriter->writeDword(wavSz + 0x40 - 8);
+        wavDataWriter->writeDword(0x45564157);
+        wavDataWriter->writeDword(0x20746D66);
+        wavDataWriter->writeDword(0x10);
+        wavDataWriter->writeWord(1);
+        wavDataWriter->writeWord(2);
+        wavDataWriter->writeDword(SOUND_FREQ);
+        wavDataWriter->writeDword(SOUND_FREQ * 4);
+        wavDataWriter->writeWord(4);
+        wavDataWriter->writeWord(16);
+        wavDataWriter->writeDword(0x61746164);
+        wavDataWriter->writeDword(wavSz);
 
-        auto wavTmpReader = wavFileTempPath->fileReader();
+        auto wavTmpReader = wavTempPath->dataReader();
 
         while (!wavTmpReader->isEof()) {
-            wavFileWriter->writeByte(wavTmpReader->readByte());
+            wavDataWriter->writeByte(wavTmpReader->readByte());
         }
 
-        wavFileWriter = nullptr;
-        wavFileTempPath->remove();
+        wavDataWriter = nullptr;
+        wavTempPath->remove();
     } catch (...) {
         printf("Unknown error occurred while finishing .wav\n");
     }
@@ -68,15 +68,15 @@ void C_SoundMixer::InitBackendDefault(int bufferSize) {
     }
 #endif
 
-void C_SoundMixer::Init(int mixerMode, bool recordWav, const char* wavFileName) { //-V688
+void C_SoundMixer::Init(int mixerMode, bool recordWav, const char* wavName) { //-V688
     assert(sndBackend != nullptr);
 
     this->mixerMode = mixerMode;
 
-    if (recordWav && *wavFileName) {
-        wavFilePath = hostEnv->fileSystem()->path(wavFileName);
-        wavFileTempPath = wavFilePath->concat(".tmp");
-        wavFileWriter = wavFileTempPath->fileWriter();
+    if (recordWav && *wavName) {
+        wavPath = hostEnv->storage()->path(wavName);
+        wavTempPath = wavPath->concat(".tmp");
+        wavDataWriter = wavTempPath->dataWriter();
     }
 
     initialized = true;
@@ -161,12 +161,12 @@ void C_SoundMixer::FlushFrame(bool soundEnabled) {
             }
         }
 
-        if (wavFileWriter) {
+        if (wavDataWriter) {
             o = audioBuffer;
 
             for (int i = minSamples; i--;) {
-                wavFileWriter->writeWord(*(o++));
-                wavFileWriter->writeWord(*(o++));
+                wavDataWriter->writeWord(*(o++));
+                wavDataWriter->writeWord(*(o++));
             }
         }
 

@@ -23,6 +23,4 @@ private:
     Config& operator=(const Config&);
 };
 
-typedef std::shared_ptr<Config> ConfigPtr;
-
 #endif

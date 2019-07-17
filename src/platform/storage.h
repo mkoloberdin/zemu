@@ -1,33 +1,42 @@
-#ifndef PLATFORM__FILESYSTEM_H__INCLUDED
-#define PLATFORM__FILESYSTEM_H__INCLUDED
+#ifndef PLATFORM__STORAGE_H__INCLUDED
+#define PLATFORM__STORAGE_H__INCLUDED
 
 #include <memory>
 #include <string>
 #include <cstdint>
 
-class FileSystem;
+class Storage;
 class Path;
-class FileReader;
-class FileWriter;
+class DataReader;
+class DataWriter;
 
-typedef std::shared_ptr<FileSystem> FileSystemPtr;
 typedef std::shared_ptr<Path> PathPtr;
-typedef std::unique_ptr<FileReader> FileReaderPtr;
-typedef std::unique_ptr<FileWriter> FileWriterPtr;
+typedef std::unique_ptr<DataReader> DataReaderPtr;
+typedef std::unique_ptr<DataWriter> DataWriterPtr;
 
-class FileSystem {
+class Storage {
 public:
 
-    FileSystem() {}
-    virtual ~FileSystem() {}
+    Storage() {}
+    virtual ~Storage() {}
 
     virtual PathPtr path(const std::string& path) = 0;
     virtual PathPtr appDataPath() = 0;
+    virtual PathPtr findExtras(const std::string& fileName) = 0;
+    virtual PathPtr findExtras(const std::string& directory, const std::string& fileName) = 0;
+
+    virtual uintmax_t readExtras(
+        const char* directory,
+        const std::string& fileName,
+        uint8_t* buffer,
+        uintmax_t size,
+        uintmax_t offset = 0
+    ) = 0;
 
 private:
 
-    FileSystem(const FileSystem&);
-    FileSystem& operator=(const FileSystem&);
+    Storage(const Storage&);
+    Storage& operator=(const Storage&);
 };
 
 class Path {
@@ -36,24 +45,31 @@ public:
     Path() {}
     virtual ~Path() {}
 
+    virtual bool isWriteSupported() = 0;
+
     virtual bool isEmpty() = 0;
     virtual bool isRoot() = 0;
+
     virtual std::string string() = 0;
     virtual std::string fileName() = 0;
     virtual std::string extension() = 0;
+
     virtual PathPtr parent() = 0;
     virtual PathPtr concat(const std::string& value) = 0;
     virtual PathPtr append(const std::string& path) = 0;
     virtual PathPtr canonical() = 0;
-    virtual bool exists() = 0;
-    virtual bool fileExists() = 0;
+
+    virtual bool isExists() = 0;
+    virtual bool isFileExists() = 0;
     virtual bool isDirectory() = 0;
     virtual uintmax_t fileSize() = 0;
+    virtual void listEntries(std::vector<PathPtr>& into) = 0;
+
+    virtual DataReaderPtr dataReader() = 0;
+
     virtual bool remove() = 0;
     virtual bool createDirectory() = 0;
-    virtual FileReaderPtr fileReader() = 0;
-    virtual FileWriterPtr fileWriter() = 0;
-    virtual void listEntries(std::vector<PathPtr>& into) = 0;
+    virtual DataWriterPtr dataWriter() = 0;
 
     std::string extensionLc();
 
@@ -63,11 +79,11 @@ private:
     Path& operator=(const Path&);
 };
 
-class FileReader {
+class DataReader {
 public:
 
-    FileReader() {}
-    virtual ~FileReader() {}
+    DataReader() {}
+    virtual ~DataReader() {}
 
     virtual bool isEof() = 0;
     virtual char readChar() = 0;
@@ -81,15 +97,15 @@ public:
 
 private:
 
-    FileReader(const FileReader&);
-    FileReader& operator=(const FileReader&);
+    DataReader(const DataReader&);
+    DataReader& operator=(const DataReader&);
 };
 
-class FileWriter {
+class DataWriter {
 public:
 
-    FileWriter() {}
-    virtual ~FileWriter() {}
+    DataWriter() {}
+    virtual ~DataWriter() {}
 
     virtual void writeFmt(const char* fmt, ...) = 0;
     virtual void writeChar(char value) = 0;
@@ -100,8 +116,8 @@ public:
 
 private:
 
-    FileWriter(const FileWriter&);
-    FileWriter& operator=(const FileWriter&);
+    DataWriter(const DataWriter&);
+    DataWriter& operator=(const DataWriter&);
 };
 
 #endif

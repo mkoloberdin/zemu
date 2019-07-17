@@ -3,6 +3,6 @@
 
 #include "platform/hostenv.h"
 
-extern HostEnvPtr hostEnv;
+extern HostEnv* hostEnv;
 
 #endif

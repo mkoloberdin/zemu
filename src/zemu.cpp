@@ -39,7 +39,7 @@
 #define MAX_FNAME 256
 #define INT_LENGTH 32
 
-HostEnvPtr hostEnv;
+HostEnv* hostEnv;
 unsigned turboMultiplier = 1;
 unsigned turboMultiplierNx = 1;
 bool unturbo = false;
@@ -345,7 +345,7 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
         return;
     }
 
-    auto ext = hostEnv->fileSystem()->path(fname)->extensionLc();
+    auto ext = hostEnv->storage()->path(fname)->extensionLc();
 
     if (ext == "z80") {
         if (load_z80_snap(fname, cpu, dev_mman, dev_border)) {
@@ -368,37 +368,37 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
     }
 
     wd1793_load_dimage(fname, drive);
-    oldFileName[drive] = hostEnv->fileSystem()->path(arcName ? arcName : fname)->canonical()->string();
+    oldFileName[drive] = hostEnv->storage()->path(arcName ? arcName : fname)->canonical()->string();
 }
 
 bool TryLoadArcFile(const char* arcName, int drive) {
-    auto fileSystem = hostEnv->fileSystem();
-    auto arcPath = fileSystem->path(arcName);
+    auto storage = hostEnv->storage();
+    auto arcPath = storage->path(arcName);
     auto arcExtension = arcPath->extensionLc();
 
     if (arcExtension.empty()) {
         return false;
     }
 
-    auto pluginFn = hostEnv->finder()->find("arc", arcExtension.c_str());
+    auto pluginFn = hostEnv->storage()->findExtras("arc", arcExtension.c_str());
 
     if (pluginFn->isEmpty()) {
         return false;
     }
 
-    auto tempFolderPath = fileSystem->path(tempFolderName);
+    auto tempFolderPath = storage->path(tempFolderName);
     auto tempFilesPath = tempFolderPath->append("files.txt");
 
     if (system((boost::format("%s list \"%s\" %s") % pluginFn->string() % arcName % tempFilesPath).str().c_str()) == -1) {
         DEBUG_MESSAGE("system failed");
     }
 
-    if (!tempFilesPath->fileExists()) {
+    if (!tempFilesPath->isFileExists()) {
         return true; // "true" here means ONLY that the file is an archive
     }
 
     std::list<std::string> files;
-    auto tempFilesReader = tempFilesPath->fileReader();
+    auto tempFilesReader = tempFilesPath->dataReader();
 
     while (!tempFilesReader->isEof()) {
         std::string str = tempFilesReader->readLine();
@@ -419,7 +419,7 @@ bool TryLoadArcFile(const char* arcName, int drive) {
         DEBUG_MESSAGE("system failed");
     }
 
-    auto resultPath = tempFolderPath->append(fileSystem->path(files.front())->fileName());
+    auto resultPath = tempFolderPath->append(storage->path(files.front())->fileName());
     LoadNormalFile(resultPath->string().c_str(), drive, arcName);
     resultPath->remove();
 
@@ -1413,6 +1413,8 @@ void FreeAll(void) {
 
     ZHW_Video_CloseWindow(window);
     z80ex_destroy(cpu);
+
+    delete hostEnv;
 }
 
 void ParseCmdLine(int argc, const char *argv[]) {
@@ -1497,7 +1499,7 @@ void windows_cleanup() {
 int main(int argc, const char *argv[]) {
     OutputLogo();
 
-    hostEnv = HostEnvPtr(new HostEnvImpl(argc, argv, "zemu"));
+    hostEnv = new HostEnvImpl(argc, argv, "zemu");
     auto config = hostEnv->config();
 
     try {
@@ -1540,7 +1542,7 @@ int main(int argc, const char *argv[]) {
 
         wd1793_set_nodelay(config->getBool("beta128", "nodelay", false));
 
-        str = hostEnv->finder()->find("boot", config->getString("beta128", "sclboot", "boot.$b"))->string();
+        str = hostEnv->storage()->findExtras("boot", config->getString("beta128", "sclboot", "boot.$b"))->string();
 
         if (!str.empty()) {
             wd1793_set_appendboot(str.c_str());
@@ -1659,7 +1661,10 @@ int main(int argc, const char *argv[]) {
             strcpy(tempFolderName, "./_temp");
         #else
             strcpy(tempFolderName, "/tmp/zemu-XXXXXX");
-            if (!mkdtemp(tempFolderName)) DEBUG_MESSAGE("mkdtemp failed");
+
+            if (!mkdtemp(tempFolderName)) {
+                DEBUG_MESSAGE("mkdtemp failed");
+            }
         #endif
 
         atexit(FreeAll);

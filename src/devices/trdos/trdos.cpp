@@ -17,7 +17,7 @@ void C_TrDos::ReadFile(void) {
     filename = hostEnv->config()->getString("beta128", "rom", "trdos.rom");
     filename = split_romname(filename, &offset);
 
-    if (hostEnv->loadDataFile("roms", filename, rom, 0x4000, offset) != 0x4000) {
+    if (hostEnv->storage()->readExtras("roms", filename, rom, 0x4000, offset) != 0x4000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 }

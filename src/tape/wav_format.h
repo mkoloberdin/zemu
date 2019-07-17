@@ -7,7 +7,7 @@
 class C_WavFormat : public C_TapeFormat {
 public:
 
-    FileReaderPtr reader;
+    DataReaderPtr reader;
     uint64_t allTicks = 0;
     // uint16_t compression;
     uint16_t channels;

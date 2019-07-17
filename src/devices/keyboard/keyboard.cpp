@@ -17,7 +17,7 @@ void C_Keyboard::ReadKbdConfig(void) {
     s_ZxKeys zxKeys;
 
     string value = hostEnv->config()->getString("input", "keymap", "keys.config");
-    string keysConfigPath = hostEnv->finder()->find(value)->string();
+    string keysConfigPath = hostEnv->storage()->findExtras(value)->string();
 
     if (keysConfigPath.empty()) {
         throw C_E(E_FileNotFound, value.c_str());
@@ -27,7 +27,7 @@ void C_Keyboard::ReadKbdConfig(void) {
     const char* fileName = keysConfigPath.c_str();
 
     printf("Trying to load keys config from \"%s\" ...\n", fileName);
-    auto reader = hostEnv->fileSystem()->path(keysConfigPath)->fileReader();
+    auto reader = hostEnv->storage()->path(keysConfigPath)->dataReader();
 
     while (!reader->isEof()) {
         strcpy(buf, reader->readLine().c_str());

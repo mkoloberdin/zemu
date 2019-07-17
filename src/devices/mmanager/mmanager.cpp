@@ -46,14 +46,14 @@ void C_MemoryManager::ReadFile(void) {
     filename = config->getString("core", "rom_48", "pentagon.rom:1");
     filename = split_romname(filename, &offset);
 
-    if (hostEnv->loadDataFile("roms", filename, &rom[0x4000], 0x4000, offset) != 0x4000) {
+    if (hostEnv->storage()->readExtras("roms", filename, &rom[0x4000], 0x4000, offset) != 0x4000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 
     filename = config->getString("core", "rom_128", "pentagon.rom:0");
     filename = split_romname(filename, &offset);
 
-    if (hostEnv->loadDataFile("roms", filename, rom, 0x4000, offset) != 0x4000) {
+    if (hostEnv->storage()->readExtras("roms", filename, rom, 0x4000, offset) != 0x4000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 

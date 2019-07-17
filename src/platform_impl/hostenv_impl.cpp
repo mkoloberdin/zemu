@@ -3,64 +3,33 @@
 
 #include "hostenv_impl.h"
 #include "logger_impl.h"
-#include "filesystem_impl.h"
-#include "finder_impl.h"
+#include "storage_impl.h"
 #include "config_impl.h"
 
 HostEnvImpl::HostEnvImpl(int argc, const char** argv, const std::string& applicationId) : applicationId(applicationId) {
-    executableDirPath = (argc ? fileSystem()->path(argv[0])->parent() : fileSystem()->path(""));
+    executablePathStr = std::string(argc ? argv[0] : "");
 }
 
-LoggerPtr HostEnvImpl::logger() {
-    if (!loggerPtr) {
-        loggerPtr = LoggerPtr(new LoggerImpl());
+Logger* HostEnvImpl::logger() {
+    if (!loggerInstance) {
+        loggerInstance.reset(new LoggerImpl());
     }
 
-    return loggerPtr;
+    return loggerInstance.get();
 }
 
-FileSystemPtr HostEnvImpl::fileSystem() {
-    if (!fileSystemPtr) {
-        fileSystemPtr = FileSystemPtr(new FileSystemImpl(applicationId));
+Storage* HostEnvImpl::storage() {
+    if (!storageInstance) {
+        storageInstance.reset(new StorageImpl(applicationId, executablePathStr));
     }
 
-    return fileSystemPtr;
+    return storageInstance.get();
 }
 
-FinderPtr HostEnvImpl::finder() {
-    if (!finderPtr) {
-        finderPtr = FinderPtr(new FinderImpl(fileSystem(), executableDirPath));
+Config* HostEnvImpl::config() {
+    if (!configInstance) {
+        configInstance.reset(new ConfigImpl(applicationId, storage(), logger()));
     }
 
-    return finderPtr;
-}
-
-ConfigPtr HostEnvImpl::config() {
-    if (!configPtr) {
-        configPtr = ConfigPtr(new ConfigImpl(applicationId, finder(), logger()));
-    }
-
-    return configPtr;
-}
-
-uintmax_t HostEnvImpl::loadDataFile(
-    const char* directory,
-    const std::string& fileName,
-    uint8_t* buffer,
-    uintmax_t size,
-    uintmax_t offset
-) {
-    auto path = finder()->find(directory, fileName);
-
-    if (path->isEmpty()) {
-        return 0;
-    }
-
-    auto reader = path->fileReader();
-
-    if (offset) {
-        reader->setPosition(offset);
-    }
-
-    return reader->readBlock(buffer, size);
+    return configInstance.get();
 }

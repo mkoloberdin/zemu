@@ -9,10 +9,10 @@
 bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
     bool banks[8];
     uint8_t buffer[16384];
-    FileReaderPtr reader;
+    DataReaderPtr reader;
 
     try {
-        reader = hostEnv->fileSystem()->path(filename)->fileReader();
+        reader = hostEnv->storage()->path(filename)->dataReader();
     } catch (...) {
         return false;
     }
@@ -118,7 +118,7 @@ bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
 
 void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
     bool banks[8];
-    auto writer = hostEnv->fileSystem()->path(filename)->fileWriter();
+    auto writer = hostEnv->storage()->path(filename)->dataWriter();
 
     writer->writeByte(z80ex_get_reg(cpu, regI));
     writer->writeWord(z80ex_get_reg(cpu, regHL_));

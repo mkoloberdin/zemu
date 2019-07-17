@@ -175,8 +175,8 @@ std::string SelectFile(std::string oldFileArg) {
     char buf[0x100];
     int key;
 
-    auto lastFileName = hostEnv->fileSystem()->path(oldFileArg)->fileName();
-    auto currentDirPath = hostEnv->fileSystem()->path(oldFileArg)->parent()->canonical();
+    auto lastFileName = hostEnv->storage()->path(oldFileArg)->fileName();
+    auto currentDirPath = hostEnv->storage()->path(oldFileArg)->parent()->canonical();
 
     int bottom = HEIGHT - font->Height() - 8;
     int lineHeight = font->Height();
@@ -324,7 +324,7 @@ std::string SelectFile(std::string oldFileArg) {
                 if (DlgConfirm("Are you sure to save disk? (Y/N)")) {
                     printf("Saving \"%s\" (drive %c) ... ", oldFileName[currentDrive].c_str(), "ABCD"[currentDrive]);
 
-                    auto path = hostEnv->fileSystem()->path(oldFileName[currentDrive]);
+                    auto path = hostEnv->storage()->path(oldFileName[currentDrive]);
 
                     if (path->extensionLc() != "trd") {
                         path = path->concat(".trd");

@@ -58,7 +58,7 @@ struct Z80_snap_header {
 
 #pragma pack(pop)
 
-bool block_read(FileReaderPtr& reader, C_MemoryManager& mmgr, uint16_t mem_offset, uint16_t len, int is_compressed) {
+bool block_read(DataReaderPtr& reader, C_MemoryManager& mmgr, uint16_t mem_offset, uint16_t len, int is_compressed) {
     uint8_t b = 0;
     uint8_t b_prev = 0;
 
@@ -97,10 +97,10 @@ bool block_read(FileReaderPtr& reader, C_MemoryManager& mmgr, uint16_t mem_offse
 }
 
 bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
-    FileReaderPtr reader;
+    DataReaderPtr reader;
 
     try {
-        reader = hostEnv->fileSystem()->path(filename)->fileReader();
+        reader = hostEnv->storage()->path(filename)->dataReader();
     } catch (...) {
         return false;
     }
@@ -278,7 +278,7 @@ void save_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     Z80_snap_header hdr;
     uint8_t add_header[23]; // Z80 v3 header
 
-    auto writer = hostEnv->fileSystem()->path(filename)->fileWriter();
+    auto writer = hostEnv->storage()->path(filename)->dataWriter();
 
     hdr.A = z80ex_get_reg(cpu, regAF) >> 8;
     hdr.F = z80ex_get_reg(cpu, regAF) & 0xFF;

@@ -10,7 +10,7 @@
 bool C_WavFormat::Load(const char* fname)
 {
     active = false;
-    reader = hostEnv->fileSystem()->path(fname)->fileReader();
+    reader = hostEnv->storage()->path(fname)->dataReader();
 
     char chunkName[5];
     chunkName[4] = 0;

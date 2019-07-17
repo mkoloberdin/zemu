@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <boost/algorithm/string.hpp>
-#include "filesystem_impl.h"
+#include "storage_impl.h"
 
 #ifdef _WIN32
     #ifndef _WIN32_IE
@@ -16,14 +16,24 @@
 #endif
 
 //
-// FileSystemImpl
+// StorageImpl
 //
 
-PathPtr FileSystemImpl::path(const std::string& path) {
+StorageImpl::StorageImpl(const std::string& applicationId, const std::string& executablePathStr) : applicationId(applicationId) {
+    extrasPaths.push_back(path(""));
+    extrasPaths.push_back(path(executablePathStr)->parent());
+    extrasPaths.push_back(appDataPath());
+
+    #ifdef SHARE_PATH
+        extrasPaths.push_back(path(SHARE_PATH));
+    #endif
+}
+
+PathPtr StorageImpl::path(const std::string& path) {
     return PathPtr(new PathImpl(path));
 }
 
-PathPtr FileSystemImpl::appDataPath() {
+PathPtr StorageImpl::appDataPath() {
     if (!appDataPathPtr) {
         #ifdef _WIN32
             const TCHAR path[MAX_PATH];
@@ -59,6 +69,52 @@ PathPtr FileSystemImpl::appDataPath() {
     return appDataPathPtr;
 }
 
+PathPtr StorageImpl::findExtras(const std::string& fileName) {
+    for (const auto& extrasPath : extrasPaths) {
+        auto path = extrasPath->append(fileName);
+
+        if (path->isFileExists()) {
+            return path;
+        }
+    }
+
+    return path("");
+}
+
+PathPtr StorageImpl::findExtras(const std::string& directory, const std::string& fileName) {
+    for (const auto& extrasPath : extrasPaths) {
+        auto path = extrasPath->append(directory)->append(fileName);
+
+        if (path->isFileExists()) {
+            return path;
+        }
+    }
+
+    return path("");
+}
+
+uintmax_t StorageImpl::readExtras(
+    const char* directory,
+    const std::string& fileName,
+    uint8_t* buffer,
+    uintmax_t size,
+    uintmax_t offset
+) {
+    auto path = findExtras(directory, fileName);
+
+    if (path->isEmpty()) {
+        return 0;
+    }
+
+    auto reader = path->dataReader();
+
+    if (offset) {
+        reader->setPosition(offset);
+    }
+
+    return reader->readBlock(buffer, size);
+}
+
 //
 // PathImpl
 //
@@ -66,7 +122,7 @@ PathPtr FileSystemImpl::appDataPath() {
 PathImpl::PathImpl(const std::string& path) {
     #ifdef _WIN32
         // path -> host | platform
-        std::string hostPathStr;
+        std::string nativePathStr;
         std::string platformPathStr;
 
         if (path.length() < 2) {
@@ -74,32 +130,32 @@ PathImpl::PathImpl(const std::string& path) {
             // "x" -> "x" | "x"
             // "/" -> "/" | ""
 
-            hostPathStr = path;
+            nativePathStr = path;
             platformPathStr = ((path == "/") ? "" : path);
         } else if (path[1] == ':') {
             // "c:x..." -> "/c/x..." | "c:/x..."
             // "c:/x..." -> "/c/x..." | "c:/x..."
 
-            hostPathStr = path;
+            nativePathStr = path;
             platformPathStr = path;
 
             if (path.length() > 2 && path[2] != '/') {
-                hostPathStr.insert(2, 1, '/');
+                nativePathStr.insert(2, 1, '/');
                 platformPathStr.insert(2, 1, '/');
             }
 
-            hostPathStr[1] = hostPathStr[0];
-            hostPathStr[0] = '/';
+            nativePathStr[1] = nativePathStr[0];
+            nativePathStr[0] = '/';
         } else if (path[0] != '/') {
             // relative path, nothing to convert
 
-            hostPathStr = path;
+            nativePathStr = path;
             platformPathStr = path;
         } else if (path.length() == 2 || path[2] == '/') {
             // "/c" -> "/c" | "c:"
             // "/c/..." -> "/c/..." | "c:/..."
 
-            hostPathStr = path;
+            nativePathStr = path;
             platformPathStr = path;
 
             platformPathStr[0] = platformPathStr[1];
@@ -114,26 +170,30 @@ PathImpl::PathImpl(const std::string& path) {
                 // an error occurred, so just ignore such path
             } else {
                 platformPathStr = currentPath.string() + path;
-                hostPathStr = platformPathStr;
+                nativePathStr = platformPathStr;
 
-                hostPathStr[1] = hostPathStr[0];
-                hostPathStr[0] = '/';
+                nativePathStr[1] = nativePathStr[0];
+                nativePathStr[0] = '/';
             }
         }
 
-        boost::algorithm::replace_all(hostPathStr, "\\", "/");
+        boost::algorithm::replace_all(nativePathStr, "\\", "/");
 
-        hostPath = hostPathStr;
+        nativePath = nativePathStr;
         platformPath = platformPathStr;
     #else
-        hostPath = path;
+        nativePath = path;
     #endif
 
-    isAbsolute = hostPath.is_absolute();
+    isAbsolute = nativePath.is_absolute();
+}
+
+bool PathImpl::isWriteSupported() {
+    return true;
 }
 
 bool PathImpl::isEmpty() {
-    return hostPath.empty();
+    return nativePath.empty();
 }
 
 bool PathImpl::isRoot() {
@@ -147,9 +207,9 @@ bool PathImpl::isRoot() {
             return false;
         }
 
-        path = boost::filesystem::absolute(hostPath, currentPath);
+        path = boost::filesystem::absolute(nativePath, currentPath);
     } else {
-        path = hostPath;
+        path = nativePath;
     }
 
     // boost::filesystem::equivalent() is not used on purpose:
@@ -160,60 +220,60 @@ bool PathImpl::isRoot() {
 }
 
 std::string PathImpl::string() {
-    return hostPath.string();
+    return nativePath.string();
 }
 
 std::string PathImpl::fileName() {
-    return hostPath.filename().string();
+    return nativePath.filename().string();
 }
 
 std::string PathImpl::extension() {
-    return hostPath.extension().string();
+    return nativePath.extension().string();
 }
 
 PathPtr PathImpl::parent() {
     #ifdef _WIN32
-        auto parentHostPath = hostPath.parent_path();
+        auto parentNativePath = nativePath.parent_path();
 
-        if (isAbsolute && parentHostPath.has_root_path() && parentHostPath.root_path() == parentHostPath) {
-            return PathPtr(new PathImpl(boost::filesystem::path(), parentHostPath));
+        if (isAbsolute && parentNativePath.has_root_path() && parentNativePath.root_path() == parentNativePath) {
+            return PathPtr(new PathImpl(boost::filesystem::path(), parentNativePath));
         }
 
-        return PathPtr(new PathImpl(platformPath.parent_path(), parentHostPath));
+        return PathPtr(new PathImpl(platformPath.parent_path(), parentNativePath));
     #else
-        return PathPtr(new PathImpl(hostPath.parent_path()));
+        return PathPtr(new PathImpl(nativePath.parent_path()));
     #endif
 }
 
 PathPtr PathImpl::concat(const std::string& value) {
     #ifdef _WIN32
-        boost::filesystem::path newPlatformPath(hostPath);
+        boost::filesystem::path newPlatformPath(platformPath);
         newPlatformPath += value;
     #endif
 
-    boost::filesystem::path newHostPath(hostPath);
-    newHostPath += value;
+    boost::filesystem::path newNativePath(nativePath);
+    newNativePath += value;
 
     #ifdef _WIN32
-        return PathPtr(new PathImpl(newPlatformPath, newHostPath));
+        return PathPtr(new PathImpl(newPlatformPath, newNativePath));
     #else
-        return PathPtr(new PathImpl(newHostPath));
+        return PathPtr(new PathImpl(newNativePath));
     #endif
 }
 
 PathPtr PathImpl::append(const std::string& value) {
     #ifdef _WIN32
-        boost::filesystem::path newPlatformPath(hostPath);
+        boost::filesystem::path newPlatformPath(platformPath);
         newPlatformPath /= value;
     #endif
 
-    boost::filesystem::path newHostPath(hostPath);
-    newHostPath /= value;
+    boost::filesystem::path newNativePath(nativePath);
+    newNativePath /= value;
 
     #ifdef _WIN32
-        return PathPtr(new PathImpl(newPlatformPath, newHostPath));
+        return PathPtr(new PathImpl(newPlatformPath, newNativePath));
     #else
-        return PathPtr(new PathImpl(newHostPath));
+        return PathPtr(new PathImpl(newNativePath));
     #endif
 }
 
@@ -224,25 +284,25 @@ PathPtr PathImpl::canonical() {
         auto canonicalPath = boost::filesystem::canonical(platformPath, ec);
         return PathPtr(new PathImpl(ec ? "" : canonicalPath.string()));
     #else
-        auto canonicalPath = boost::filesystem::canonical(hostPath, ec);
+        auto canonicalPath = boost::filesystem::canonical(nativePath, ec);
         return PathPtr(ec ? new PathImpl(std::string("")) : new PathImpl(canonicalPath));
     #endif
 }
 
-bool PathImpl::exists() {
+bool PathImpl::isExists() {
     boost::system::error_code ec;
 
     #ifdef _WIN32
         bool result = boost::filesystem::exists(platformPath, ec);
     #else
-        bool result = boost::filesystem::exists(hostPath, ec);
+        bool result = boost::filesystem::exists(nativePath, ec);
     #endif
 
     return result && !ec;
 }
 
-bool PathImpl::fileExists() {
-    if (!exists()) {
+bool PathImpl::isFileExists() {
+    if (!isExists()) {
         return false;
     }
 
@@ -251,7 +311,7 @@ bool PathImpl::fileExists() {
     #ifdef _WIN32
         bool result = boost::filesystem::is_regular_file(platformPath, ec);
     #else
-        bool result = boost::filesystem::is_regular_file(hostPath, ec);
+        bool result = boost::filesystem::is_regular_file(nativePath, ec);
     #endif
 
     return result && !ec;
@@ -263,7 +323,7 @@ bool PathImpl::isDirectory() {
     #ifdef _WIN32
         bool result = boost::filesystem::is_directory(platformPath, ec);
     #else
-        bool result = boost::filesystem::is_directory(hostPath, ec);
+        bool result = boost::filesystem::is_directory(nativePath, ec);
     #endif
 
     return result && !ec;
@@ -275,50 +335,10 @@ uintmax_t PathImpl::fileSize() {
     #ifdef _WIN32
         uintmax_t result = boost::filesystem::file_size(platformPath, ec);
     #else
-        uintmax_t result = boost::filesystem::file_size(hostPath, ec);
+        uintmax_t result = boost::filesystem::file_size(nativePath, ec);
     #endif
 
     return (ec ? 0 : result);
-}
-
-bool PathImpl::remove() {
-    boost::system::error_code ec;
-
-    #ifdef _WIN32
-        bool result = boost::filesystem::remove(platformPath, ec);
-    #else
-        bool result = boost::filesystem::remove(hostPath, ec);
-    #endif
-
-    return result && !ec;
-}
-
-bool PathImpl::createDirectory() {
-    boost::system::error_code ec;
-
-    #ifdef _WIN32
-        bool result = boost::filesystem::create_directory(platformPath, ec);
-    #else
-        bool result = boost::filesystem::create_directory(hostPath, ec);
-    #endif
-
-    return result && !ec;
-}
-
-FileReaderPtr PathImpl::fileReader() {
-    #ifdef _WIN32
-        return FileReaderPtr(new FileReaderImpl(platformPath));
-    #else
-        return FileReaderPtr(new FileReaderImpl(hostPath));
-    #endif
-}
-
-FileWriterPtr PathImpl::fileWriter() {
-    #ifdef _WIN32
-        return FileWriterPtr(new FileWriterImpl(platformPath));
-    #else
-        return FileWriterPtr(new FileWriterImpl(hostPath));
-    #endif
 }
 
 void PathImpl::listEntries(std::vector<PathPtr>& into) {
@@ -348,7 +368,7 @@ void PathImpl::listEntries(std::vector<PathPtr>& into) {
         into.push_back(append(".."));
     }
 
-    if (!exists()) {
+    if (!isExists()) {
         return;
     }
 
@@ -357,7 +377,7 @@ void PathImpl::listEntries(std::vector<PathPtr>& into) {
     #ifdef _WIN32
         auto iterator = boost::filesystem::directory_iterator(platformPath);
     #else
-        auto iterator = boost::filesystem::directory_iterator(hostPath);
+        auto iterator = boost::filesystem::directory_iterator(nativePath);
     #endif
 
     if (ec) {
@@ -369,75 +389,115 @@ void PathImpl::listEntries(std::vector<PathPtr>& into) {
     }
 }
 
+DataReaderPtr PathImpl::dataReader() {
+    #ifdef _WIN32
+        return DataReaderPtr(new DataReaderImpl(platformPath));
+    #else
+        return DataReaderPtr(new DataReaderImpl(nativePath));
+    #endif
+}
+
+bool PathImpl::remove() {
+    boost::system::error_code ec;
+
+    #ifdef _WIN32
+        bool result = boost::filesystem::remove(platformPath, ec);
+    #else
+        bool result = boost::filesystem::remove(nativePath, ec);
+    #endif
+
+    return result && !ec;
+}
+
+bool PathImpl::createDirectory() {
+    boost::system::error_code ec;
+
+    #ifdef _WIN32
+        bool result = boost::filesystem::create_directory(platformPath, ec);
+    #else
+        bool result = boost::filesystem::create_directory(nativePath, ec);
+    #endif
+
+    return result && !ec;
+}
+
+DataWriterPtr PathImpl::dataWriter() {
+    #ifdef _WIN32
+        return DataWriterPtr(new DataWriterImpl(platformPath));
+    #else
+        return DataWriterPtr(new DataWriterImpl(nativePath));
+    #endif
+}
+
 //
-// FileReaderImpl
+// DataReaderImpl
 //
 
-FileReaderImpl::FileReaderImpl(const boost::filesystem::path& path) {
+DataReaderImpl::DataReaderImpl(const boost::filesystem::path& path) {
     ifs.open(path.string(), std::ifstream::in | std::ifstream::binary);
 }
 
-FileReaderImpl::~FileReaderImpl() {
+DataReaderImpl::~DataReaderImpl() {
     ifs.close();
 }
 
-bool FileReaderImpl::isEof() {
+bool DataReaderImpl::isEof() {
     return ifs.eof();
 }
 
-char FileReaderImpl::readChar() {
+char DataReaderImpl::readChar() {
     return ifs.get();
 }
 
-uint8_t FileReaderImpl::readByte() {
+uint8_t DataReaderImpl::readByte() {
     return ifs.get();
 }
 
-uint16_t FileReaderImpl::readWord() {
+uint16_t DataReaderImpl::readWord() {
     int l = ifs.get();
     int h = ifs.get();
     return (uint16_t)(l + 0x100 * h);
 }
 
-uint32_t FileReaderImpl::readDword() {
+uint32_t DataReaderImpl::readDword() {
     uint32_t l = readWord();
     uint32_t h = readWord();
     return (uint32_t)(l + (uint32_t)0x10000 * h);
 }
 
-uintmax_t FileReaderImpl::readBlock(void* buffer, uintmax_t size) {
+uintmax_t DataReaderImpl::readBlock(void* buffer, uintmax_t size) {
     ifs.read((char*)buffer, size);
     return ifs.gcount();
 }
 
-std::string FileReaderImpl::readLine() {
+std::string DataReaderImpl::readLine() {
     std::string result;
     std::getline(ifs, result);
     return result;
 }
 
-uintmax_t FileReaderImpl::getPosition() {
+uintmax_t DataReaderImpl::getPosition() {
     return ifs.tellg();
 }
 
-void FileReaderImpl::setPosition(uintmax_t position) {
+void DataReaderImpl::setPosition(uintmax_t position) {
     ifs.seekg(position);
 }
 
 //
-// FileWriterImpl
+// DataWriterImpl
 //
 
-FileWriterImpl::FileWriterImpl(const boost::filesystem::path& path) {
+DataWriterImpl::DataWriterImpl(const boost::filesystem::path& path) {
     ofs.open(path.string(), std::ifstream::out | std::ifstream::binary | std::ifstream::trunc);
     fmtBuffer[0] = '\0';
 }
 
-FileWriterImpl::~FileWriterImpl() {
+DataWriterImpl::~DataWriterImpl() {
     ofs.close();
 }
 
-void FileWriterImpl::writeFmt(const char* fmt, ...) {
+void DataWriterImpl::writeFmt(const char* fmt, ...) {
     va_list argPtr;
 
     va_start(argPtr, fmt);
@@ -447,24 +507,24 @@ void FileWriterImpl::writeFmt(const char* fmt, ...) {
     ofs.write(fmtBuffer, size);
 }
 
-void FileWriterImpl::writeChar(char value) {
+void DataWriterImpl::writeChar(char value) {
     ofs.put(value);
 }
 
-void FileWriterImpl::writeByte(uint8_t value) {
+void DataWriterImpl::writeByte(uint8_t value) {
     ofs.put(value);
 }
 
-void FileWriterImpl::writeWord(uint16_t value) {
+void DataWriterImpl::writeWord(uint16_t value) {
     ofs.put(value & 0xFF);
     ofs.put(value >> 8);
 }
 
-void FileWriterImpl::writeDword(uint32_t value) {
+void DataWriterImpl::writeDword(uint32_t value) {
     writeWord((uint16_t)(value & (uint32_t)0xFFFF));
     writeWord((uint16_t)(value >> 0x10));
 }
 
-void FileWriterImpl::writeBlock(void* buffer, uintmax_t size) {
+void DataWriterImpl::writeBlock(void* buffer, uintmax_t size) {
     ofs.write((char*)buffer, size);
 }

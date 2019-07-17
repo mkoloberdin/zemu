@@ -1,45 +1,64 @@
-#ifndef PLATFORM_IMPL__FILESYSTEM_IMPL_H__INCLUDED
-#define PLATFORM_IMPL__FILESYSTEM_IMPL_H__INCLUDED
+#ifndef PLATFORM_IMPL__STORAGE_IMPL_H__INCLUDED
+#define PLATFORM_IMPL__STORAGE_IMPL_H__INCLUDED
 
+#include <vector>
 #include <fstream>
 #include <boost/filesystem.hpp>
-#include "platform/filesystem.h"
+#include "platform/storage.h"
 
-class FileSystemImpl : public FileSystem {
+class StorageImpl : public Storage {
 public:
 
-    FileSystemImpl(const std::string& applicationId) : applicationId(applicationId) {}
+    StorageImpl(const std::string& applicationId, const std::string& executablePathStr);
 
     PathPtr path(const std::string& path);
     PathPtr appDataPath();
+    PathPtr findExtras(const std::string& fileName);
+    PathPtr findExtras(const std::string& directory, const std::string& fileName);
+
+    uintmax_t readExtras(
+        const char* directory,
+        const std::string& fileName,
+        uint8_t* buffer,
+        uintmax_t size,
+        uintmax_t offset = 0
+    );
 
 private:
 
     std::string applicationId;
     PathPtr appDataPathPtr;
+    std::vector<PathPtr> extrasPaths;
 };
 
 class PathImpl : public Path {
 public:
 
+    bool isWriteSupported();
+
     bool isEmpty();
     bool isRoot();
+
     std::string string();
     std::string fileName();
     std::string extension();
+
     PathPtr parent();
     PathPtr concat(const std::string& value);
     PathPtr append(const std::string& value);
     PathPtr canonical();
-    bool exists();
-    bool fileExists();
+
+    bool isExists();
+    bool isFileExists();
     bool isDirectory();
     uintmax_t fileSize();
+    void listEntries(std::vector<PathPtr>& into);
+
+    DataReaderPtr dataReader();
+
     bool remove();
     bool createDirectory();
-    FileReaderPtr fileReader();
-    FileWriterPtr fileWriter();
-    void listEntries(std::vector<PathPtr>& into);
+    DataWriterPtr dataWriter();
 
 private:
 
@@ -47,32 +66,32 @@ private:
         boost::filesystem::path platformPath;
     #endif
 
-    boost::filesystem::path hostPath;
+    boost::filesystem::path nativePath;
     bool isAbsolute;
 
     PathImpl(const std::string& path);
 
     #ifdef _WIN32
         PathImpl(const std::shared_ptr<PathImpl>& path) : platformPath(path->platformPath),
-            hostPath(path->hostPath),
+            nativePath(path->nativePath),
             isAbsolute(path->isAbsolute) {}
 
         PathImpl(
             const boost::filesystem::path& platformPath,
-            const boost::filesystem::path& hostPath
-        ) : platformPath(platformPath), hostPath(hostPath), isAbsolute(hostPath.is_absolute()) {}
+            const boost::filesystem::path& nativePath
+        ) : platformPath(platformPath), nativePath(nativePath), isAbsolute(nativePath.is_absolute()) {}
     #else
-        PathImpl(const std::shared_ptr<PathImpl>& path) : hostPath(path->hostPath), isAbsolute(path->isAbsolute) {}
-        PathImpl(const boost::filesystem::path& hostPath) : hostPath(hostPath), isAbsolute(hostPath.is_absolute()) {}
+        PathImpl(const std::shared_ptr<PathImpl>& path) : nativePath(path->nativePath), isAbsolute(path->isAbsolute) {}
+        PathImpl(const boost::filesystem::path& nativePath) : nativePath(nativePath), isAbsolute(nativePath.is_absolute()) {}
     #endif
 
-    friend class FileSystemImpl;
+    friend class StorageImpl;
 };
 
-class FileReaderImpl : public FileReader {
+class DataReaderImpl : public DataReader {
 public:
 
-    ~FileReaderImpl();
+    ~DataReaderImpl();
 
     bool isEof();
     char readChar();
@@ -88,14 +107,15 @@ private:
 
     std::ifstream ifs;
 
-    FileReaderImpl(const boost::filesystem::path& path);
+    DataReaderImpl(const boost::filesystem::path& path);
+
     friend class PathImpl;
 };
 
-class FileWriterImpl : public FileWriter {
+class DataWriterImpl : public DataWriter {
 public:
 
-    ~FileWriterImpl();
+    ~DataWriterImpl();
 
     void writeFmt(const char* fmt, ...);
     void writeChar(char value);
@@ -109,7 +129,8 @@ private:
     std::ofstream ofs;
     char fmtBuffer[0x400];
 
-    FileWriterImpl(const boost::filesystem::path& path);
+    DataWriterImpl(const boost::filesystem::path& path);
+
     friend class PathImpl;
 };
 
