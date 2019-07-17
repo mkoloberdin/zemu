@@ -1,0 +1,52 @@
+#!/bin/bash
+
+UNRAR="$(which unrar 2> /dev/null)" || UNRAR="$(which rar 2> /dev/null)"
+
+## v     Verbosely list archive contents
+## p     Print file to stdout
+##
+## -c-   Disable comments show
+## -cfg- Disable read configuration
+## -p-   Do not query password
+## -inul Disable all messages
+
+list_files() {
+    [ "$UNRAR" = "" ] && return
+    INSIDE="0"
+
+    "$UNRAR" v -c- -cfg- -p- "$1" | while read ATTS SIZE _ _ _ _ _ NAME ; do
+        if [ "${ATTS:0:4}" = "----" ] && [ "$INSIDE" = "1" ] ; then
+            INSIDE="0"
+            continue
+        fi
+
+        if [ "$INSIDE" = "1" ] ; then
+            if [ "${ATTS:3:1}" = "D" ] ; then
+                echo "- $NAME"
+            else
+                echo "$SIZE $NAME"
+            fi
+        fi
+
+        if [ "${ATTS:0:4}" = "----" ] && [ "$INSIDE" = "0" ] ; then
+            INSIDE="1"
+        fi
+    done
+}
+
+extract_files() {
+    [ "$UNRAR" != "" ] && "$UNRAR" p -c- -cfg- -p- -inul "$1" "$2" > "$3"
+}
+
+# arc/rar l <archive>
+# arc/rar x <archive> <path> <destination>
+
+case "$1" in
+    l)
+        list_files "$2"
+        ;;
+
+    x)
+        extract_files "$2" "$3" "$4"
+        ;;
+esac
