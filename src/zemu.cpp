@@ -35,8 +35,6 @@
 
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
-#define MAX_FILES 4096
-#define MAX_FNAME 256
 #define INT_LENGTH 32
 
 HostEnv* hostEnv;
@@ -340,7 +338,12 @@ void StrToLower(char* str) {
 
 void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr) {
     if (C_Tape::IsTapeFormat(fname)) {
-        C_Tape::Insert(fname);
+        try {
+            C_Tape::Insert(fname);
+        } catch (StorageException& e) {
+            printf("Load failed: %s\n", e.what());
+        }
+
         return;
     }
 
@@ -366,7 +369,12 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
         return;
     }
 
-    wd1793_load_dimage(fname, drive);
+    try {
+        wd1793_load_dimage(fname, drive);
+    } catch (StorageException& e) {
+        printf("Load failed: %s\n", e.what());
+    }
+
     oldFileName[drive] = hostEnv->storage()->path(arcName ? arcName : fname)->canonical()->string();
 }
 
@@ -436,15 +444,18 @@ void Action_QuickLoad(void) {
 }
 
 void Action_QuickSave(void) {
-    void (* saveSnap)(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border);
+    bool (* saveSnap)(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border);
 
     isPaused = false;
 
     const char* snapName = (params.snapFormat == SNAP_FORMAT_SNA ? "snap.sna" : "snap.z80");
     saveSnap = (params.snapFormat == SNAP_FORMAT_SNA ? save_sna_snap : save_z80_snap);
 
-    saveSnap(snapName, cpu, dev_mman, dev_border);
-    SetMessage("Snapshot saved");
+    if (!saveSnap(snapName, cpu, dev_mman, dev_border)) {
+        SetMessage("Error saving snapshot");
+    } else {
+        SetMessage("Snapshot saved");
+    }
 }
 
 void Action_AntiFlicker(void) {

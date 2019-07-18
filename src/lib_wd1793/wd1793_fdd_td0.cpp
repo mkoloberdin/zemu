@@ -7,7 +7,7 @@
 #include "defines.h"
 #include "wd1793_fdd.h"
 
-int C_Fdd::write_td0(FILE* ff) {
+int C_Fdd::write_td0(DataWriterPtr& writer) {
     uint8_t zerosec[256] = { 0 };
     uint8_t td0hdr[12] = { 0 };
     unsigned cc;
@@ -27,7 +27,7 @@ int C_Fdd::write_td0(FILE* ff) {
     td0hdr[10] = (crc16 & 0xFF);
     td0hdr[11] = (crc16 >> 8);
 
-    if (fwrite(td0hdr, 1, 12, ff) != 12) {
+    if (!writer->writeBlock(td0hdr, 12)) {
         DEBUG_MESSAGE("fwrite failed");
     }
 
@@ -45,7 +45,7 @@ int C_Fdd::write_td0(FILE* ff) {
         inf[0] = (crc16 & 0xFF);
         inf[1] = (crc16 >> 8);
 
-        if (fwrite(inf, 1, len + 10, ff) != (len + 10)) {
+        if (!writer->writeBlock(inf, len + 10)) {
             DEBUG_MESSAGE("fwrite failed");
         }
     }
@@ -60,7 +60,7 @@ int C_Fdd::write_td0(FILE* ff) {
             bf[2] = s;
             bf[3] = (uint8_t)wd1793_crc16(bf, 3);
 
-            if (fwrite(bf, 1, 4, ff) != 4) {
+            if (!writer->writeBlock(bf, 4)) {
                 DEBUG_MESSAGE("fwrite failed");
             }
 
@@ -81,11 +81,11 @@ int C_Fdd::write_td0(FILE* ff) {
                 bf[7] = ((t.hdr[sec].datlen + 1) >> 8);
                 bf[8] = 0; // compression type = none
 
-                if (fwrite(bf, 1, 9, ff) != 9) {
+                if (!writer->writeBlock(bf, 9)) {
                     DEBUG_MESSAGE("fwrite failed");
                 }
 
-                if (fwrite(t.hdr[sec].data, 1, t.hdr[sec].datlen, ff) != t.hdr[sec].datlen) {
+                if (!writer->writeBlock(t.hdr[sec].data, t.hdr[sec].datlen)) {
                     return 0;
                 }
             }
@@ -94,7 +94,7 @@ int C_Fdd::write_td0(FILE* ff) {
 
     uint8_t ccb[4] = { 0xFF, 0, 0, 0 };
 
-    if (fwrite(ccb, 1, 4, ff) != 4) {
+    if (!writer->writeBlock(ccb, 4)) {
         return 0;
     }
 

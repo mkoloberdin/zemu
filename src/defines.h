@@ -18,8 +18,6 @@ int sgn(int a);
 int unhex(char c);
 bool ishex(char c);
 
-void AddLog(const char* fmt, ...);
-void AddLogN(const char* fmt, ...);
 [[noreturn]] void StrikeError(const char* fmt, ...);
 void StrikeMessage(const char* fmt, ...);
 

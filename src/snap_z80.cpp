@@ -101,7 +101,8 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
 
     try {
         reader = hostEnv->storage()->path(filename)->dataReader();
-    } catch (...) {
+    } catch (StorageException& e) {
+        printf("Load failed: %s\n", e.what());
         return false;
     }
 
@@ -274,11 +275,17 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     return true;
 }
 
-void save_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
+bool save_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
     Z80_snap_header hdr;
     uint8_t add_header[23]; // Z80 v3 header
+    DataWriterPtr writer;
 
-    auto writer = hostEnv->storage()->path(filename)->dataWriter();
+    try {
+        writer = hostEnv->storage()->path(filename)->dataWriter();
+    } catch (StorageException& e) {
+        printf("Write failed: %s\n", e.what());
+        return false;
+    }
 
     hdr.A = z80ex_get_reg(cpu, regAF) >> 8;
     hdr.F = z80ex_get_reg(cpu, regAF) & 0xFF;
@@ -331,4 +338,6 @@ void save_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
             writer->writeByte(mmgr.ram[j]);
         }
     }
+
+    return true;
 }

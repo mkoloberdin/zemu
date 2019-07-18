@@ -64,7 +64,7 @@ int C_Fdd::read_udi() {
     return 1;
 }
 
-int C_Fdd::write_udi(FILE* ff) {
+int C_Fdd::write_udi(DataWriterPtr& writer) {
     memset(snbuf, 0, 0x10); //-V512
 
     snbuf[0] = 'U';
@@ -116,7 +116,7 @@ int C_Fdd::write_udi(FILE* ff) {
     *(dst++) = ((((uint32_t)crc) >> 16) & 0xFF);
     *(dst++) = (((uint32_t)crc) >> 24);
 
-    if (fwrite(snbuf, 1, dst - snbuf, ff) != (unsigned)(dst - snbuf)) {
+    if (!writer->writeBlock(snbuf, dst - snbuf)) {
         return 0;
     }
 

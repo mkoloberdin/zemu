@@ -5,6 +5,7 @@
 #include <string.h>
 #include "wd1793_fdd.h"
 #include "defines.h"
+#include "zemu_env.h"
 
 uint8_t snbuf[SNBUF_LEN]; // large temporary buffer
 
@@ -64,35 +65,43 @@ void C_Fdd::eject() {
 }
 
 int C_Fdd::save_dimage(const char* filename, enum DIMAGE_TYPE type) {
-    FILE* fp;
-    int ret = 0;
+    auto path = hostEnv->storage()->path(filename);
 
-    if ((fp = fopen(filename, "wb")) == nullptr) {
+    if (!path->isWriteSupported()) {
         return 0;
     }
 
+    DataWriterPtr writer;
+
+    try {
+        writer = path->dataWriter();
+    } catch (StorageException& e) {
+        printf("Write failed: %s\n", e.what());
+        return 0;
+    }
+
+    int ret = 0;
+
     switch(type) {
         case imgTRD:
-            ret = write_trd(fp);
+            ret = write_trd(writer);
             break;
 
         case imgUDI:
-            ret = write_udi(fp);
+            ret = write_udi(writer);
             break;
 
         case imgTD0:
-            ret = write_td0(fp);
+            ret = write_td0(writer);
             break;
 
         case imgFDI:
-            ret = write_fdi(fp);
+            ret = write_fdi(writer);
             break;
 
         default:
             ret = 0;
     }
-
-    fclose(fp);
 
     if (ret) {
         optype = 0; // reset "changed" flag after saving
@@ -210,16 +219,16 @@ int C_Fdd::load_dimage(const char* filename) {
 }
 
 uint8_t C_Fdd::what_is(const char* filename) {
-    FILE *ff = fopen(filename, "rb");
+    auto path = hostEnv->storage()->path(filename);
 
-    if (!ff) {
+    if (!path->isFile()) {
         return snNOFILE;
     }
 
-    snapsize = fread(snbuf, 1, sizeof(snbuf), ff);
-    fclose(ff);
+    auto reader = path->dataReader();
+    snapsize = reader->readBlock(snbuf, sizeof(snbuf));
 
-    if (snapsize >= sizeof(snbuf)) { // '>=' just for case
+    if (snapsize == sizeof(snbuf)) {
         return snTOOLARGE;
     }
 

@@ -12,8 +12,8 @@ void Labels_Load(const char* fname) {
 
     try {
         reader = hostEnv->storage()->path(fname)->dataReader();
-    } catch (...) {
-        printf("Error loading labels from \"%s\"\n", fname);
+    } catch (StorageException& e) {
+        printf("Error loading labels from \"%s\": %s\n", fname, e.what());
         return;
     }
 

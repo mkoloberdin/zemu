@@ -23,7 +23,6 @@
     int sigtimedwait(const sigset_t *set, siginfo_t *info, const struct timespec *timeout);
 #endif
 
-#include <iostream> // TODO: remove
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -170,7 +169,7 @@ uintmax_t StorageImpl::readExtras(
     const char* directory,
     const std::string& fileName,
     uint8_t* buffer,
-    uintmax_t size,
+    uintmax_t maxSize,
     uintmax_t offset
 ) {
     auto path = findExtras(directory, fileName);
@@ -185,7 +184,7 @@ uintmax_t StorageImpl::readExtras(
         reader->setPosition(offset);
     }
 
-    return reader->readBlock(buffer, size);
+    return reader->readBlock(buffer, maxSize);
 }
 
 Path* StorageImpl::createPath(const std::string& srcPathStr) {
@@ -350,14 +349,12 @@ std::shared_ptr<ArchiveEntries> StorageImpl::listArchiveEntries(PathPtr pluginPa
         }
 
         boost::algorithm::replace_all(innerPath, "\\", "/");
-        size_t prevPos = std::string::npos;
+        size_t prevPos = 0;
         std::string prevPath;
-
-        // std::cout << "S = \"" << sizeStr << "\", F = \"" << innerPath << "\"\n";
 
         for (;;) {
             size_t currentPos = innerPath.find('/', prevPos);
-            std::string currentPath = (currentPos == std::string::npos ? innerPath : innerPath.substr(0, currentPos - 1));
+            std::string currentPath = innerPath.substr(0, currentPos);
             entries->at(prevPath).children.insert(currentPath);
 
             if (entries->find(currentPath) == entries->end()) {
@@ -802,7 +799,7 @@ PathPtr ArchivePathImpl::parent() {
 
 PathPtr ArchivePathImpl::concat(const std::string& value) {
     boost::filesystem::path newInnerPath(innerPath);
-    innerPath += value;
+    newInnerPath += value;
 
     #ifdef _WIN32
         return PathPtr(new ArchivePathImpl(
@@ -820,7 +817,7 @@ PathPtr ArchivePathImpl::concat(const std::string& value) {
 
 PathPtr ArchivePathImpl::append(const std::string& value) {
     boost::filesystem::path newInnerPath(innerPath);
-    innerPath /= value;
+    newInnerPath /= value;
 
     #ifdef _WIN32
         return PathPtr(new ArchivePathImpl(
@@ -837,11 +834,11 @@ PathPtr ArchivePathImpl::append(const std::string& value) {
 }
 
 PathPtr ArchivePathImpl::canonical() {
-    return PathPtr(this);
+    return PathPtr(new ArchivePathImpl(this));
 }
 
 bool ArchivePathImpl::isExists() {
-    if (innerPath == "..") {
+    if (isDotDot) {
         return true;
     }
 
@@ -849,7 +846,7 @@ bool ArchivePathImpl::isExists() {
 }
 
 bool ArchivePathImpl::isFile() {
-    if (innerPath == "..") {
+    if (isDotDot) {
         return false;
     }
 
@@ -858,7 +855,7 @@ bool ArchivePathImpl::isFile() {
 }
 
 bool ArchivePathImpl::isDirectory() {
-    if (innerPath == "..") {
+    if (isDotDot) {
         return true;
     }
 
@@ -867,7 +864,7 @@ bool ArchivePathImpl::isDirectory() {
 }
 
 uintmax_t ArchivePathImpl::fileSize() {
-    if (innerPath == "..") {
+    if (isDotDot) {
         return 0;
     }
 
@@ -876,12 +873,12 @@ uintmax_t ArchivePathImpl::fileSize() {
 }
 
 void ArchivePathImpl::listEntries(std::vector<PathPtr>& into) {
-    into.clear();
-
-    if (innerPath == "..") {
+    if (isDotDot) {
+        parent()->listEntries(into);
         return;
     }
 
+    into.clear();
     into.push_back(append(".."));
 
     auto it = entries()->find(innerPath.string());
@@ -938,7 +935,6 @@ DataWriterPtr ArchivePathImpl::dataWriter() {
 
 std::shared_ptr<ArchiveEntries>& ArchivePathImpl::entries() {
     if (!entriesInstance) {
-        std::cout << "HERE archivePath = " << archivePath << ", innerPath = " << innerPath << "\n";
         entriesInstance = storage->listArchiveEntries(pluginPath, archivePath);
     }
 
@@ -981,8 +977,8 @@ uint32_t FileDataReaderImpl::readDword() {
     return (uint32_t)(l + (uint32_t)0x10000 * h);
 }
 
-uintmax_t FileDataReaderImpl::readBlock(void* buffer, uintmax_t size) {
-    ifs.read((char*)buffer, size);
+uintmax_t FileDataReaderImpl::readBlock(void* buffer, uintmax_t maxSize) {
+    ifs.read((char*)buffer, maxSize);
     return ifs.gcount();
 }
 
@@ -1016,27 +1012,29 @@ ArchiveDataReaderImpl::ArchiveDataReaderImpl(
     unpackedPath /= boost::filesystem::unique_path(std::string("%%%%-%%%%-%%%%-%%%%") + innerPath.extension().string(), ec);
 
     if (ec) {
-        throw DataReaderException((boost::format("Failed obtain unique path for \"%s\" in \"%s\"")
+        throw StorageException((boost::format("Failed obtain unique path for %s in \"%s\"")
             % innerPath
             % tempDirPath->string()
         ).str());
     }
 
-    if (!shellExecute(pluginPath->string(), {"x", innerPath.string(), unpackedPath.string()}, nullptr)) {
-        throw DataReaderException((boost::format("Failed to unpack \"%s\" from \"%s\" using plugin \"%s\"")
+    if (!shellExecute(pluginPath->string(), {"x", archivePath.string(), innerPath.string(), unpackedPath.string()}, nullptr)) {
+        throw StorageException((boost::format("Failed to unpack %s from %s to %s using plugin \"%s\"")
             % innerPath
             % archivePath
-            % pluginPath
+            % unpackedPath
+            % pluginPath->string()
         ).str());
     }
 
     bool isFile = boost::filesystem::is_regular_file(unpackedPath, ec);
 
     if (!isFile || ec) {
-        throw DataReaderException((boost::format("Failed to unpack \"%s\" from \"%s\" using plugin \"%s\"")
+        throw StorageException((boost::format("Failed to unpack %s from %s to %s using plugin \"%s\"")
             % innerPath
             % archivePath
-            % pluginPath
+            % unpackedPath
+            % pluginPath->string()
         ).str());
     }
 
@@ -1068,8 +1066,8 @@ uint32_t ArchiveDataReaderImpl::readDword() {
     return unpackedDataReader->readDword();
 }
 
-uintmax_t ArchiveDataReaderImpl::readBlock(void* buffer, uintmax_t size) {
-    return unpackedDataReader->readBlock(buffer, size);
+uintmax_t ArchiveDataReaderImpl::readBlock(void* buffer, uintmax_t maxSize) {
+    return unpackedDataReader->readBlock(buffer, maxSize);
 }
 
 std::string ArchiveDataReaderImpl::readLine() {
@@ -1089,8 +1087,12 @@ void ArchiveDataReaderImpl::setPosition(uintmax_t position) {
 //
 
 DataWriterImpl::DataWriterImpl(const boost::filesystem::path& path) {
-    ofs.open(path.string(), std::ifstream::out | std::ifstream::binary | std::ifstream::trunc);
     fmtBuffer[0] = '\0';
+    ofs.open(path.string(), std::ifstream::out | std::ifstream::binary | std::ifstream::trunc);
+
+    if (ofs.fail()) {
+        throw StorageException((boost::format("Failed to write into \"%s\"") % path).str());
+    }
 }
 
 DataWriterImpl::~DataWriterImpl() {
@@ -1125,6 +1127,15 @@ void DataWriterImpl::writeDword(uint32_t value) {
     writeWord((uint16_t)(value >> 0x10));
 }
 
-void DataWriterImpl::writeBlock(void* buffer, uintmax_t size) {
+bool DataWriterImpl::writeBlock(void* buffer, uintmax_t size) {
     ofs.write((char*)buffer, size);
+    return !ofs.fail();
+}
+
+uintmax_t DataWriterImpl::getPosition() {
+    return ofs.tellp();
+}
+
+void DataWriterImpl::setPosition(uintmax_t position) {
+    ofs.seekp(position);
 }

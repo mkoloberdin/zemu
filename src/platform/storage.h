@@ -15,10 +15,10 @@ typedef std::shared_ptr<Path> PathPtr;
 typedef std::unique_ptr<DataReader> DataReaderPtr;
 typedef std::unique_ptr<DataWriter> DataWriterPtr;
 
-class DataReaderException : public std::runtime_error {
+class StorageException : public std::runtime_error {
 public:
-    DataReaderException(const std::string& whatArg) : std::runtime_error(whatArg) {};
-    DataReaderException(const char* whatArg) : std::runtime_error(whatArg) {};
+    StorageException(const std::string& whatArg) : std::runtime_error(whatArg) {};
+    StorageException(const char* whatArg) : std::runtime_error(whatArg) {};
 };
 
 class Storage {
@@ -36,7 +36,7 @@ public:
         const char* directory,
         const std::string& fileName,
         uint8_t* buffer,
-        uintmax_t size,
+        uintmax_t maxSize,
         uintmax_t offset = 0
     ) = 0;
 
@@ -98,7 +98,7 @@ public:
     virtual uint8_t readByte() = 0;
     virtual uint16_t readWord() = 0;
     virtual uint32_t readDword() = 0;
-    virtual uintmax_t readBlock(void* buffer, uintmax_t size) = 0;
+    virtual uintmax_t readBlock(void* buffer, uintmax_t maxSize) = 0;
     virtual std::string readLine() = 0;
     virtual uintmax_t getPosition() = 0;
     virtual void setPosition(uintmax_t position) = 0;
@@ -120,7 +120,9 @@ public:
     virtual void writeByte(uint8_t value) = 0;
     virtual void writeWord(uint16_t value) = 0;
     virtual void writeDword(uint32_t value) = 0;
-    virtual void writeBlock(void* buffer, uintmax_t size) = 0;
+    virtual bool writeBlock(void* buffer, uintmax_t size) = 0;
+    virtual uintmax_t getPosition() = 0;
+    virtual void setPosition(uintmax_t position) = 0;
 
 private:
 

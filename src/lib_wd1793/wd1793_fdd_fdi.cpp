@@ -60,7 +60,7 @@ int C_Fdd::read_fdi() {
     return res;
 }
 
-int C_Fdd::write_fdi(FILE* ff) {
+int C_Fdd::write_fdi(DataWriterPtr& writer) {
     unsigned c;
     unsigned s;
     unsigned total_s = 0;
@@ -95,7 +95,7 @@ int C_Fdd::write_fdi(FILE* ff) {
     snbuf[0x0C] = 0;
     snbuf[0x0D] = 0;
 
-    if (fwrite(snbuf, 1, 14, ff) != 14) {
+    if (!writer->writeBlock(snbuf, 14)) {
         DEBUG_MESSAGE("fwrite failed");
     }
 
@@ -115,7 +115,7 @@ int C_Fdd::write_fdi(FILE* ff) {
 
             snbuf[6] = t.s;
 
-            if (fwrite(snbuf, 1, 7, ff) != 7) {
+            if (!writer->writeBlock(snbuf, 7)) {
                 DEBUG_MESSAGE("fwrite failed");
             }
 
@@ -140,7 +140,7 @@ int C_Fdd::write_fdi(FILE* ff) {
                 snbuf[7] = ((secoffs >> 16) & 0xFF);
                 snbuf[8] = (secoffs >> 24);
 
-                if (fwrite(snbuf, 1, 7, ff) != 7) {
+                if (!writer->writeBlock(snbuf, 7)) {
                     DEBUG_MESSAGE("fwrite failed");
                 }
 
@@ -151,9 +151,9 @@ int C_Fdd::write_fdi(FILE* ff) {
         }
     }
 
-    fseek(ff, hsize, SEEK_SET);
+    writer->setPosition(hsize);
 
-    if (fwrite(dsc, 1, tlen, ff) != tlen) {
+    if (!writer->writeBlock(dsc, tlen)) {
         DEBUG_MESSAGE("fwrite failed");
     }
 
@@ -163,7 +163,7 @@ int C_Fdd::write_fdi(FILE* ff) {
 
             for (unsigned se = 0; se < t.s; se++) {
                 if (t.hdr[se].data) {
-                    if (fwrite(t.hdr[se].data, 1, t.hdr[se].datlen, ff) != t.hdr[se].datlen) {
+                    if (!writer->writeBlock(t.hdr[se].data, t.hdr[se].datlen)) {
                         return 0;
                     }
                 }

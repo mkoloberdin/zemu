@@ -6,6 +6,7 @@
 #include "wd1793_trkcache.h"
 #include "wd1793_crc_utils.h"
 #include "wd1793_chip.h"
+#include "platform/storage.h"
 
 enum DISKSNAP {
     snHOB,
@@ -62,13 +63,13 @@ public:
     int read_scl();
     int read_hob();
     int read_trd();
-    int write_trd(FILE* ff);
+    int write_trd(DataWriterPtr& writer);
     int read_fdi();
-    int write_fdi(FILE* ff);
+    int write_fdi(DataWriterPtr& writer);
     int read_td0();
-    int write_td0(FILE* ff);
+    int write_td0(DataWriterPtr& writer);
     int read_udi();
-    int write_udi(FILE* ff);
+    int write_udi(DataWriterPtr& writer);
 
     void set_trkcache(C_TrkCache* tc);
     void free();

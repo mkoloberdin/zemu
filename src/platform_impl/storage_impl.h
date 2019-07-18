@@ -35,7 +35,7 @@ public:
         const char* directory,
         const std::string& fileName,
         uint8_t* buffer,
-        uintmax_t size,
+        uintmax_t maxSize,
         uintmax_t offset = 0
     );
 
@@ -133,12 +133,6 @@ private:
     #ifdef _WIN32
         boost::filesystem::path platformPath;
 
-        FilePathImpl(const std::shared_ptr<FilePathImpl>& path) : storage(path->storage),
-            nativePath(path->nativePath),
-            isAbsolute(path->isAbsolute),
-            archivePluginPath(path->archivePluginPath),
-            platformPath(path->platformPath) {}
-
         FilePathImpl(
             StorageImpl* storage,
             const boost::filesystem::path& nativePath,
@@ -149,11 +143,6 @@ private:
             archivePluginPath(storage->detectArchivePlugin(platformPath)),
             platformPath(platformPath) {}
     #else
-        FilePathImpl(const std::shared_ptr<FilePathImpl>& path) : storage(path->storage),
-            nativePath(path->nativePath),
-            isAbsolute(path->isAbsolute),
-            archivePluginPath(path->archivePluginPath) {}
-
         FilePathImpl(StorageImpl* storage, const boost::filesystem::path& nativePath) : storage(storage),
             nativePath(nativePath),
             isAbsolute(nativePath.is_absolute()),
@@ -201,15 +190,17 @@ private:
     boost::filesystem::path archivePath;
     boost::filesystem::path innerPath;
     std::shared_ptr<ArchiveEntries> entriesInstance;
+    bool isDotDot;
 
     #ifdef _WIN32
         boost::filesystem::path platformArchivePath;
 
-        ArchivePathImpl(const std::shared_ptr<ArchivePathImpl>& path) : storage(path->storage),
+        ArchivePathImpl(ArchivePathImpl* path) : storage(path->storage),
             pluginPath(path->pluginPath),
             archivePath(path->archivePath),
             innerPath(path->innerPath),
             entriesInstance(path->entriesInstance),
+            isDotDot(path->isDotDot),
             platformArchivePath(path->platformArchivePath) {}
 
         ArchivePathImpl(
@@ -224,13 +215,15 @@ private:
             archivePath(archivePath),
             innerPath(innerPath),
             entriesInstance(entriesInstance),
+            isDotDot(innerPath.filename() == ".."),
             platformArchivePath(platformArchivePath) {}
     #else
-        ArchivePathImpl(const std::shared_ptr<ArchivePathImpl>& path) : storage(path->storage),
+        ArchivePathImpl(ArchivePathImpl* path) : storage(path->storage),
             pluginPath(path->pluginPath),
             archivePath(path->archivePath),
             innerPath(path->innerPath),
-            entriesInstance(path->entriesInstance) {}
+            entriesInstance(path->entriesInstance),
+            isDotDot(path->isDotDot) {}
 
         ArchivePathImpl(
             StorageImpl* storage,
@@ -242,7 +235,8 @@ private:
             pluginPath(pluginPath),
             archivePath(archivePath),
             innerPath(innerPath),
-            entriesInstance(entriesInstance) {}
+            entriesInstance(entriesInstance),
+            isDotDot(innerPath.filename() == "..") {}
     #endif
 
     std::shared_ptr<ArchiveEntries>& entries();
@@ -261,7 +255,7 @@ public:
     uint8_t readByte();
     uint16_t readWord();
     uint32_t readDword();
-    uintmax_t readBlock(void* buffer, uintmax_t size);
+    uintmax_t readBlock(void* buffer, uintmax_t maxSize);
     std::string readLine();
     uintmax_t getPosition();
     void setPosition(uintmax_t position);
@@ -285,7 +279,7 @@ public:
     uint8_t readByte();
     uint16_t readWord();
     uint32_t readDword();
-    uintmax_t readBlock(void* buffer, uintmax_t size);
+    uintmax_t readBlock(void* buffer, uintmax_t maxSize);
     std::string readLine();
     uintmax_t getPosition();
     void setPosition(uintmax_t position);
@@ -315,7 +309,9 @@ public:
     void writeByte(uint8_t value);
     void writeWord(uint16_t value);
     void writeDword(uint32_t value);
-    void writeBlock(void* buf, uintmax_t size);
+    bool writeBlock(void* buf, uintmax_t size);
+    uintmax_t getPosition();
+    void setPosition(uintmax_t position);
 
 private:
 

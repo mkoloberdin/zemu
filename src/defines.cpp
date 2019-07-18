@@ -5,7 +5,6 @@
 #include <string.h>
 
 char hex[17] = "0123456789ABCDEF";
-int addLogFirst = 1;
 
 double sqq(double n) {
     return (n * n);
@@ -78,50 +77,6 @@ int unhex(char c) {
 
 bool ishex(char c) {
     return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-void AddLog(const char* fmt, ...) {
-    va_list argptr;
-    char buf[0x800];
-    FILE* fp;
-
-    va_start(argptr, fmt);
-    vsprintf(buf, fmt, argptr);
-    va_end(argptr);
-
-    if (addLogFirst) {
-        fp = fopen("debuglog.txt", "wb");
-        addLogFirst = 0;
-    } else {
-        fp = fopen("debuglog.txt", "ab");
-    }
-
-    if (fp != nullptr) {
-        fprintf(fp, "%s\n", buf);
-        fclose(fp);
-    }
-}
-
-void AddLogN(const char* fmt, ...) {
-    va_list argptr;
-    char buf[0x800];
-    FILE* fp;
-
-    va_start(argptr, fmt);
-    vsprintf(buf, fmt, argptr);
-    va_end(argptr);
-
-    if (addLogFirst) {
-        fp = fopen("debuglog.txt", "wb");
-        addLogFirst = 0;
-    } else {
-        fp = fopen("debuglog.txt", "ab");
-    }
-
-    if (fp != nullptr) {
-        fprintf(fp, "%s", buf);
-        fclose(fp);
-    }
 }
 
 [[noreturn]] void StrikeError(const char* fmt, ...) {

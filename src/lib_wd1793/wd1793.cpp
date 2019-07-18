@@ -6,7 +6,6 @@
 #include "wd1793.h"
 #include "wd1793_crc_utils.h"
 
-void AddLog(const char* fmt, ...);
 extern bool wdDebug;
 
 C_Wd1793::C_Wd1793() {
@@ -748,7 +747,7 @@ uint8_t C_Wd1793::in(uint8_t port, int64_t ttime, int* err) {
     *err = 0;
 
     if (wdDebug) {
-        AddLog("%08X %08X: %02X", (unsigned)(time >> 32), (unsigned)(time & (int64_t)(0xFFFFFFFF)), port);
+        // AddLog("%08X %08X: %02X", (unsigned)(time >> 32), (unsigned)(time & (int64_t)(0xFFFFFFFF)), port);
     }
 
     if (!process()) {
@@ -803,7 +802,7 @@ void C_Wd1793::out(uint8_t port, uint8_t val, int64_t ttime, int* err) {
 
         if (status & WDS_BUSY) {
             if (wdDebug) {
-                AddLog("BUSY");
+                // AddLog("BUSY");
             }
 
             return;

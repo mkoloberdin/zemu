@@ -5,6 +5,7 @@
 #include <string.h>
 #include "defines.h"
 #include "wd1793_fdd.h"
+#include "zemu_env.h"
 
 void C_Fdd::format_trd() {
     static const uint8_t lv[3][16] = {
@@ -127,17 +128,15 @@ void C_Fdd::addboot() {
         }
     }
 
-    FILE* f = fopen(get_appendboot(), "rb");
+    auto bootPath = hostEnv->storage()->path(get_appendboot());
 
-    if (!f) {
+    if (!bootPath->isFile()) {
         return;
     }
 
-    if (fread(snbuf, 1, sizeof(snbuf), f) < 0x10) {
-        DEBUG_MESSAGE("fread failed");
+    if (bootPath->dataReader()->readBlock(snbuf, sizeof(snbuf)) < 0x10) {
+        DEBUG_MESSAGE("read failed");
     }
-
-    fclose(f);
 
     snbuf[13] = snbuf[14]; // copy length
     addfile(snbuf, snbuf + 0x11);
@@ -196,7 +195,7 @@ int C_Fdd::read_trd() {
     return 1;
 }
 
-int C_Fdd::write_trd(FILE* ff) {
+int C_Fdd::write_trd(DataWriterPtr& writer) {
     uint8_t zerosec[256] = { 0 };
 
     for (unsigned i = 0; i < 2560; i++) {
@@ -213,7 +212,7 @@ int C_Fdd::write_trd(FILE* ff) {
             ptr = zerosec;
         }
 
-        if (fwrite(ptr, 1, 256, ff) != 256) {
+        if (!writer->writeBlock(ptr, 256)) {
             return 0;
         }
     }

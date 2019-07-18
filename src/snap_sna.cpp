@@ -13,7 +13,8 @@ bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
 
     try {
         reader = hostEnv->storage()->path(filename)->dataReader();
-    } catch (...) {
+    } catch (StorageException& e) {
+        printf("Load failed: %s\n", e.what());
         return false;
     }
 
@@ -116,9 +117,16 @@ bool load_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     return true;
 }
 
-void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
+bool save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mmgr, C_Border& border) {
     bool banks[8];
-    auto writer = hostEnv->storage()->path(filename)->dataWriter();
+    DataWriterPtr writer;
+
+    try {
+        writer = hostEnv->storage()->path(filename)->dataWriter();
+    } catch (StorageException& e) {
+        printf("Write failed: %s\n", e.what());
+        return false;
+    }
 
     writer->writeByte(z80ex_get_reg(cpu, regI));
     writer->writeWord(z80ex_get_reg(cpu, regHL_));
@@ -199,4 +207,6 @@ void save_sna_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
             writer->writeBlock(&mmgr.ram[0x4000 * k], 0x4000);
         }
     }
+
+    return true;
 }
