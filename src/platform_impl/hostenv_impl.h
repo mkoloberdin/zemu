@@ -12,6 +12,7 @@ public:
     Logger* logger();
     Storage* storage();
     Config* config();
+    Hardware* hardware();
 
 private:
 

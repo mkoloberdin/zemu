@@ -3,90 +3,32 @@
 
 #include "font.h"
 
-//------------------------------------------------------------------------------------------------------------------------------
-
-ZHW_Video_Surface* ExtractImage(uint8_t* data) {
-    ZHW_Video_Surface* surf;
-    int hgt;
-    int wdt;
-    int i;
-    int j;
-    int r;
-    int g;
-    int b;
-    int spitch;
-
-    hgt = data[0] + 0x100 * data[1];
-    wdt = data[2] + 0x100 * data[3];
+C_Font::C_Font(uint8_t* data) {
+    pixelsHeight = data[0] + 0x100 * data[1];
+    pixelsWidth = data[2] + 0x100 * data[3];
     data += 4;
 
-    surf = ZHW_Video_CreateSurface(wdt,hgt, screen);
-    spitch = surf->pitch / 4;
+    pixels = new uint32_t[pixelsWidth * pixelsHeight];
 
-    if (!ZHW_VIDEO_LOCKSURFACE(surf)) {
-        return nullptr;
+    for (int i = pixelsWidth * pixelsHeight; i--;) {
+        int r = *(data++);
+        int g = *(data++);
+        int b = *(data++);
+        pixels[i] = ZHW_VIDEO_MAKERGB(r, g, b);
     }
 
-    for (i = 0; i < hgt; i++) {
-        for (j = 0; j < wdt; j++) {
-            r = *(data++);
-            g = *(data++);
-            b = *(data++);
-            ((int*)surf->pixels)[i * spitch + j] = ZHW_VIDEO_MAKERGB(r, g, b);
-        }
-    }
-
-    ZHW_VIDEO_UNLOCKSURFACE(surf);
-    return surf;
-}
-
-ZHW_Video_Surface* CopySurfaceX(ZHW_Video_Surface* src) {
-    ZHW_Video_Rect s;
-    ZHW_Video_Rect d;
-    ZHW_Video_Surface *dst;
-
-    s.x = 0;
-    s.y = 0;
-    s.w = src->w;
-    s.h = src->h;
-
-    d.x = 0;
-    d.y = 0;
-
-    dst = ZHW_Video_CreateSurface(src->w, src->h, screen);
-    ZHW_Video_BlitSurface(src, &s, dst, &d);
-
-    return dst;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------
-
-C_Font::C_Font(uint8_t* data) {
-    surf = ExtractImage(data);
-    CalcFont();
-}
-
-C_Font::C_Font(ZHW_Video_Surface* surf) {
-    this->surf = CopySurfaceX(surf);
     CalcFont();
 }
 
 C_Font::~C_Font() {
-    ZHW_Video_FreeSurface(surf);
+    delete[] pixels;
 }
 
 void C_Font::CalcFont(void) {
     int n;
 
-    if (!ZHW_VIDEO_LOCKSURFACE(surf)) {
-        return;
-    }
-
-    spitch = surf->pitch / 4;
-    int w = surf->w;
-
-    int t1 = ((int*)surf->pixels)[0];
-    int t2 = ((int*)surf->pixels)[1];
+    uint32_t t1 = pixels[0];
+    colorKey = pixels[1];
 
     for (n = 0; n < 32; n++) {
         off[n] = 1;
@@ -96,8 +38,8 @@ void C_Font::CalcFont(void) {
     int x = 0;
 
     do {
-        while (x < w) {
-            if (((int*)surf->pixels)[x] == t1) {
+        while (x < pixelsWidth) {
+            if (pixels[x] == t1) {
                 x++;
             } else {
                 break;
@@ -106,8 +48,8 @@ void C_Font::CalcFont(void) {
 
         off[n] = x;
 
-        while (x < w) {
-            if (((int*)surf->pixels)[x] != t1) {
+        while (x < pixelsWidth) {
+            if (pixels[x] != t1) {
                 x++;
             } else {
                 break;
@@ -116,7 +58,7 @@ void C_Font::CalcFont(void) {
 
         len[n] = x - off[n];
         n++;
-    } while (n < 0x100 && x < w);
+    } while (n < 0x100 && x < pixelsWidth);
 
     for (; n < 0x100; n++) {
         off[n] = 1;
@@ -127,25 +69,69 @@ void C_Font::CalcFont(void) {
         xoff[n] = 0;
         yoff[n] = 0;
     }
-
-    ZHW_VIDEO_UNLOCKSURFACE(surf);
-    ZHW_Video_SetColorKey(surf, t2);
 }
 
 void C_Font::PrintChar(int x, int y, char c) {
     int n = (uint8_t)c;
-    ZHW_Video_Rect s;
-    ZHW_Video_Rect d;
+    int screenX = x + xoff[n];
+    int screenY = y + yoff[n];
 
-    s.x = off[n];
-    s.y = 0;
-    s.w = len[n];
-    s.h = surf->h;
+    if (screenX >= WIDTH || screenY >= HEIGHT) {
+        return;
+    }
 
-    d.x = x + xoff[n];
-    d.y = y + yoff[n];
+    int letterX = off[n];
+    int letterY = 0;
+    int letterW = len[n];
+    int letterH = pixelsHeight;
 
-    ZHW_Video_BlitSurface(surf, &s, screen, &d);
+    if (screenX < 0) {
+        letterW += screenX;
+
+        if (letterW <= 0) {
+            return;
+        }
+
+        letterX -= screenX;
+        screenX = 0;
+    }
+
+    if (screenY < 0) {
+        letterH += screenY;
+
+        if (letterH <= 0) {
+            return;
+        }
+
+        letterY -= screenY;
+        screenY = 0;
+    }
+
+    if (screenX + letterW >= WIDTH) {
+        letterW -= screenX + letterW - WIDTH + 1;
+
+        if (letterW <= 0) {
+            return;
+        }
+    }
+
+    if (screenY + letterH >= HEIGHT) {
+        letterH -= screenY + letterH - HEIGHT + 1;
+
+        if (letterH <= 0) {
+            return;
+        }
+    }
+
+    for (int y = letterH; y--;) {
+        for (int x = letterW; x--;) {
+            uint32_t c = pixels[(letterY + y) * pixelsWidth + letterX + x];
+
+            if (c != colorKey) {
+                screen[(screenY + y) * WIDTH + screenX + x] = c;
+            }
+        }
+    }
 }
 
 void C_Font::PrintString(int x, int y, const char* str) {
@@ -181,7 +167,7 @@ void C_Font::PrintString(int x, int y, const char* str) {
 }
 
 int C_Font::Height(void) {
-    return surf->h;
+    return pixelsHeight;
 }
 
 int C_Font::StrLenPx(const char* str) {

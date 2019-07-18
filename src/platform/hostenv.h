@@ -6,6 +6,7 @@
 #include "logger.h"
 #include "storage.h"
 #include "config.h"
+#include "hardware.h"
 
 class HostEnv {
 public:
@@ -16,6 +17,7 @@ public:
     virtual Logger* logger() = 0;
     virtual Storage* storage() = 0;
     virtual Config* config() = 0;
+    virtual Hardware* hardware() = 0;
 
 private:
 

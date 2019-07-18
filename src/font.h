@@ -7,7 +7,6 @@ class C_Font {
 public:
 
     C_Font(uint8_t* data);
-    C_Font(ZHW_Video_Surface* surf);
     ~C_Font();
 
     void PrintChar(int x, int y, char c);
@@ -21,12 +20,15 @@ public:
 
 private:
 
-    ZHW_Video_Surface* surf;
-    int spitch;
+    int pixelsHeight;
+    int pixelsWidth;
+    uint32_t* pixels;
+
     int off[0x100];
     int len[0x100];
     int xoff[0x100];
     int yoff[0x100];
+    uint32_t colorKey;
 
     void CalcFont(void);
 

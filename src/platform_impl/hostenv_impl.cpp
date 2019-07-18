@@ -33,3 +33,7 @@ Config* HostEnvImpl::config() {
 
     return configInstance.get();
 }
+
+Hardware* HostEnvImpl::hardware() {
+    return nullptr;
+}

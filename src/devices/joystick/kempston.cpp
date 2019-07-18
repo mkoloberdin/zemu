@@ -2,9 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "kempston.h"
-#include "joystick_manager.h"
 
-int C_KempstonStick::joy_num = -1;
 uint8_t C_KempstonStick::joy_kbd = 0;
 
 void C_KempstonStick::Init(void) {
@@ -15,10 +13,6 @@ void C_KempstonStick::Init(void) {
 }
 
 void C_KempstonStick::Close(void) {
-}
-
-void C_KempstonStick::SetJoyNum(int num) {
-    joy_num = num;
 }
 
 bool C_KempstonStick::OnKeyDown(ZHW_Event& event) {
@@ -98,7 +92,10 @@ bool C_KempstonStick::OnInputByte(uint16_t port, uint8_t& retval) {
 
     if (joyOnKeyb) {
         retval = joy_kbd;
-    } else if (joy_num >= 0) {
+    } else {
+        /*
+         * Rework to joystick events from hardware layer
+         *
         JoystickState* jstate = C_JoystickManager::Instance()->GetJoystickState(joy_num);
 
         if (jstate->right) {
@@ -120,6 +117,7 @@ bool C_KempstonStick::OnInputByte(uint16_t port, uint8_t& retval) {
         if (jstate->fire) {
             retval |= 0x10;
         }
+        */
     }
 
     return true;

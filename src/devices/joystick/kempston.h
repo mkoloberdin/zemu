@@ -17,11 +17,6 @@ public:
 
     static bool InputByteCheckPort(uint16_t port);
     static bool OnInputByte(uint16_t port, uint8_t& retval);
-    static void SetJoyNum(int num);
-
-private:
-
-    static int joy_num;
 };
 
 #endif

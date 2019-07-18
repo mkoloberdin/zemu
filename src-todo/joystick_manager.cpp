@@ -1,6 +1,12 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+// Joystick events now refer to an SDL_JoystickID.
+// This is because SDL 2.0 can handle joysticks coming and going, as devices are plugged in and pulled out during your game's lifetime,
+// so the index into the device list that 1.2 uses would be meaningless as the available device list changes.
+//
+// See https://wiki.libsdl.org/MigrationGuide !!!
+
 #include "joystick_manager.h"
 #include "exceptions.h"
 #include "devs.h"

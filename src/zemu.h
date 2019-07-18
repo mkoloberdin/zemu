@@ -2,7 +2,7 @@
 #define _ZEMU_H_INCLUDED_
 
 #include "defines.h"
-#include "platform_hardware.h"
+#include "platform/hardware.h"
 #include <z80ex.h>
 #include "sound/mixer.h"
 
@@ -13,7 +13,7 @@
 #endif
 
 #include "params.h"
-#define SOUND_ENABLED (!params.maxSpeed && params.sound)
+#define SOUND_ENABLED (!params.maxSpeed && hostEnv->hardware()->isSoundEnabled())
 
 struct s_Action {
     const char* name;
@@ -28,7 +28,7 @@ struct s_Params {
     bool sound;
     bool maxSpeed;
     bool antiFlicker;
-    eSndBackend sndBackend;
+    HardwareSoundDriver soundDriver;
     int audioBufferSize;
     int mouseDiv;
     bool showInactiveIcons;
@@ -43,15 +43,15 @@ struct s_Params {
     int kempstonAxisTreshold;
 };
 
+extern uint32_t* screen;
+extern uint32_t* renderScreen; // points to renderScreenBuffer
+extern uint32_t* renderScreenBuffer[2];
+
 extern Z80EX_CONTEXT* cpu;
 extern uint64_t cpuClk, devClk, lastDevClk, devClkCounter;
 extern s_Params params;
-extern ZHW_Video_Surface* screen;
-extern ZHW_Window* window;
-extern int PITCH;
 extern bool drawFrame;
 extern int frames;
-extern bool disableSound;
 extern char tempFolderName[MAX_PATH];
 
 extern s_Action cfgActions[];
@@ -108,8 +108,6 @@ uint8_t ReadByteDasm(uint16_t addr, void* userData);
 void WriteByteDasm(uint16_t addr, uint8_t value);
 void DebugStep(void);
 
-extern ZHW_Video_Surface* renderSurf;
-extern int renderPitch;
 extern unsigned long prevRenderClk;
 extern void (* renderPtr)(unsigned long);
 

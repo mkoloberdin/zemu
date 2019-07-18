@@ -49,28 +49,7 @@ C_SoundMixer::~C_SoundMixer() {
     }
 }
 
-void C_SoundMixer::InitBackendDefault(int bufferSize) {
-    sndBackend = new CSndBackendDefault(SND_CALLBACK_BUFFER_SIZE * bufferSize);
-    sndBackend->Init();
-}
-
-#ifdef _WIN32
-    void C_SoundMixer::InitBackendWin32(int soundParam) {
-        sndBackend = new CSndBackendWIN32(soundParam, AUDIO_NATIVE_BUFFER);
-        sndBackend->Init();
-    }
-#endif
-
-#ifdef __unix__
-    void C_SoundMixer::InitBackendOSS(int soundParam) {
-        sndBackend = new CSndBackendOSS(soundParam, AUDIO_NATIVE_BUFFER);
-        sndBackend->Init();
-    }
-#endif
-
 void C_SoundMixer::Init(int mixerMode, bool recordWav, const char* wavName) { //-V688
-    assert(sndBackend != nullptr);
-
     this->mixerMode = mixerMode;
 
     if (recordWav && *wavName) {
@@ -147,7 +126,7 @@ void C_SoundMixer::FlushFrame(bool soundEnabled) {
         }
 
         p = mixBuffer;
-        uint16_t *o = audioBuffer;
+        uint16_t* o = (uint16_t*)audioBuffer;
 
         if (mixerMode & MIXER_FULL_VOL_MASK) {
             for (int i = minSamples; i--; p++) {
@@ -162,7 +141,7 @@ void C_SoundMixer::FlushFrame(bool soundEnabled) {
         }
 
         if (wavDataWriter) {
-            o = audioBuffer;
+            o = (uint16_t*)audioBuffer;
 
             for (int i = minSamples; i--;) {
                 wavDataWriter->writeWord(*(o++));
@@ -170,7 +149,7 @@ void C_SoundMixer::FlushFrame(bool soundEnabled) {
             }
         }
 
-        sndBackend->Write((uint8_t*)audioBuffer, minSamples * sizeof(uint16_t) * 2);
+        hostEnv->hardware()->renderSound(audioBuffer, minSamples);
     }
 
     if (maxSamples > minSamples) {

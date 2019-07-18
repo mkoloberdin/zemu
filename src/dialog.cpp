@@ -51,24 +51,15 @@ namespace {
 }
 
 void DlgClearScreen(void) {
-    if (!ZHW_VIDEO_LOCKSURFACE(screen)) {
-        return;
-    }
+    uint32_t* s = screen;
 
-    int* s = (int*)screen->pixels;
+    for (int i = HEIGHT; i--;) {
+        int cl = (i & 1) ? ZHW_VIDEO_MAKERGB(0, 0, 64) : ZHW_VIDEO_MAKERGB(0, 0, 32);
 
-    for (int i = 0; i < HEIGHT; i++) {
-        int* p = s;
-        int cl = (i & 1) ? ZHW_VIDEO_MAKERGB(0,0,64) : ZHW_VIDEO_MAKERGB(0,0,32);
-
-        for (int j = 0; j < WIDTH; j++) {
-            *(p++) = cl;
+        for (int j = WIDTH; j--;) {
+            *(s++) = cl;
         }
-
-        s += PITCH;
     }
-
-    ZHW_VIDEO_UNLOCKSURFACE(screen);
 }
 
 bool DlgConfirm(const char* message) {
@@ -457,16 +448,13 @@ std::string SelectFile(std::string oldFileArg) {
 }
 
 void FileDialog(void) {
-    disableSound = true;
-    ZHW_Keyboard_EnableKeyRepeat(window);
+    hostEnv->hardware()->setKeyRepeat(true);
     auto fname = SelectFile(oldFileName[currentDrive]);
-    ZHW_Keyboard_DisableKeyRepeat(window);
+    hostEnv->hardware()->setKeyRepeat(false);
 
     if (!fname.empty()) {
         TryNLoadFile(fname.c_str(), currentDrive);
     }
-
-    disableSound = false;
 }
 
 void FileDialogInit(void) {
@@ -871,11 +859,7 @@ void DebugIt(void) {
 }
 
 void RunDebugger(void) {
-    disableSound = true;
-    ZHW_Keyboard_EnableKeyRepeat(window);
-
+    hostEnv->hardware()->setKeyRepeat(true);
     DebugIt();
-
-    ZHW_Keyboard_DisableKeyRepeat(window);
-    disableSound = false;
+    hostEnv->hardware()->setKeyRepeat(false);
 }

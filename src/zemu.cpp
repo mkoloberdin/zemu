@@ -17,7 +17,6 @@
 #include "cpu_trace.h"
 #include "tape/tape.h"
 #include "labels.h"
-#include "joystick_manager.h"
 #include "renderer/render_speccy.h"
 #include "renderer/render_16c.h"
 #include "renderer/render_multicolor.h"
@@ -51,20 +50,11 @@ uint64_t devClk;
 uint64_t lastDevClk;
 uint64_t devClkCounter;
 s_Params params;
-ZHW_Video_Surface* screen;
-ZHW_Video_Surface* realScreen;
-ZHW_Video_Surface* scrSurf[2];
-int PITCH;
-int REAL_PITCH;
 bool drawFrame;
 int frames;
 C_Font* font = nullptr;
 C_Font* fixed_font = nullptr;
-bool disableSound = false;
 bool doCopyOfSurfaces = false;
-ZHW_Window* window;
-int actualWidth;
-int actualHeight;
 bool recordWav = false;
 const char* wavFileName = "output.wav"; // TODO: make configurable + full filepath
 int attributesHack = 0;
@@ -74,15 +64,12 @@ uint64_t actDevClkCounter = 0;
 uint64_t actClk = 0;
 int (* DoCpuStep)(Z80EX_CONTEXT* cpu) = z80ex_step;
 int (* DoCpuInt)(Z80EX_CONTEXT* cpu) = z80ex_int;
-ZHW_Video_Surface* renderSurf;
-int renderPitch;
 unsigned long prevRenderClk;
 void (* renderPtr)(unsigned long) = nullptr;
 
-ZHW_Thread *upadteScreenThread = nullptr;
-ZHW_Mutex_Sem *updateScreenThreadSem;
-volatile bool updateScreenThreadActive = true;
-int UpdateScreenThreadFunc(void *param);
+uint32_t* screen;
+uint32_t* renderScreen;
+uint32_t* renderScreenBuffer[2];
 
 //--------------------------------------------------------------------------------------------------------------
 
@@ -474,15 +461,7 @@ void Action_LoadFile(void) {
 }
 
 void Action_Fullscreen(void) {
-    ZHW_Video_ToggleFullScreen(window);
-
-    realScreen = window->surface;
-    REAL_PITCH = realScreen->pitch / 4;
-
-    if (!params.scale2x) {
-        screen = realScreen;
-        PITCH = REAL_PITCH;
-    }
+    hostEnv->hardware()->setFullscreen(!hostEnv->hardware()->isFullscreen());
 }
 
 void Action_Debugger(void) {
@@ -734,20 +713,6 @@ void InitDevMaps(void) {
 
 //--------------------------------------------------------------------------------------------------------------
 
-void InitSurfaces(void) {
-    scrSurf[0] = ZHW_Video_CreateSurface(WIDTH, HEIGHT, screen);
-
-    if (scrSurf[0] == nullptr) {
-        StrikeError("Unable to create primary surface: %s\n", ZHW_Error_Get());
-    }
-
-    scrSurf[1] = ZHW_Video_CreateSurface(WIDTH, HEIGHT, screen);
-
-    if (scrSurf[1] == nullptr) {
-        StrikeError("Unable to create secondary surface: %s\n", ZHW_Error_Get());
-    }
-}
-
 void InitFont(void) {
     font = new C_Font(ftbos_font_data);
     font->CopySym('-', '_');
@@ -758,24 +723,25 @@ void InitFont(void) {
 }
 
 void InitAll(void) {
-    int i;
+    screen = new uint32_t[WIDTH * HEIGHT];
+    renderScreenBuffer[0] = new uint32_t[WIDTH * HEIGHT];
+    renderScreenBuffer[1] = new uint32_t[WIDTH * HEIGHT];
 
-    for (i = 0; devs[i]; i++) {
+    for (int i = 0; devs[i]; i++) {
         devs[i]->Init();
     }
 
     InitDevMaps();
 
-    for (i = 0; i < 0x10; i++) {
+    for (int i = 0; i < 0x10; i++) {
         colors[i] = colors_base[i];
     }
 
-    InitSurfaces();
     InitFont();
     FileDialogInit();
     C_Tape::Init();
 
-    for (i = 0; i < 0x10000; i++) {
+    for (int i = 0; i < 0x10000; i++) {
         breakpoints[i] = false;
     }
 
@@ -791,104 +757,26 @@ void InitAll(void) {
         ReadIntVec,
         nullptr
     );
-
-    updateScreenThreadSem = ZHW_Mutex_CreateSemaphore(0);
-    upadteScreenThread = ZHW_Thread_Create(UpdateScreenThreadFunc, nullptr);
 }
 
 // ----------------------------------
 
-void AntiFlicker(ZHW_Video_Surface* copyFrom, ZHW_Video_Surface* copyTo) {
-    int i;
-    int j;
-    uint8_t* s1;
-    uint8_t* s2;
-    uint8_t* sr;
-    uint8_t* s1w;
-    uint8_t* s2w;
-    uint8_t* srw;
-
-    if (!ZHW_VIDEO_LOCKSURFACE(screen)) {
-        return;
-    }
-
-    if (!ZHW_VIDEO_LOCKSURFACE(scrSurf[0])) {
-        ZHW_VIDEO_UNLOCKSURFACE(screen);
-        return;
-    }
-
-    if (!ZHW_VIDEO_LOCKSURFACE(scrSurf[1])) {
-        ZHW_VIDEO_UNLOCKSURFACE(scrSurf[0]);
-        ZHW_VIDEO_UNLOCKSURFACE(screen);
-        return;
-    }
-
+void AntiFlicker(int copyFrom, int copyTo) {
     if (doCopyOfSurfaces) {
-        s1 = (uint8_t*)copyFrom->pixels;
-        s2 = (uint8_t*)copyTo->pixels;
-
-        for (i = HEIGHT; i--;) {
-            uint32_t *s1dw = (uint32_t*)s1;
-            uint32_t *s2dw = (uint32_t*)s2;
-
-            for (j = WIDTH; j--;) {
-                *(s2dw++) = *(s1dw++);
-            }
-
-            s1 += copyFrom->pitch;
-            s2 += copyTo->pitch;
-        }
-
+        memcpy(renderScreenBuffer[copyTo], renderScreenBuffer[copyFrom], WIDTH * HEIGHT * sizeof(uint32_t));
         doCopyOfSurfaces = false;
     }
 
-    sr = (uint8_t*)screen->pixels;
-    s1 = (uint8_t*)scrSurf[0]->pixels;
-    s2 = (uint8_t*)scrSurf[1]->pixels;
+    uint8_t* s1 = (uint8_t*)renderScreenBuffer[0];
+    uint8_t* s2 = (uint8_t*)renderScreenBuffer[1];
+    uint8_t* sr = (uint8_t*)renderScreenBuffer[2];
 
-    for (i = HEIGHT; i--;) {
-        srw = sr;
-        s1w = s1;
-        s2w = s2;
-
-        for (j = WIDTH; j--;)
-        {
-            #ifdef ZHW_FLIPPED_RGBA
-                *(srw++) = 0;
-                s1w++;
-                s2w++;
-            #endif
-
-            *srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
-            srw++;
-            s1w++;
-            s2w++;
-
-            *srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
-            srw++;
-            s1w++;
-            s2w++;
-
-            *srw = (uint8_t)(((unsigned int)(*s1w) + (unsigned int)(*s2w)) >> 1);
-            srw++;
-            s1w++;
-            s2w++;
-
-            #ifndef ZHW_FLIPPED_RGBA
-                *(srw++) = 0;
-                s1w++;
-                s2w++;
-            #endif
-        }
-
-        sr += screen->pitch;
-        s1 += scrSurf[0]->pitch;
-        s2 += scrSurf[1]->pitch;
+    for (int i = WIDTH * HEIGHT; i--;) {
+        *(sr++) = (uint8_t)(((unsigned int)(*(s1++)) + (unsigned int)(*(s2++))) >> 1);
+        *(sr++) = (uint8_t)(((unsigned int)(*(s1++)) + (unsigned int)(*(s2++))) >> 1);
+        *(sr++) = (uint8_t)(((unsigned int)(*(s1++)) + (unsigned int)(*(s2++))) >> 1);
+        *(sr++) = 0; ++s1; ++s2;
     }
-
-    ZHW_VIDEO_UNLOCKSURFACE(scrSurf[1]);
-    ZHW_VIDEO_UNLOCKSURFACE(scrSurf[0]);
-    ZHW_VIDEO_UNLOCKSURFACE(screen);
 }
 
 void InitActClk(void) {
@@ -926,15 +814,8 @@ inline void CpuCalcTacts(unsigned long cmdClk) {
     C_Tape::Process();
 
     if (runDebuggerFlag || breakpoints[z80ex_get_reg(cpu, regPC)]) {
-        ZHW_VIDEO_UNLOCKSURFACE(renderSurf);
-
         runDebuggerFlag = false;
         RunDebugger();
-
-        if (!ZHW_VIDEO_LOCKSURFACE(renderSurf)) {
-            printf("Can't lock surface\n");
-            return;
-        }
     }
 }
 
@@ -1015,18 +896,11 @@ void Render(void) {
     static int sn = 0;
 
     if (params.antiFlicker) {
-        renderSurf = scrSurf[sn];
+        renderScreen = renderScreenBuffer[sn];
         sn = 1 - sn;
     } else {
-        renderSurf = screen;
+        renderScreen = screen;
     }
-
-    if (drawFrame && !ZHW_VIDEO_LOCKSURFACE(renderSurf)) {
-        printf("Can't lock surface\n");
-        return;
-    }
-
-    renderPitch = renderSurf->pitch / 4;
 
     if (dev_extport.Is16Colors()) {
         renderPtr = Render16c;
@@ -1063,12 +937,8 @@ void Render(void) {
     cpuClk -= MAX_FRAME_TACTS;
     devClk = cpuClk;
 
-    if (drawFrame) {
-        ZHW_VIDEO_UNLOCKSURFACE(renderSurf);
-    }
-
     if (params.antiFlicker && drawFrame) {
-        AntiFlicker(renderSurf, scrSurf[sn]);
+        AntiFlicker(1 - sn, sn);
     }
 }
 
@@ -1114,6 +984,10 @@ void ResetSequence(void) {
         ptr++;
         cnt--;
     }
+}
+
+void UpdateScreen(void) {
+    hostEnv->hardware()->renderFrame(screen, WIDTH, HEIGHT);
 }
 
 void Process(void) {
@@ -1240,95 +1114,6 @@ void Process(void) {
     }
 }
 
-void InitAudio(void) {
-    if (params.sndBackend == SND_BACKEND_DEFAULT) {
-        soundMixer.InitBackendDefault(params.audioBufferSize);
-    }
-    #ifdef _WIN32
-        else if (params.sndBackend == SND_BACKEND_WIN32) {
-            soundMixer.InitBackendWin32(params.soundParam);
-        }
-    #endif
-    #ifdef __unix__
-        else if (params.sndBackend == SND_BACKEND_OSS) {
-            soundMixer.InitBackendOSS(params.soundParam);
-        }
-    #endif
-
-    soundMixer.Init(params.mixerMode, recordWav, wavFileName);
-}
-
-int UpdateScreenThreadFunc(void* param) {
-    while (updateScreenThreadActive) {
-        ZHW_Mutex_SemWait(updateScreenThreadSem);
-        ZHW_Video_BlitWindow(window);
-    }
-
-    return 0;
-}
-
-// Tries to update screen.
-// If screen is already updating, do nothing, therefore this function must be called in a loop,
-// to ensure that screen is really updated
-void UpdateScreen(void) {
-    if (!params.scale2x) {
-        // do not use threading here, because realScreen == screen
-        ZHW_Video_BlitWindow(window);
-        return;
-    }
-
-    if (ZHW_Mutex_SemValue(updateScreenThreadSem)) {
-        return;
-    }
-
-    if (!ZHW_VIDEO_LOCKSURFACE(realScreen)) {
-        return;
-    }
-
-    if (!ZHW_VIDEO_LOCKSURFACE(screen)) {
-        ZHW_VIDEO_UNLOCKSURFACE(realScreen);
-        return;
-    }
-
-    if (params.scanlines) {
-        for (int i = HEIGHT - 1; i >= 0; i--) {
-            int* line = (int*)screen->pixels + i * PITCH + WIDTH-1;
-            int* lineA = (int*)realScreen->pixels + (i * 2) * REAL_PITCH + (WIDTH * 2 - 1);
-            int* lineB = (int*)realScreen->pixels + (i * 2 + 1) * REAL_PITCH + (WIDTH * 2 - 1);
-
-            for (int j = WIDTH; j--;) {
-                int c = *(line--);
-                int dc = (c & 0xFEFEFE) >> 1;
-
-                *(lineA--) = c;
-                *(lineA--) = c;
-                *(lineB--) = dc;
-                *(lineB--) = dc;
-            }
-        }
-    } else {
-        for (int i = HEIGHT - 1; i >= 0; i--) {
-            int* line = (int*)screen->pixels + i * PITCH + WIDTH-1;
-            int* lineA = (int*)realScreen->pixels + (i * 2) * REAL_PITCH + (WIDTH * 2 - 1);
-            int* lineB = (int*)realScreen->pixels + (i * 2 + 1) * REAL_PITCH + (WIDTH * 2 - 1);
-
-            for (int j = WIDTH; j--;) {
-                int c = *(line--);
-
-                *(lineA--) = c;
-                *(lineA--) = c;
-                *(lineB--) = c;
-                *(lineB--) = c;
-            }
-        }
-    }
-
-    ZHW_VIDEO_UNLOCKSURFACE(screen);
-    ZHW_VIDEO_UNLOCKSURFACE(realScreen);
-
-    ZHW_Mutex_SemPost(updateScreenThreadSem);
-}
-
 void FreeAll(void) {
     for (int i = 0; devs[i]; i++) {
         devs[i]->Close();
@@ -1336,24 +1121,14 @@ void FreeAll(void) {
 
     C_Tape::Close();
 
-    if (upadteScreenThread) {
-        updateScreenThreadActive = false;
-        ZHW_Mutex_SemPost(updateScreenThreadSem);
-        ZHW_Thread_Wait(upadteScreenThread, nullptr);
-    }
-
     delete fixed_font;
     delete font;
 
-    ZHW_Video_FreeSurface(scrSurf[0]);
-    ZHW_Video_FreeSurface(scrSurf[1]);
-
-    if (params.scale2x) {
-        ZHW_Video_FreeSurface(screen);
-    }
-
-    ZHW_Video_CloseWindow(window);
     z80ex_destroy(cpu);
+
+    delete[] renderScreenBuffer[1];
+    delete[] renderScreenBuffer[0];
+    delete[] screen;
 
     delete hostEnv;
 }
@@ -1403,39 +1178,6 @@ void OutputLogo(void) {
     printf(" with help of SMT                       \n");
     printf("                                        \n");
 }
-
-#ifdef _WIN32
-
-HICON windows_icon;
-HWND hwnd;
-
-#include "windows/resource.h"
-
-void windows_init() {
-    HINSTANCE handle = ::GetModuleHandle(nullptr);
-    windows_icon = ::LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
-
-    if (windows_icon == nullptr) {
-        StrikeError("Error: %d\n", GetLastError());
-    }
-
-    ZHW_SysWm_Info wminfo;
-    ZHW_VERSION_FILL(&wminfo.version);
-
-    if (int wmerror = ZHW_SysWm_GetInfo(&wminfo) != 1) {
-        StrikeError("ZHW_SysWm_GetInfo() returned %d\n", wmerror);
-    }
-
-    hwnd = wminfo.window;
-    ::SetClassLongPtr(hwnd, GCLP_HICON, (LONG_PTR)windows_icon);
-}
-
-void windows_cleanup() {
-    ZHW_Core_Quit();
-    ::DestroyIcon(windows_icon);
-}
-
-#endif // _WIN32
 
 int main(int argc, char *argv[]) {
     OutputLogo();
@@ -1510,6 +1252,7 @@ int main(int argc, char *argv[]) {
         params.sound = config->getBool("sound", "enable", true);
         params.mixerMode = config->getInt("sound", "mixermode", 1);
 
+        /*
         #ifdef _WIN32
             eSndBackend default_snd_backend = SND_BACKEND_WIN32;
         #else
@@ -1535,6 +1278,7 @@ int main(int argc, char *argv[]) {
         else {
             params.sndBackend = default_snd_backend;
         }
+        */
 
         params.audioBufferSize = config->getInt("sound", "sdlbuffersize", 4);
 
@@ -1557,47 +1301,7 @@ int main(int argc, char *argv[]) {
         str = config->getString("cputrace", "filename", "cputrace.log");
         strcpy(params.cpuTraceFileName, str.c_str());
 
-        if (ZHW_Core_Init(params.sound && params.sndBackend == SND_BACKEND_DEFAULT) < 0) {
-            StrikeError("Unable to init: %s\n", ZHW_Error_Get());
-        }
-
-        #ifdef _WIN32
-            windows_init();
-            atexit(windows_cleanup);
-        #else
-            atexit(ZHW_Core_Quit);
-        #endif
-
-        int actualWidth = WIDTH;
-        int actualHeight = HEIGHT;
-
-        if (params.scale2x) {
-            actualWidth *= 2;
-            actualHeight *= 2;
-        }
-
-        window = ZHW_Video_CreateWindow("ZEmu", actualWidth, actualHeight, params.fullscreen, params.useFlipSurface);
-
-        if (window == nullptr) {
-            StrikeError("Unable to create window: %s\n", ZHW_Error_Get());
-        }
-
-        realScreen = window->surface;
-        REAL_PITCH = realScreen->pitch / 4;
-
-        if (params.scale2x) {
-            screen = ZHW_Video_CreateSurface(WIDTH, HEIGHT, realScreen);
-
-            if (screen == nullptr) {
-                StrikeError("Unable to create screen surface: %s\n", ZHW_Error_Get());
-            }
-
-            PITCH = screen->pitch / 4;
-        } else {
-            screen = realScreen;
-            PITCH = REAL_PITCH;
-        }
-
+        hostEnv->hardware(); // force hardware initialization
         atexit(FreeAll);
 
         if (params.cpuTraceEnabled) {
@@ -1618,8 +1322,6 @@ int main(int argc, char *argv[]) {
             ParseCmdLine(argc, argv);
         }
 
-        InitAudio();
-        C_JoystickManager::Instance()->Init();
         Process();
 
         if (params.cpuTraceEnabled) {
