@@ -6,7 +6,7 @@
 #include "storage_impl.h"
 #include "config_impl.h"
 
-HostEnvImpl::HostEnvImpl(int argc, const char** argv, const std::string& applicationId) : applicationId(applicationId) {
+HostEnvImpl::HostEnvImpl(int argc, char** argv, const std::string& applicationId) : applicationId(applicationId) {
     executablePathStr = std::string(argc ? argv[0] : "");
 }
 

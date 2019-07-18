@@ -1,19 +1,22 @@
 cmake_minimum_required (VERSION 2.8)
 project (zame_z80)
 
-find_program (RUBY_EXECUTABLE "ruby")
+find_program (RUBY_COMMAND "ruby")
 
-if (RUBY_EXECUTABLE)
+if (RUBY_COMMAND)
     message ("Ruby found")
 else ()
     message (FATAL_ERROR "Ruby not found (required to build zame_z80 core)")
 endif ()
 
+set (CMAKE_C_STANDARD 99)
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+
 if (CMAKE_COMPILER_IS_GNUCC)
-    set (CMAKE_C_FLAGS "-O2 -fomit-frame-pointer -Wall -pipe -std=gnu99 -pedantic")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fomit-frame-pointer -pipe -pedantic")
 endif ()
 
-file (GLOB_RECURSE ns_sources
+file (GLOB_RECURSE NS_SOURCES
     src/*.ns.*
 )
 
@@ -23,22 +26,20 @@ else ()
     set (OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/processed")
 endif ()
 
-include_directories(${OUTPUT_DIR})
-set (z80ex_wrapper_sources)
+include_directories (${OUTPUT_DIR})
+set (Z80EX_WRAPPER_SOURCES)
 
-foreach (ns_file ${ns_sources})
-    string (REPLACE ".ns" "" dest_file ${ns_file})
-    string (REGEX REPLACE "^.*src/(.+)$" "${OUTPUT_DIR}/\\1" dest_file ${dest_file})
+foreach (NS_FILE ${NS_SOURCES})
+    string (REPLACE ".ns" "" DEST_FILE ${NS_FILE})
+    string (REGEX REPLACE "^.*src/(.+)$" "${OUTPUT_DIR}/\\1" DEST_FILE ${DEST_FILE})
 
-    add_custom_command(
-        OUTPUT ${dest_file}
-        COMMAND ${RUBY_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/nspp ${ns_file} ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_DIR}
-        DEPENDS ${ns_file}
+    add_custom_command (
+        OUTPUT ${DEST_FILE}
+        COMMAND ${RUBY_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/nspp ${NS_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_DIR}
+        DEPENDS ${NS_FILE}
     )
 
-    list (APPEND z80ex_wrapper_sources ${dest_file})
+    list (APPEND Z80EX_WRAPPER_SOURCES ${DEST_FILE})
 endforeach()
 
-# message ("z80ex_wrapper_sources = ${z80ex_wrapper_sources}")
-add_library (z80ex_wrapper STATIC ${z80ex_wrapper_sources})
-# set_target_properties (z80ex_wrapper PROPERTIES OUTPUT_NAME z80ex_dasm)
+add_library (z80ex_wrapper STATIC ${Z80EX_WRAPPER_SOURCES})

@@ -1358,7 +1358,7 @@ void FreeAll(void) {
     delete hostEnv;
 }
 
-void ParseCmdLine(int argc, const char *argv[]) {
+void ParseCmdLine(int argc, char *argv[]) {
     argv++;
     argc--;
 
@@ -1437,7 +1437,7 @@ void windows_cleanup() {
 
 #endif // _WIN32
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
     OutputLogo();
 
     hostEnv = new HostEnvImpl(argc, argv, "zemu");

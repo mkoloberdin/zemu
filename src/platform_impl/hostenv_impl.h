@@ -7,7 +7,7 @@
 class HostEnvImpl : public HostEnv {
 public:
 
-    HostEnvImpl(int argc, const char** argv, const std::string& applicationId);
+    HostEnvImpl(int argc, char** argv, const std::string& applicationId);
 
     Logger* logger();
     Storage* storage();

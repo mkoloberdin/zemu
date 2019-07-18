@@ -2,19 +2,43 @@ cmake_minimum_required (VERSION 3.7)
 project (ZEmu)
 
 if (NOT USE_SDL1)
-    set(USE_SDL1 0)
-
     # CMake should be able to find SDL2 without this module, but I'm not sure what about Windows.
     # So this module is used mainly for compatibility with old-way and for Windows.
     list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake-sdl2)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    find_program (RUBY_COMMAND "ruby")
+
+    if (RUBY_COMMAND)
+        message ("Ruby found")
+    else ()
+        message (FATAL_ERROR "Ruby not found (required to patch executable for Mojave when SDL1 is used)")
+    endif ()
 endif ()
 
-if (NOT CMAKE_BUILD_TYPE)
+if (USE_ANALYZE)
+    find_program (PVS_STUDIO_ANALYZER_COMMAND "pvs-studio-analyzer")
+    find_program (PLOG_CONVERTER_COMMAND "plog-converter")
+
+    if (PVS_STUDIO_ANALYZER_COMMAND AND PLOG_CONVERTER_COMMAND)
+        message ("PVS-Studio files found")
+    else ()
+        message (FATAL_ERROR "PVS-Studio files not found (required to perform static analysis)")
+    endif ()
+
+    set (CMAKE_EXPORT_COMPILE_COMMANDS On)
+elseif (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE Release)
 endif ()
 
+    set (CMAKE_EXPORT_COMPILE_COMMANDS On)
+
+if (NOT USE_DEFAULT_FIND_FRAMEWORK)
+    # Fix to be able to compile on macOS Mojave
+    set (CMAKE_FIND_FRAMEWORK LAST)
+endif ()
+
 set (CMAKE_CXX_STANDARD 14)
-set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 
 set (ZEMU_VERSION_MAJOR 1)
 set (ZEMU_VERSION_MINOR 0)
@@ -60,7 +84,6 @@ if (USE_SDL1)
         endif ()
     endif ()
 
-    # message ("ENV{SDLDIR}=$ENV{SDLDIR}")
     find_package (SDL REQUIRED)
 
     if (SDL_FOUND)
@@ -77,7 +100,6 @@ else ()
         endif ()
     endif ()
 
-    # message ("ENV{SDL2_DIR}=$ENV{SDL2_DIR}")
     find_package (SDL2 REQUIRED)
 
     if (SDL2_FOUND)
@@ -123,6 +145,44 @@ endif ()
 
 if (WIN32)
     target_link_libraries (zemu winmm shlwapi)
+endif ()
+
+if (USE_SDL1 AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_custom_command (
+        TARGET zemu
+        POST_BUILD
+        COMMAND ${RUBY_COMMAND} "${CMAKE_SOURCE_DIR}/osx-mojave-fix.rb" "${CMAKE_BINARY_DIR}/zemu"
+    )
+endif ()
+
+if (USE_ANALYZE)
+    add_custom_command (
+        TARGET zemu
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/analysis"
+    )
+
+    add_custom_command (
+        TARGET zemu
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/analysis"
+    )
+
+    add_custom_command (
+        TARGET zemu
+        POST_BUILD
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMAND ${PVS_STUDIO_ANALYZER_COMMAND} analyze -o analysis.log -i -j 2 -f compile_commands.json
+        VERBATIM
+    )
+
+    add_custom_command (
+        TARGET zemu
+        POST_BUILD
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMAND ${PLOG_CONVERTER_COMMAND} -a "GA;64;OP;CS;MISRA" -t fullhtml -o analysis analysis.log
+        VERBATIM
+    )
 endif ()
 
 # Visual Studio file grouping

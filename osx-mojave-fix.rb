@@ -74,7 +74,10 @@ class MachO
     def perform_mojave_fix
         lc_build_version_ptr = find_load_command(LC_BUILD_VERSION)
 
-        unless lc_build_version_ptr.nil?
+        if lc_build_version_ptr.nil?
+            puts "No need to fix \"#{@path}\" for Mojave"
+        else
+            puts "Applying Mojave fix for \"#{@path}\""
             put_int(lc_build_version_ptr, 0)
             write_out
         end
