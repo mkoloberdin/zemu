@@ -68,7 +68,7 @@ void AttachZ80InputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uin
 void AttachZ80OutputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t));
 void AttachFrameStartHandler(void (* func)(void));
 void AttachAfterFrameRenderHandler(void (* func)(void));
-void AttachHwHandler(int eventType, bool (* func)(ZHW_Event&));
+void AttachHwHandler(HardwareEventType eventType, bool (* func)(HardwareEvent&));
 void AttachResetHandler(void (* func)(void));
 
 extern ptrOnReadByteFunc* devMapRead;

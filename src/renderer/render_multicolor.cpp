@@ -24,14 +24,14 @@ void RenderMulticolor(unsigned long nextClk) {
             if (cp) {
                 cp = colors[cp];
 
-                int r = ((unsigned int)ZHW_VIDEO_GETR(ci) + (unsigned int)ZHW_VIDEO_GETR(cp)) >> 1;
-                int g = ((unsigned int)ZHW_VIDEO_GETG(ci) + (unsigned int)ZHW_VIDEO_GETG(cp)) >> 1;
-                int b = ((unsigned int)ZHW_VIDEO_GETB(ci) + (unsigned int)ZHW_VIDEO_GETB(cp)) >> 1;
+                int r = ((unsigned int)HW_GETR(ci) + (unsigned int)HW_GETR(cp)) >> 1;
+                int g = ((unsigned int)HW_GETG(ci) + (unsigned int)HW_GETG(cp)) >> 1;
+                int b = ((unsigned int)HW_GETB(ci) + (unsigned int)HW_GETB(cp)) >> 1;
 
-                ci = ZHW_VIDEO_MAKERGB(r, g, b);
+                ci = HW_MAKERGB(r, g, b);
             }
 
-            cp = ZHW_VIDEO_MAKERGB(0, 0, 0);
+            cp = HW_MAKERGB(0, 0, 0);
         } else {
             if ((frames & 32) && (cl & 128)) {
                 cp = colors[((cl & 64) >> 3) | (cl & 7)];
@@ -45,11 +45,11 @@ void RenderMulticolor(unsigned long nextClk) {
         bt = dev_mman.ram[ zxScreen + ((zxLine & 0xC0) << 5) + ((zxLine & 7) << 8) + ((zxLine & 0x38) << 2) + pos ];
 
         if (((zxLine >> 3) & 1) ^ (pos & 1)) {
-            ci = ZHW_VIDEO_MAKERGB(0, 0, 0);
-            cp = ZHW_VIDEO_MAKERGB(192, 192, 192);
+            ci = HW_MAKERGB(0, 0, 0);
+            cp = HW_MAKERGB(192, 192, 192);
         } else {
-            ci = ZHW_VIDEO_MAKERGB(64, 64, 64);
-            cp = ZHW_VIDEO_MAKERGB(255, 255, 255);
+            ci = HW_MAKERGB(64, 64, 64);
+            cp = HW_MAKERGB(255, 255, 255);
         }
     } else { // attributesHack == 2
         bt = 0x3C;

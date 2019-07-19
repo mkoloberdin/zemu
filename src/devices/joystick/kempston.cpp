@@ -3,11 +3,14 @@
 
 #include "kempston.h"
 
-uint8_t C_KempstonStick::joy_kbd = 0;
+uint8_t C_KempstonStick::joyState = 0;
+uint8_t C_KempstonStick::joyOnKeybState = 0;
 
 void C_KempstonStick::Init(void) {
-    AttachHwHandler(ZHW_EVENT_KEYDOWN, OnKeyDown);
-    AttachHwHandler(ZHW_EVENT_KEYUP, OnKeyUp);
+    AttachHwHandler(HW_EVENT_KEYDOWN, OnKeyDown);
+    AttachHwHandler(HW_EVENT_KEYUP, OnKeyUp);
+    AttachHwHandler(HW_EVENT_JOYDOWN, OnJoyDown);
+    AttachHwHandler(HW_EVENT_JOYUP, OnJoyUp);
 
     AttachZ80InputHandler(InputByteCheckPort, OnInputByte);
 }
@@ -15,31 +18,31 @@ void C_KempstonStick::Init(void) {
 void C_KempstonStick::Close(void) {
 }
 
-bool C_KempstonStick::OnKeyDown(ZHW_Event& event) {
-    if (!joyOnKeyb || !ZHW_EVENT_OKKEY(window, event)) {
+bool C_KempstonStick::OnKeyDown(HardwareEvent& event) {
+    if (!joyOnKeyb) {
         return false;
     }
 
-    switch (event.key.keysym.sym) {
-        case ZHW_KEY_UP:
-            joy_kbd |= 0x08;
+    switch (event.keyCode) {
+        case HW_KEYCODE_UP:
+            joyOnKeybState |= 0x08;
             break;
 
-        case ZHW_KEY_DOWN:
-            joy_kbd |= 0x04;
+        case HW_KEYCODE_DOWN:
+            joyOnKeybState |= 0x04;
             break;
 
-        case ZHW_KEY_LEFT:
-            joy_kbd |= 0x02;
+        case HW_KEYCODE_LEFT:
+            joyOnKeybState |= 0x02;
             break;
 
-        case ZHW_KEY_RIGHT:
-            joy_kbd |= 0x01;
+        case HW_KEYCODE_RIGHT:
+            joyOnKeybState |= 0x01;
             break;
 
-        case ZHW_KEY_RCTRL: // fallthrough
-        case ZHW_KEY_RALT:
-            joy_kbd |= 0x10;
+        case HW_KEYCODE_RCTRL: // fallthrough
+        case HW_KEYCODE_RALT:
+            joyOnKeybState |= 0x10;
             break;
 
         default:
@@ -49,31 +52,31 @@ bool C_KempstonStick::OnKeyDown(ZHW_Event& event) {
     return false;
 }
 
-bool C_KempstonStick::OnKeyUp(ZHW_Event& event) {
-    if (!joyOnKeyb || !ZHW_EVENT_OKKEY(window, event)) {
+bool C_KempstonStick::OnKeyUp(HardwareEvent& event) {
+    if (!joyOnKeyb) {
         return false;
     }
 
-    switch (event.key.keysym.sym) {
-        case ZHW_KEY_UP:
-            joy_kbd &= ~0x08;
+    switch (event.keyCode) {
+        case HW_KEYCODE_UP:
+            joyOnKeybState &= ~0x08;
             break;
 
-        case ZHW_KEY_DOWN:
-            joy_kbd &= ~0x04;
+        case HW_KEYCODE_DOWN:
+            joyOnKeybState &= ~0x04;
             break;
 
-        case ZHW_KEY_LEFT:
-            joy_kbd &= ~0x02;
+        case HW_KEYCODE_LEFT:
+            joyOnKeybState &= ~0x02;
             break;
 
-        case ZHW_KEY_RIGHT:
-            joy_kbd &= ~0x01;
+        case HW_KEYCODE_RIGHT:
+            joyOnKeybState &= ~0x01;
             break;
 
-        case ZHW_KEY_RCTRL: // fallthrough
-        case ZHW_KEY_RALT:
-            joy_kbd &= ~0x10;
+        case HW_KEYCODE_RCTRL: // fallthrough
+        case HW_KEYCODE_RALT:
+            joyOnKeybState &= ~0x10;
             break;
 
         default:
@@ -81,6 +84,58 @@ bool C_KempstonStick::OnKeyUp(ZHW_Event& event) {
     }
 
     return false;
+}
+
+bool C_KempstonStick::OnJoyDown(HardwareEvent& event) {
+    switch (event.joyButton) {
+        case HW_JOYSTICK_UP:
+            joyState |= 0x08;
+            break;
+
+        case HW_JOYSTICK_DOWN:
+            joyState |= 0x04;
+            break;
+
+        case HW_JOYSTICK_LEFT:
+            joyState |= 0x02;
+            break;
+
+        case HW_JOYSTICK_RIGHT:
+            joyState |= 0x01;
+            break;
+
+        case HW_JOYSTICK_FIRE:
+            joyState |= 0x10;
+            break;
+    }
+
+    return true;
+}
+
+bool C_KempstonStick::OnJoyUp(HardwareEvent& event) {
+    switch (event.joyButton) {
+        case HW_JOYSTICK_UP:
+            joyState &= ~0x08;
+            break;
+
+        case HW_JOYSTICK_DOWN:
+            joyState &= ~0x04;
+            break;
+
+        case HW_JOYSTICK_LEFT:
+            joyState &= ~0x02;
+            break;
+
+        case HW_JOYSTICK_RIGHT:
+            joyState &= ~0x01;
+            break;
+
+        case HW_JOYSTICK_FIRE:
+            joyState &= ~0x10;
+            break;
+    }
+
+    return true;
 }
 
 bool C_KempstonStick::InputByteCheckPort(uint16_t port) {
@@ -88,37 +143,6 @@ bool C_KempstonStick::InputByteCheckPort(uint16_t port) {
 }
 
 bool C_KempstonStick::OnInputByte(uint16_t port, uint8_t& retval) {
-    retval = 0;
-
-    if (joyOnKeyb) {
-        retval = joy_kbd;
-    } else {
-        /*
-         * Rework to joystick events from hardware layer
-         *
-        JoystickState* jstate = C_JoystickManager::Instance()->GetJoystickState(joy_num);
-
-        if (jstate->right) {
-            retval |= 0x01;
-        }
-
-        if (jstate->left) {
-            retval |= 0x02;
-        }
-
-        if (jstate->down) {
-            retval |= 0x04;
-        }
-
-        if (jstate->up) {
-            retval |= 0x08;
-        }
-
-        if (jstate->fire) {
-            retval |= 0x10;
-        }
-        */
-    }
-
+    retval = (joyOnKeyb ? joyOnKeybState : joyState);
     return true;
 }

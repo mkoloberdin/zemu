@@ -18,7 +18,7 @@ public:
     static void UpdateState(void);
     static bool InputByteCheckPort(uint16_t port);
     static bool OnInputByte(uint16_t port, uint8_t& retval);
-    static bool OnHwMouseButtonDown(ZHW_Event& ev);
+    static bool OnHwMouseWheel(HardwareEvent& event);
 };
 
 #endif

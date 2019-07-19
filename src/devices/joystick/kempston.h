@@ -7,13 +7,16 @@
 class C_KempstonStick : public C_Device {
 public:
 
-    static uint8_t joy_kbd;
+    static uint8_t joyState;
+    static uint8_t joyOnKeybState;
 
     void Init(void);
     void Close(void);
 
-    static bool OnKeyDown(ZHW_Event& event);
-    static bool OnKeyUp(ZHW_Event& event);
+    static bool OnKeyDown(HardwareEvent& event);
+    static bool OnKeyUp(HardwareEvent& event);
+    static bool OnJoyDown(HardwareEvent& event);
+    static bool OnJoyUp(HardwareEvent& event);
 
     static bool InputByteCheckPort(uint16_t port);
     static bool OnInputByte(uint16_t port, uint8_t& retval);

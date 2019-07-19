@@ -10,7 +10,7 @@ uint8_t C_Mouse::wheelCnt;
 
 void C_Mouse::Init(void) {
     AttachZ80InputHandler(InputByteCheckPort, OnInputByte);
-    AttachHwHandler(ZHW_EVENT_MOUSEWHEEL, OnHwMouseButtonDown);
+    AttachHwHandler(HW_EVENT_MOUSEWHEEL, OnHwMouseWheel);
 
     portFBDF = 128;
     portFFDF = 96;
@@ -22,24 +22,22 @@ void C_Mouse::Close(void) {
 }
 
 void C_Mouse::UpdateState(void) {
-    int mx;
-    int my;
+    HardwareMouseState state;
+    hostEnv->hardware()->getMouseState(&state);
 
-    int bt = ZHW_Moyse_GetRelativeState(&mx, &my);
-
-    portFBDF += mx / params.mouseDiv;
-    portFFDF -= my / params.mouseDiv;
+    portFBDF += state.x / params.mouseDiv;
+    portFFDF -= state.y / params.mouseDiv;
     portFADF = (wheelCnt << 4) | 0x0F;
 
-    if (bt & ZHW_MOUSE_LMASK) {
+    if (state.buttons & HW_MOUSE_LMASK) {
         portFADF &= ~1;
     }
 
-    if (bt & ZHW_MOUSE_RMASK) {
+    if (state.buttons & HW_MOUSE_RMASK) {
         portFADF &= ~2;
     }
 
-    if (bt & ZHW_MOUSE_MMASK) {
+    if (state.buttons & HW_MOUSE_MMASK) {
         portFADF &= ~3; // middle button works as LMB + RMB
     }
 }
@@ -62,13 +60,13 @@ bool C_Mouse::OnInputByte(uint16_t port, uint8_t& retval) {
     return true;
 }
 
-bool C_Mouse::OnHwMouseButtonDown(ZHW_Event& event) {
-    if (ZHW_EVENT_WHEELDIRECTION(event) == ZHW_MOUSE_WHEELUP) {
+bool C_Mouse::OnHwMouseWheel(HardwareEvent& event) {
+    if (event.mouseWheelDirection < 0) {
         wheelCnt++;
         return true;
     }
 
-    if (ZHW_EVENT_WHEELDIRECTION(event) == ZHW_MOUSE_WHEELDOWN) {
+    if (event.mouseWheelDirection > 0) {
         wheelCnt--;
         return true;
     }

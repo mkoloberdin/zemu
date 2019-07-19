@@ -37,16 +37,16 @@ public:
         s_HostKeyMods mods;
     };
 
-    static std::set<ZHW_Keyboard_KeyCode> hostKeyPressed;
-    static std::map<ZHW_Keyboard_KeyCode, s_HostKey> hostKeys;
+    static std::set<int> hostKeyPressed;
+    static std::map<int, s_HostKey> hostKeys;
     static int keyboard[8];
 
     static void ReadKbdConfig(void);
     void Init(void);
     void Close(void);
 
-    static bool OnKeyDown(ZHW_Event& event);
-    static bool OnKeyUp(ZHW_Event& event);
+    static bool OnKeyDown(HardwareEvent& event);
+    static bool OnKeyUp(HardwareEvent& event);
 
     static bool InputByteCheckPort(uint16_t port);
     static bool OnInputByte(uint16_t port, uint8_t& retval);

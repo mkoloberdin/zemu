@@ -8,8 +8,8 @@
 #include "keyboard.h"
 #include "keys.h"
 
-std::set<ZHW_Keyboard_KeyCode> C_Keyboard::hostKeyPressed;
-std::map<ZHW_Keyboard_KeyCode, C_Keyboard::s_HostKey> C_Keyboard::hostKeys;
+std::set<int> C_Keyboard::hostKeyPressed;
+std::map<int, C_Keyboard::s_HostKey> C_Keyboard::hostKeys;
 int C_Keyboard::keyboard[8];
 
 void C_Keyboard::ReadKbdConfig(void) {
@@ -56,8 +56,8 @@ void C_Keyboard::ReadKbdConfig(void) {
         *s = 0;
         s++;
 
-        ZHW_Keyboard_KeyCode keySym = 0;
-        ZHW_Keyboard_KeyCode keySymAdd = 0;
+        int keySym = 0;
+        int keySymAdd = 0;
 
         for (int i = 0; cfgHostKeys[i].cfgname[0]; i++) {
             if (!strcasecmp(p, cfgHostKeys[i].cfgname)) {
@@ -71,8 +71,8 @@ void C_Keyboard::ReadKbdConfig(void) {
             StrikeError("Host key \"%s\" not found at line %d of %s", p, lineNum, fileName);
         }
 
-        ZHW_Keyboard_KeyCode keyMod = 0;
-        ZHW_Keyboard_KeyCode keyModAdd = 0;
+        int keyMod = 0;
+        int keyModAdd = 0;
 
         while (*s && ((*s) == ' ' || (*s) == 9)) {
             s++;
@@ -267,8 +267,8 @@ void C_Keyboard::ReadKbdConfig(void) {
 void C_Keyboard::Init(void) {
     ReadKbdConfig();
 
-    AttachHwHandler(ZHW_EVENT_KEYDOWN, OnKeyDown);
-    AttachHwHandler(ZHW_EVENT_KEYUP, OnKeyUp);
+    AttachHwHandler(HW_EVENT_KEYDOWN, OnKeyDown);
+    AttachHwHandler(HW_EVENT_KEYUP, OnKeyUp);
 
     AttachZ80InputHandler(InputByteCheckPort, OnInputByte);
 
@@ -280,20 +280,20 @@ void C_Keyboard::Init(void) {
 void C_Keyboard::Close(void) {
 }
 
-bool C_Keyboard::OnKeyDown(ZHW_Event& event) {
-    ZHW_Keyboard_KeyCode key = event.key.keysym.sym;
+bool C_Keyboard::OnKeyDown(HardwareEvent& event) {
+    int key = event.keyCode;
 
-    if (!ZHW_EVENT_OKKEY(window, event) || (joyOnKeyb && (key == ZHW_KEY_UP
-        || key == ZHW_KEY_DOWN
-        || key == ZHW_KEY_LEFT
-        || key == ZHW_KEY_RIGHT
-        || key == ZHW_KEY_RCTRL
-        || key == ZHW_KEY_RALT
-    ))) {
+    if (joyOnKeyb && (key == HW_KEYCODE_UP
+        || key == HW_KEYCODE_DOWN
+        || key == HW_KEYCODE_LEFT
+        || key == HW_KEYCODE_RIGHT
+        || key == HW_KEYCODE_RCTRL
+        || key == HW_KEYCODE_RALT
+    )) {
         return false;
     }
 
-    std::map<ZHW_Keyboard_KeyCode, s_HostKey>::iterator keyIt = hostKeys.find(key);
+    std::map<int, s_HostKey>::iterator keyIt = hostKeys.find(key);
 
     if (keyIt == hostKeys.end()) {
         return false;
@@ -303,13 +303,13 @@ bool C_Keyboard::OnKeyDown(ZHW_Event& event) {
     s_HostKey* hostKey = &keyIt->second;
 
     for (int k = 0; k < hostKey->mods.count; k++) {
-        ZHW_Keyboard_KeyCode keyMod = hostKey->mods.keyMod[k];
+        int keyMod = hostKey->mods.keyMod[k];
 
         if (hostKeyPressed.find(keyMod) == hostKeyPressed.end()) {
             continue;
         }
 
-        if (hostKey->mods.actions[k] && keyMod == ZHW_KEY_NUMLOCK) {
+        if (hostKey->mods.actions[k] && keyMod == HW_KEYCODE_NUMLOCK) {
             hostKey->mods.actions[k]();
             return false;
         }
@@ -328,7 +328,7 @@ bool C_Keyboard::OnKeyDown(ZHW_Event& event) {
         return false;
     }
 
-    if (hostKey->action && key == ZHW_KEY_NUMLOCK) {
+    if (hostKey->action && key == HW_KEYCODE_NUMLOCK) {
         hostKey->action();
         return false;
     }
@@ -342,20 +342,20 @@ bool C_Keyboard::OnKeyDown(ZHW_Event& event) {
     return false;
 }
 
-bool C_Keyboard::OnKeyUp(ZHW_Event& event) {
-    ZHW_Keyboard_KeyCode key = event.key.keysym.sym;
+bool C_Keyboard::OnKeyUp(HardwareEvent& event) {
+    int key = event.keyCode;
 
-    if (!ZHW_EVENT_OKKEY(window, event) || (joyOnKeyb && (key == ZHW_KEY_UP
-        || key == ZHW_KEY_DOWN
-        || key == ZHW_KEY_LEFT
-        || key == ZHW_KEY_RIGHT
-        || key == ZHW_KEY_RCTRL
-        || key == ZHW_KEY_RALT
-    ))) {
+    if (joyOnKeyb && (key == HW_KEYCODE_UP
+        || key == HW_KEYCODE_DOWN
+        || key == HW_KEYCODE_LEFT
+        || key == HW_KEYCODE_RIGHT
+        || key == HW_KEYCODE_RCTRL
+        || key == HW_KEYCODE_RALT
+    )) {
         return false;
     }
 
-    std::map<ZHW_Keyboard_KeyCode, s_HostKey>::iterator keyIt = hostKeys.find(key);
+    std::map<int, s_HostKey>::iterator keyIt = hostKeys.find(key);
 
     if (keyIt == hostKeys.end()) {
         return false;
@@ -366,7 +366,7 @@ bool C_Keyboard::OnKeyUp(ZHW_Event& event) {
 
     for (int k = 0; k < hostKey->mods.count; k++)
     {
-        ZHW_Keyboard_KeyCode keyMod = hostKey->mods.keyMod[k];
+        int keyMod = hostKey->mods.keyMod[k];
         bool isModPressed = (hostKeyPressed.find(keyMod) != hostKeyPressed.end());
 
         if (isModPressed && hostKey->mods.actions[k]) {
@@ -390,7 +390,7 @@ bool C_Keyboard::OnKeyUp(ZHW_Event& event) {
     }
 
     if (hostKey->mods.count) {
-        for (std::map<ZHW_Keyboard_KeyCode, s_HostKey>::iterator it = hostKeys.begin(); it != hostKeys.end(); ++it) {
+        for (std::map<int, s_HostKey>::iterator it = hostKeys.begin(); it != hostKeys.end(); ++it) {
             if (hostKeyPressed.find(it->first) != hostKeyPressed.end() && it->second.normal.count) {
                 for (int i = 0; i < it->second.normal.count; i++) {
                     keyboard[it->second.normal.portnum[i]] &= ~it->second.normal.bitmask[i];

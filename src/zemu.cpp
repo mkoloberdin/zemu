@@ -107,8 +107,8 @@ struct s_InputItem {
 typedef s_WriteItem s_OutputItem;
 
 struct s_HwItem {
-    unsigned int eventType;
-    bool (* func)(ZHW_Event&);
+    HardwareEventType eventType;
+    bool (* func)(HardwareEvent&);
 };
 
 //--------------------------------------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ void AttachAfterFrameRenderHandler(void (* func)(void)) {
     hnd_afterFrameRender[cnt_afterFrameRender++] = func;
 }
 
-void AttachHwHandler(int eventType, bool (* func)(ZHW_Event&)) {
+void AttachHwHandler(HardwareEventType eventType, bool (* func)(HardwareEvent&)) {
     if (cnt_hw >= MAX_HANDLERS) {
         StrikeError("Increase MAX_HANDLERS");
     }
@@ -242,45 +242,45 @@ C_Device* devs[] = {
 };
 
 int colors_base[0x10] = {
-    ZHW_VIDEO_MAKERGB(  0,   0,   0),
-    ZHW_VIDEO_MAKERGB(  0,   0, 192),
-    ZHW_VIDEO_MAKERGB(192,   0,   0),
-    ZHW_VIDEO_MAKERGB(192,   0, 192),
-    ZHW_VIDEO_MAKERGB(  0, 192,   0),
-    ZHW_VIDEO_MAKERGB(  0, 192, 192),
-    ZHW_VIDEO_MAKERGB(192, 192,   0),
-    ZHW_VIDEO_MAKERGB(192, 192, 192),
-    ZHW_VIDEO_MAKERGB(  0,   0,   0),
-    ZHW_VIDEO_MAKERGB(  0,   0, 255),
-    ZHW_VIDEO_MAKERGB(255,   0,   0),
-    ZHW_VIDEO_MAKERGB(255,   0, 255),
-    ZHW_VIDEO_MAKERGB(  0, 255,   0),
-    ZHW_VIDEO_MAKERGB(  0, 255, 255),
-    ZHW_VIDEO_MAKERGB(255, 255,   0),
-    ZHW_VIDEO_MAKERGB(255, 255, 255)
+    HW_MAKERGB(  0,   0,   0),
+    HW_MAKERGB(  0,   0, 192),
+    HW_MAKERGB(192,   0,   0),
+    HW_MAKERGB(192,   0, 192),
+    HW_MAKERGB(  0, 192,   0),
+    HW_MAKERGB(  0, 192, 192),
+    HW_MAKERGB(192, 192,   0),
+    HW_MAKERGB(192, 192, 192),
+    HW_MAKERGB(  0,   0,   0),
+    HW_MAKERGB(  0,   0, 255),
+    HW_MAKERGB(255,   0,   0),
+    HW_MAKERGB(255,   0, 255),
+    HW_MAKERGB(  0, 255,   0),
+    HW_MAKERGB(  0, 255, 255),
+    HW_MAKERGB(255, 255,   0),
+    HW_MAKERGB(255, 255, 255)
 };
 
 /*
  * Work in progress
  *
 int c64_colors_base[0x10] = {
-    ZHW_VIDEO_MAKERGB(0x00, 0x00, 0x00),
-    ZHW_VIDEO_MAKERGB(0x35, 0x28, 0x79),
-    ZHW_VIDEO_MAKERGB(0x9A, 0x67, 0x59),
-    ZHW_VIDEO_MAKERGB(0x6F, 0x3D, 0x86),
-    ZHW_VIDEO_MAKERGB(0x58, 0x8D, 0x43),
-    ZHW_VIDEO_MAKERGB(0x70, 0xA4, 0xB2),
-    ZHW_VIDEO_MAKERGB(0xB8, 0xC7, 0x6F),
-    ZHW_VIDEO_MAKERGB(0x95, 0x95, 0x95),
+    HW_MAKERGB(0x00, 0x00, 0x00),
+    HW_MAKERGB(0x35, 0x28, 0x79),
+    HW_MAKERGB(0x9A, 0x67, 0x59),
+    HW_MAKERGB(0x6F, 0x3D, 0x86),
+    HW_MAKERGB(0x58, 0x8D, 0x43),
+    HW_MAKERGB(0x70, 0xA4, 0xB2),
+    HW_MAKERGB(0xB8, 0xC7, 0x6F),
+    HW_MAKERGB(0x95, 0x95, 0x95),
 
-    ZHW_VIDEO_MAKERGB(0x00, 0x00, 0x00),
-    ZHW_VIDEO_MAKERGB(0x35, 0x28, 0x79),
-    ZHW_VIDEO_MAKERGB(0x9A, 0x67, 0x59),
-    ZHW_VIDEO_MAKERGB(0x6F, 0x3D, 0x86),
-    ZHW_VIDEO_MAKERGB(0x58, 0x8D, 0x43),
-    ZHW_VIDEO_MAKERGB(0x70, 0xA4, 0xB2),
-    ZHW_VIDEO_MAKERGB(0xB8, 0xC7, 0x6F),
-    ZHW_VIDEO_MAKERGB(0xFF, 0xFF, 0xFF)
+    HW_MAKERGB(0x00, 0x00, 0x00),
+    HW_MAKERGB(0x35, 0x28, 0x79),
+    HW_MAKERGB(0x9A, 0x67, 0x59),
+    HW_MAKERGB(0x6F, 0x3D, 0x86),
+    HW_MAKERGB(0x58, 0x8D, 0x43),
+    HW_MAKERGB(0x70, 0xA4, 0xB2),
+    HW_MAKERGB(0xB8, 0xC7, 0x6F),
+    HW_MAKERGB(0xFF, 0xFF, 0xFF)
 };
 */
 
@@ -539,7 +539,7 @@ void Action_Pause(void) {
 void Action_JoyOnKeyb(void) {
     isPaused = false;
     joyOnKeyb = !joyOnKeyb;
-    dev_kempston.joy_kbd = 0;
+    dev_kempston.joyOnKeybState = 0;
     SetMessage(joyOnKeyb ? "Kempston on keyboard ON" : "Kempston on keyboard OFF");
 }
 
@@ -769,7 +769,7 @@ void AntiFlicker(int copyFrom, int copyTo) {
 
     uint8_t* s1 = (uint8_t*)renderScreenBuffer[0];
     uint8_t* s2 = (uint8_t*)renderScreenBuffer[1];
-    uint8_t* sr = (uint8_t*)renderScreenBuffer[2];
+    uint8_t* sr = (uint8_t*)screen;
 
     for (int i = WIDTH * HEIGHT; i--;) {
         *(sr++) = (uint8_t)(((unsigned int)(*(s1++)) + (unsigned int)(*(s2++))) >> 1);
@@ -991,10 +991,8 @@ void UpdateScreen(void) {
 }
 
 void Process(void) {
-    int key;
-    ZHW_Event event;
+    HardwareEvent event;
     int i;
-    unsigned int btick;
     int frameSkip = 0;
     bool tapePrevActive = false;
 
@@ -1004,7 +1002,7 @@ void Process(void) {
     lastDevClk = 0;
     frames = 0;
     params.maxSpeed = false;
-    btick = ZHW_Timer_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
+    uint32_t ntick = hostEnv->hardware()->getElapsedMillis() + (params.sound ? 0 : FRAME_WAIT_MS);
 
     for (;;) {
         if (!isPaused) {
@@ -1042,10 +1040,11 @@ void Process(void) {
             }
 
             if (!params.maxSpeed) {
-                ZHW_Timer_Delay(1);
+                hostEnv->hardware()->delay(1);
+                uint32_t ctick = hostEnv->hardware()->getElapsedMillis();
 
-                if (ZHW_Timer_GetTicks() < btick) {
-                    ZHW_Timer_Delay(btick - ZHW_Timer_GetTicks());
+                if (ctick < ntick) {
+                    hostEnv->hardware()->delay(ntick - ctick);
                 }
             }
 
@@ -1062,21 +1061,17 @@ void Process(void) {
             soundMixer.FlushFrame(SOUND_ENABLED);
         }
 
-        btick = ZHW_Timer_GetTicks() + (params.sound ? 0 : FRAME_WAIT_MS);
+        ntick = hostEnv->hardware()->getElapsedMillis() + (params.sound ? 0 : FRAME_WAIT_MS);
         isPaused = isPausedNx;
         bool quitMode = false;
 
-        while (ZHW_Event_Poll(&event)) {
-            if (event.type == ZHW_EVENT_QUIT) {
+        while (hostEnv->hardware()->pollEvent(&event)) {
+            if (event.type == HW_EVENT_QUIT) {
                 exit(0);
             }
 
-            if (event.type == ZHW_EVENT_KEYUP && ZHW_EVENT_OKKEY(window, event)) {
-                key = event.key.keysym.sym;
-
-                if (key == ZHW_KEY_ESCAPE) {
-                    quitMode = true;
-                }
+            if (event.type == HW_EVENT_KEYUP && event.keyCode == HW_KEYCODE_ESCAPE) {
+                quitMode = true;
             }
 
             i = cnt_hw;
