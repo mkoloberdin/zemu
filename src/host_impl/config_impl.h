@@ -1,9 +1,9 @@
-#ifndef PLATFORM_IMPL__CONFIG_IMPL_H__INCLUDED
-#define PLATFORM_IMPL__CONFIG_IMPL_H__INCLUDED
+#ifndef HOST_IMPL__CONFIG_IMPL_H__INCLUDED
+#define HOST_IMPL__CONFIG_IMPL_H__INCLUDED
 
-#include "platform/config.h"
-#include "platform/storage.h"
-#include "platform/logger.h"
+#include "host/config.h"
+#include "host/storage.h"
+#include "host/logger.h"
 #include "lib_simpleini/SimpleIni.h"
 
 class ConfigImpl : public Config {

@@ -31,7 +31,7 @@ void C_TsFm::Init(void) {
     AttachAfterFrameRenderHandler(OnAfterFrameRender);
     AttachResetHandler(OnReset);
 
-    auto s = hostEnv->config()->getString("sound", "tsfmmode", "zxm");
+    auto s = host->config()->getString("sound", "tsfmmode", "zxm");
     str = s.c_str();
 
     if (!strcasecmp(str, "ay")) {

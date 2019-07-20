@@ -128,7 +128,7 @@ void C_Fdd::addboot() {
         }
     }
 
-    auto bootPath = hostEnv->storage()->path(get_appendboot());
+    auto bootPath = host->storage()->path(get_appendboot());
 
     if (!bootPath->isFile()) {
         return;

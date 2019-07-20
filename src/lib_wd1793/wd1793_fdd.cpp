@@ -65,7 +65,7 @@ void C_Fdd::eject() {
 }
 
 int C_Fdd::save_dimage(const char* filename, enum DIMAGE_TYPE type) {
-    auto path = hostEnv->storage()->path(filename);
+    auto path = host->storage()->path(filename);
 
     if (!path->isWriteSupported()) {
         return 0;
@@ -219,7 +219,7 @@ int C_Fdd::load_dimage(const char* filename) {
 }
 
 uint8_t C_Fdd::what_is(const char* filename) {
-    auto path = hostEnv->storage()->path(filename);
+    auto path = host->storage()->path(filename);
 
     if (!path->isFile()) {
         return snNOFILE;

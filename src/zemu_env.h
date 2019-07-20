@@ -1,8 +1,8 @@
 #ifndef _ZEMU_ENV_H_INCLUDED_
 #define _ZEMU_ENV_H_INCLUDED_
 
-#include "platform/hostenv.h"
+#include "host/host.h"
 
-extern HostEnv* hostEnv;
+extern Host* host;
 
 #endif

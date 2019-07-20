@@ -100,7 +100,7 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     DataReaderPtr reader;
 
     try {
-        reader = hostEnv->storage()->path(filename)->dataReader();
+        reader = host->storage()->path(filename)->dataReader();
     } catch (StorageException& e) {
         printf("Load failed: %s\n", e.what());
         return false;
@@ -281,7 +281,7 @@ bool save_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
     DataWriterPtr writer;
 
     try {
-        writer = hostEnv->storage()->path(filename)->dataWriter();
+        writer = host->storage()->path(filename)->dataWriter();
     } catch (StorageException& e) {
         printf("Write failed: %s\n", e.what());
         return false;

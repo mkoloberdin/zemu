@@ -41,19 +41,19 @@ std::string split_romname(std::string& romname, size_t* offset) {
 void C_MemoryManager::ReadFile(void) {
     std::string filename;
     size_t offset;
-    auto config = hostEnv->config();
+    auto config = host->config();
 
     filename = config->getString("core", "rom_48", "pentagon.rom:1");
     filename = split_romname(filename, &offset);
 
-    if (hostEnv->storage()->readExtras("roms", filename, &rom[0x4000], 0x4000, offset) != 0x4000) {
+    if (host->storage()->readExtras("roms", filename, &rom[0x4000], 0x4000, offset) != 0x4000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 
     filename = config->getString("core", "rom_128", "pentagon.rom:0");
     filename = split_romname(filename, &offset);
 
-    if (hostEnv->storage()->readExtras("roms", filename, rom, 0x4000, offset) != 0x4000) {
+    if (host->storage()->readExtras("roms", filename, rom, 0x4000, offset) != 0x4000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 

@@ -2,6 +2,7 @@
 *.o
 .kdev*
 callgrind.out.*
+*.PVS-Studio*
 
 .cproject
 .DS_Store

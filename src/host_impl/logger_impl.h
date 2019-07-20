@@ -1,7 +1,7 @@
-#ifndef PLATFORM_IMPL__LOGGER_IMPL_H__INCLUDED
-#define PLATFORM_IMPL__LOGGER_IMPL_H__INCLUDED
+#ifndef HOST_IMPL__LOGGER_IMPL_H__INCLUDED
+#define HOST_IMPL__LOGGER_IMPL_H__INCLUDED
 
-#include "platform/logger.h"
+#include "host/logger.h"
 
 class LoggerImpl : public Logger {
 public:

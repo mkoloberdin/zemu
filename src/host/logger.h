@@ -1,5 +1,5 @@
-#ifndef PLATFORM__LOGGER_H__INCLUDED
-#define PLATFORM__LOGGER_H__INCLUDED
+#ifndef HOST__LOGGER_H__INCLUDED
+#define HOST__LOGGER_H__INCLUDED
 
 #include <memory>
 

@@ -12,7 +12,7 @@ void OutputGimpImage(int x, int y, s_GimpImage* img) {
                 int r = *(o++);
                 int g = *(o++);
                 int b = *(o++);
-                screen[(y + i) * WIDTH + x + j] = HW_MAKERGB(r, g, b);
+                screen[(y + i) * WIDTH + x + j] = STAGE_MAKERGB(r, g, b);
             }
         }
     } else if (img->bpp == 4) {
@@ -24,7 +24,7 @@ void OutputGimpImage(int x, int y, s_GimpImage* img) {
                 int a = *(o++);
 
                 if (a > 128) {
-                    screen[(y + i) * WIDTH + x + j] = HW_MAKERGB(r, g, b);
+                    screen[(y + i) * WIDTH + x + j] = STAGE_MAKERGB(r, g, b);
                 }
             }
         }

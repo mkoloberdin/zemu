@@ -14,7 +14,7 @@ C_Font::C_Font(uint8_t* data) {
         int r = *(data++);
         int g = *(data++);
         int b = *(data++);
-        pixels[i] = HW_MAKERGB(r, g, b);
+        pixels[i] = STAGE_MAKERGB(r, g, b);
     }
 
     CalcFont();

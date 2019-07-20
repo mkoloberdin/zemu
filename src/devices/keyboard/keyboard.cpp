@@ -16,8 +16,8 @@ void C_Keyboard::ReadKbdConfig(void) {
     char buf[0x1000];
     s_ZxKeys zxKeys;
 
-    string value = hostEnv->config()->getString("input", "keymap", "keys.config");
-    string keysConfigPath = hostEnv->storage()->findExtras(value)->string();
+    string value = host->config()->getString("input", "keymap", "keys.config");
+    string keysConfigPath = host->storage()->findExtras(value)->string();
 
     if (keysConfigPath.empty()) {
         throw C_E(E_FileNotFound, value.c_str());
@@ -27,7 +27,7 @@ void C_Keyboard::ReadKbdConfig(void) {
     const char* fileName = keysConfigPath.c_str();
 
     printf("Trying to load keys config from \"%s\" ...\n", fileName);
-    auto reader = hostEnv->storage()->path(keysConfigPath)->dataReader();
+    auto reader = host->storage()->path(keysConfigPath)->dataReader();
 
     while (!reader->isEof()) {
         strcpy(buf, reader->readLine().c_str());
@@ -267,8 +267,8 @@ void C_Keyboard::ReadKbdConfig(void) {
 void C_Keyboard::Init(void) {
     ReadKbdConfig();
 
-    AttachHwHandler(HW_EVENT_KEYDOWN, OnKeyDown);
-    AttachHwHandler(HW_EVENT_KEYUP, OnKeyUp);
+    AttachHwHandler(STAGE_EVENT_KEYDOWN, OnKeyDown);
+    AttachHwHandler(STAGE_EVENT_KEYUP, OnKeyUp);
 
     AttachZ80InputHandler(InputByteCheckPort, OnInputByte);
 
@@ -280,15 +280,15 @@ void C_Keyboard::Init(void) {
 void C_Keyboard::Close(void) {
 }
 
-bool C_Keyboard::OnKeyDown(HardwareEvent& event) {
+bool C_Keyboard::OnKeyDown(StageEvent& event) {
     int key = event.keyCode;
 
-    if (joyOnKeyb && (key == HW_KEYCODE_UP
-        || key == HW_KEYCODE_DOWN
-        || key == HW_KEYCODE_LEFT
-        || key == HW_KEYCODE_RIGHT
-        || key == HW_KEYCODE_RCTRL
-        || key == HW_KEYCODE_RALT
+    if (joyOnKeyb && (key == STAGE_KEYCODE_UP
+        || key == STAGE_KEYCODE_DOWN
+        || key == STAGE_KEYCODE_LEFT
+        || key == STAGE_KEYCODE_RIGHT
+        || key == STAGE_KEYCODE_RCTRL
+        || key == STAGE_KEYCODE_RALT
     )) {
         return false;
     }
@@ -309,7 +309,7 @@ bool C_Keyboard::OnKeyDown(HardwareEvent& event) {
             continue;
         }
 
-        if (hostKey->mods.actions[k] && keyMod == HW_KEYCODE_NUMLOCK) {
+        if (hostKey->mods.actions[k] && keyMod == STAGE_KEYCODE_NUMLOCK) {
             hostKey->mods.actions[k]();
             return false;
         }
@@ -328,7 +328,7 @@ bool C_Keyboard::OnKeyDown(HardwareEvent& event) {
         return false;
     }
 
-    if (hostKey->action && key == HW_KEYCODE_NUMLOCK) {
+    if (hostKey->action && key == STAGE_KEYCODE_NUMLOCK) {
         hostKey->action();
         return false;
     }
@@ -342,15 +342,15 @@ bool C_Keyboard::OnKeyDown(HardwareEvent& event) {
     return false;
 }
 
-bool C_Keyboard::OnKeyUp(HardwareEvent& event) {
+bool C_Keyboard::OnKeyUp(StageEvent& event) {
     int key = event.keyCode;
 
-    if (joyOnKeyb && (key == HW_KEYCODE_UP
-        || key == HW_KEYCODE_DOWN
-        || key == HW_KEYCODE_LEFT
-        || key == HW_KEYCODE_RIGHT
-        || key == HW_KEYCODE_RCTRL
-        || key == HW_KEYCODE_RALT
+    if (joyOnKeyb && (key == STAGE_KEYCODE_UP
+        || key == STAGE_KEYCODE_DOWN
+        || key == STAGE_KEYCODE_LEFT
+        || key == STAGE_KEYCODE_RIGHT
+        || key == STAGE_KEYCODE_RCTRL
+        || key == STAGE_KEYCODE_RALT
     )) {
         return false;
     }

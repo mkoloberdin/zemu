@@ -1,5 +1,5 @@
-#ifndef PLATFORM__CONFIG_H__INCLUDED
-#define PLATFORM__CONFIG_H__INCLUDED
+#ifndef HOST__CONFIG_H__INCLUDED
+#define HOST__CONFIG_H__INCLUDED
 
 #include <memory>
 #include <string>

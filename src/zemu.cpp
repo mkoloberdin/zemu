@@ -30,13 +30,13 @@
 #include "data/img_floppy_write.h"
 #include "data/img_turbo_off.h"
 #include "data/img_turbo_on.h"
-#include "platform_impl/hostenv_impl.h"
+#include "host_impl/host_impl.h"
 
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
 #define INT_LENGTH 32
 
-HostEnv* hostEnv;
+Host* host;
 unsigned turboMultiplier = 1;
 unsigned turboMultiplierNx = 1;
 bool unturbo = false;
@@ -107,8 +107,8 @@ struct s_InputItem {
 typedef s_WriteItem s_OutputItem;
 
 struct s_HwItem {
-    HardwareEventType eventType;
-    bool (* func)(HardwareEvent&);
+    StageEventType eventType;
+    bool (* func)(StageEvent&);
 };
 
 //--------------------------------------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ void AttachAfterFrameRenderHandler(void (* func)(void)) {
     hnd_afterFrameRender[cnt_afterFrameRender++] = func;
 }
 
-void AttachHwHandler(HardwareEventType eventType, bool (* func)(HardwareEvent&)) {
+void AttachHwHandler(StageEventType eventType, bool (* func)(StageEvent&)) {
     if (cnt_hw >= MAX_HANDLERS) {
         StrikeError("Increase MAX_HANDLERS");
     }
@@ -242,45 +242,45 @@ C_Device* devs[] = {
 };
 
 int colors_base[0x10] = {
-    HW_MAKERGB(  0,   0,   0),
-    HW_MAKERGB(  0,   0, 192),
-    HW_MAKERGB(192,   0,   0),
-    HW_MAKERGB(192,   0, 192),
-    HW_MAKERGB(  0, 192,   0),
-    HW_MAKERGB(  0, 192, 192),
-    HW_MAKERGB(192, 192,   0),
-    HW_MAKERGB(192, 192, 192),
-    HW_MAKERGB(  0,   0,   0),
-    HW_MAKERGB(  0,   0, 255),
-    HW_MAKERGB(255,   0,   0),
-    HW_MAKERGB(255,   0, 255),
-    HW_MAKERGB(  0, 255,   0),
-    HW_MAKERGB(  0, 255, 255),
-    HW_MAKERGB(255, 255,   0),
-    HW_MAKERGB(255, 255, 255)
+    STAGE_MAKERGB(  0,   0,   0),
+    STAGE_MAKERGB(  0,   0, 192),
+    STAGE_MAKERGB(192,   0,   0),
+    STAGE_MAKERGB(192,   0, 192),
+    STAGE_MAKERGB(  0, 192,   0),
+    STAGE_MAKERGB(  0, 192, 192),
+    STAGE_MAKERGB(192, 192,   0),
+    STAGE_MAKERGB(192, 192, 192),
+    STAGE_MAKERGB(  0,   0,   0),
+    STAGE_MAKERGB(  0,   0, 255),
+    STAGE_MAKERGB(255,   0,   0),
+    STAGE_MAKERGB(255,   0, 255),
+    STAGE_MAKERGB(  0, 255,   0),
+    STAGE_MAKERGB(  0, 255, 255),
+    STAGE_MAKERGB(255, 255,   0),
+    STAGE_MAKERGB(255, 255, 255)
 };
 
 /*
  * Work in progress
  *
 int c64_colors_base[0x10] = {
-    HW_MAKERGB(0x00, 0x00, 0x00),
-    HW_MAKERGB(0x35, 0x28, 0x79),
-    HW_MAKERGB(0x9A, 0x67, 0x59),
-    HW_MAKERGB(0x6F, 0x3D, 0x86),
-    HW_MAKERGB(0x58, 0x8D, 0x43),
-    HW_MAKERGB(0x70, 0xA4, 0xB2),
-    HW_MAKERGB(0xB8, 0xC7, 0x6F),
-    HW_MAKERGB(0x95, 0x95, 0x95),
+    STAGE_MAKERGB(0x00, 0x00, 0x00),
+    STAGE_MAKERGB(0x35, 0x28, 0x79),
+    STAGE_MAKERGB(0x9A, 0x67, 0x59),
+    STAGE_MAKERGB(0x6F, 0x3D, 0x86),
+    STAGE_MAKERGB(0x58, 0x8D, 0x43),
+    STAGE_MAKERGB(0x70, 0xA4, 0xB2),
+    STAGE_MAKERGB(0xB8, 0xC7, 0x6F),
+    STAGE_MAKERGB(0x95, 0x95, 0x95),
 
-    HW_MAKERGB(0x00, 0x00, 0x00),
-    HW_MAKERGB(0x35, 0x28, 0x79),
-    HW_MAKERGB(0x9A, 0x67, 0x59),
-    HW_MAKERGB(0x6F, 0x3D, 0x86),
-    HW_MAKERGB(0x58, 0x8D, 0x43),
-    HW_MAKERGB(0x70, 0xA4, 0xB2),
-    HW_MAKERGB(0xB8, 0xC7, 0x6F),
-    HW_MAKERGB(0xFF, 0xFF, 0xFF)
+    STAGE_MAKERGB(0x00, 0x00, 0x00),
+    STAGE_MAKERGB(0x35, 0x28, 0x79),
+    STAGE_MAKERGB(0x9A, 0x67, 0x59),
+    STAGE_MAKERGB(0x6F, 0x3D, 0x86),
+    STAGE_MAKERGB(0x58, 0x8D, 0x43),
+    STAGE_MAKERGB(0x70, 0xA4, 0xB2),
+    STAGE_MAKERGB(0xB8, 0xC7, 0x6F),
+    STAGE_MAKERGB(0xFF, 0xFF, 0xFF)
 };
 */
 
@@ -334,7 +334,7 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
         return;
     }
 
-    auto ext = hostEnv->storage()->path(fname)->extensionLc();
+    auto ext = host->storage()->path(fname)->extensionLc();
 
     if (ext == ".z80") {
         if (load_z80_snap(fname, cpu, dev_mman, dev_border)) {
@@ -362,7 +362,7 @@ void LoadNormalFile(const char* fname, int drive, const char* arcName = nullptr)
         printf("Load failed: %s\n", e.what());
     }
 
-    oldFileName[drive] = hostEnv->storage()->path(arcName ? arcName : fname)->canonical()->string();
+    oldFileName[drive] = host->storage()->path(arcName ? arcName : fname)->canonical()->string();
 }
 
 void TryNLoadFile(const char* fname, int drive) {
@@ -461,7 +461,7 @@ void Action_LoadFile(void) {
 }
 
 void Action_Fullscreen(void) {
-    hostEnv->hardware()->setFullscreen(!hostEnv->hardware()->isFullscreen());
+    host->stage()->setFullscreen(!host->stage()->isFullscreen());
 }
 
 void Action_Debugger(void) {
@@ -772,10 +772,17 @@ void AntiFlicker(int copyFrom, int copyTo) {
     uint8_t* sr = (uint8_t*)screen;
 
     for (int i = WIDTH * HEIGHT; i--;) {
+        #ifdef STAGE_FLIPPED_ARGB
+            *(sr++) = 0; ++s1; ++s2;
+        #endif
+
         *(sr++) = (uint8_t)(((unsigned int)(*(s1++)) + (unsigned int)(*(s2++))) >> 1);
         *(sr++) = (uint8_t)(((unsigned int)(*(s1++)) + (unsigned int)(*(s2++))) >> 1);
         *(sr++) = (uint8_t)(((unsigned int)(*(s1++)) + (unsigned int)(*(s2++))) >> 1);
-        *(sr++) = 0; ++s1; ++s2;
+
+        #ifndef STAGE_FLIPPED_ARGB
+            *(sr++) = 0; ++s1; ++s2;
+        #endif
     }
 }
 
@@ -987,11 +994,11 @@ void ResetSequence(void) {
 }
 
 void UpdateScreen(void) {
-    hostEnv->hardware()->renderFrame(screen, WIDTH, HEIGHT);
+    host->stage()->renderFrame(screen, WIDTH, HEIGHT);
 }
 
 void Process(void) {
-    HardwareEvent event;
+    StageEvent event;
     int i;
     int frameSkip = 0;
     bool tapePrevActive = false;
@@ -1002,7 +1009,7 @@ void Process(void) {
     lastDevClk = 0;
     frames = 0;
     params.maxSpeed = false;
-    uint32_t ntick = hostEnv->hardware()->getElapsedMillis() + (params.sound ? 0 : FRAME_WAIT_MS);
+    uint32_t ntick = host->timer()->getElapsedMillis() + (params.sound ? 0 : FRAME_WAIT_MS);
 
     for (;;) {
         if (!isPaused) {
@@ -1040,11 +1047,11 @@ void Process(void) {
             }
 
             if (!params.maxSpeed) {
-                hostEnv->hardware()->delay(1);
-                uint32_t ctick = hostEnv->hardware()->getElapsedMillis();
+                host->timer()->wait(1);
+                uint32_t ctick = host->timer()->getElapsedMillis();
 
                 if (ctick < ntick) {
-                    hostEnv->hardware()->delay(ntick - ctick);
+                    host->timer()->wait(ntick - ctick);
                 }
             }
 
@@ -1061,16 +1068,16 @@ void Process(void) {
             soundMixer.FlushFrame(SOUND_ENABLED);
         }
 
-        ntick = hostEnv->hardware()->getElapsedMillis() + (params.sound ? 0 : FRAME_WAIT_MS);
+        ntick = host->timer()->getElapsedMillis() + (params.sound ? 0 : FRAME_WAIT_MS);
         isPaused = isPausedNx;
         bool quitMode = false;
 
-        while (hostEnv->hardware()->pollEvent(&event)) {
-            if (event.type == HW_EVENT_QUIT) {
+        while (host->stage()->pollEvent(&event)) {
+            if (event.type == STAGE_EVENT_QUIT) {
                 exit(0);
             }
 
-            if (event.type == HW_EVENT_KEYUP && event.keyCode == HW_KEYCODE_ESCAPE) {
+            if (event.type == STAGE_EVENT_KEYUP && event.keyCode == STAGE_KEYCODE_ESCAPE) {
                 quitMode = true;
             }
 
@@ -1125,7 +1132,7 @@ void FreeAll(void) {
     delete[] renderScreenBuffer[0];
     delete[] screen;
 
-    delete hostEnv;
+    delete host;
 }
 
 void ParseCmdLine(int argc, char *argv[]) {
@@ -1177,8 +1184,8 @@ void OutputLogo(void) {
 int main(int argc, char *argv[]) {
     OutputLogo();
 
-    hostEnv = new HostEnvImpl(argc, argv, "zemu");
-    auto config = hostEnv->config();
+    host = new HostImpl(argc, argv, "zemu");
+    auto config = host->config();
 
     try {
         string str;
@@ -1220,7 +1227,7 @@ int main(int argc, char *argv[]) {
 
         wd1793_set_nodelay(config->getBool("beta128", "nodelay", false));
 
-        str = hostEnv->storage()->findExtras("boot", config->getString("beta128", "sclboot", "boot.$b"))->string();
+        str = host->storage()->findExtras("boot", config->getString("beta128", "sclboot", "boot.$b"))->string();
 
         if (!str.empty()) {
             wd1793_set_appendboot(str.c_str());
@@ -1296,7 +1303,7 @@ int main(int argc, char *argv[]) {
         str = config->getString("cputrace", "filename", "cputrace.log");
         strcpy(params.cpuTraceFileName, str.c_str());
 
-        hostEnv->hardware(); // force hardware initialization
+        host->stage(); // force stage initialization
         atexit(FreeAll);
 
         if (params.cpuTraceEnabled) {

@@ -13,7 +13,7 @@ C_AyChipConfig::C_AyChipConfig() {
 
 void C_AyChipConfig::ReadConfig(void) {
     const char *str;
-    auto config = hostEnv->config();
+    auto config = host->config();
 
     str = config->getString("sound", "aychiptype", "ym").c_str();
     chipType = (!strcasecmp(str, "ay") ? TypeAy : TypeYm);

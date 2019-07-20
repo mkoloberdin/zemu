@@ -53,7 +53,7 @@ void C_SoundMixer::Init(int mixerMode, bool recordWav, const char* wavName) { //
     this->mixerMode = mixerMode;
 
     if (recordWav && *wavName) {
-        wavPath = hostEnv->storage()->path(wavName);
+        wavPath = host->storage()->path(wavName);
         wavTempPath = wavPath->concat(".tmp");
         wavDataWriter = wavTempPath->dataWriter();
     }
@@ -149,7 +149,7 @@ void C_SoundMixer::FlushFrame(bool soundEnabled) {
             }
         }
 
-        hostEnv->hardware()->renderSound(audioBuffer, minSamples);
+        host->stage()->renderSound(audioBuffer, minSamples);
     }
 
     if (maxSamples > minSamples) {

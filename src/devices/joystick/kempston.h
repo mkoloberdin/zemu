@@ -13,10 +13,10 @@ public:
     void Init(void);
     void Close(void);
 
-    static bool OnKeyDown(HardwareEvent& event);
-    static bool OnKeyUp(HardwareEvent& event);
-    static bool OnJoyDown(HardwareEvent& event);
-    static bool OnJoyUp(HardwareEvent& event);
+    static bool OnKeyDown(StageEvent& event);
+    static bool OnKeyUp(StageEvent& event);
+    static bool OnJoyDown(StageEvent& event);
+    static bool OnJoyUp(StageEvent& event);
 
     static bool InputByteCheckPort(uint16_t port);
     static bool OnInputByte(uint16_t port, uint8_t& retval);

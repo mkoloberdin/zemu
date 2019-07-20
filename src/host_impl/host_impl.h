@@ -1,18 +1,19 @@
-#ifndef PLATFORM_IMPL__HOSTENV_IMPL_H__INCLUDED
-#define PLATFORM_IMPL__HOSTENV_IMPL_H__INCLUDED
+#ifndef HOST_IMPL__HOST_IMPL_H__INCLUDED
+#define HOST_IMPL__HOST_IMPL_H__INCLUDED
 
 #include <string>
-#include "platform/hostenv.h"
+#include "host/host.h"
 
-class HostEnvImpl : public HostEnv {
+class HostImpl : public Host {
 public:
 
-    HostEnvImpl(int argc, char** argv, const std::string& applicationId);
+    HostImpl(int argc, char** argv, const std::string& applicationId);
 
     Logger* logger();
     Storage* storage();
     Config* config();
-    Hardware* hardware();
+    Timer* timer();
+    Stage* stage();
 
 private:
 

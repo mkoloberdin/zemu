@@ -54,7 +54,7 @@ void DlgClearScreen(void) {
     uint32_t* s = screen;
 
     for (int i = HEIGHT; i--;) {
-        int cl = (i & 1) ? HW_MAKERGB(0, 0, 64) : HW_MAKERGB(0, 0, 32);
+        int cl = (i & 1) ? STAGE_MAKERGB(0, 0, 64) : STAGE_MAKERGB(0, 0, 32);
 
         for (int j = WIDTH; j--;) {
             *(s++) = cl;
@@ -64,7 +64,7 @@ void DlgClearScreen(void) {
 
 bool DlgConfirm(const char* message) {
     int key;
-    HardwareEvent event;
+    StageEvent event;
 
     int wdt = font->StrLenPx(message) + 0x10;
     int hgt = font->Height() + 0x10;
@@ -72,31 +72,31 @@ bool DlgConfirm(const char* message) {
     int y = (HEIGHT - hgt) / 2;
 
     DlgClearScreen();
-    Bar(x, y, x + wdt - 1, y + hgt - 1, HW_MAKERGB(0x80, 0x20, 0x20));
+    Bar(x, y, x + wdt - 1, y + hgt - 1, STAGE_MAKERGB(0x80, 0x20, 0x20));
     font->PrintString(x + 8, y + 8, message);
 
     for (;;) {
         UpdateScreen();
 
-        for (key = 0; hostEnv->hardware()->pollEvent(&event);) {
-            if (event.type == HW_EVENT_QUIT) {
+        for (key = 0; host->stage()->pollEvent(&event);) {
+            if (event.type == STAGE_EVENT_QUIT) {
                 exit(0);
             }
 
-            if (event.type == HW_EVENT_KEYUP) {
+            if (event.type == STAGE_EVENT_KEYUP) {
                 key = event.keyCode;
             }
         }
 
-        if (key == HW_KEYCODE_y || key == HW_KEYCODE_RETURN) {
+        if (key == STAGE_KEYCODE_y || key == STAGE_KEYCODE_RETURN) {
             return true;
         }
 
-        if (key == HW_KEYCODE_n || key == HW_KEYCODE_ESCAPE) {
+        if (key == STAGE_KEYCODE_n || key == STAGE_KEYCODE_ESCAPE) {
             return false;
         }
 
-        hostEnv->hardware()->delay(10);
+        host->timer()->wait(10);
     }
 }
 
@@ -108,7 +108,7 @@ const char* DlgInputString(const char* message) {
     int bufferSz = 0;
 
     int key;
-    HardwareEvent event;
+    StageEvent event;
 
     for (;;) {
         sprintf(buf, "%s: %s", message, buffer);
@@ -119,32 +119,32 @@ const char* DlgInputString(const char* message) {
         int y = (HEIGHT - hgt) / 2;
 
         DlgClearScreen();
-        Bar(x, y, x + wdt - 1, y + hgt - 1, HW_MAKERGB(0x80, 0x20, 0x20));
+        Bar(x, y, x + wdt - 1, y + hgt - 1, STAGE_MAKERGB(0x80, 0x20, 0x20));
         font->PrintString(x + 8, y + 8, buf);
         UpdateScreen();
 
         do {
-            for (key = 0; hostEnv->hardware()->pollEvent(&event);) {
-                if (event.type == HW_EVENT_QUIT) {
+            for (key = 0; host->stage()->pollEvent(&event);) {
+                if (event.type == STAGE_EVENT_QUIT) {
                     exit(0);
                 }
 
-                if (event.type == HW_EVENT_KEYDOWN) {
+                if (event.type == STAGE_EVENT_KEYDOWN) {
                     key = event.keyCode;
                 }
             }
         } while (key == 0);
 
-        if (key == HW_KEYCODE_ESCAPE) {
+        if (key == STAGE_KEYCODE_ESCAPE) {
             buffer[0] = 0;
             return buffer;
         }
 
-        if (key == HW_KEYCODE_RETURN) {
+        if (key == STAGE_KEYCODE_RETURN) {
             return buffer;
         }
 
-        if (key == HW_KEYCODE_BACKSPACE) {
+        if (key == STAGE_KEYCODE_BACKSPACE) {
             if (bufferSz > 0) {
                 buffer[--bufferSz] = 0;
             }
@@ -155,19 +155,19 @@ const char* DlgInputString(const char* message) {
             }
         }
 
-        hostEnv->hardware()->delay(10);
+        host->timer()->wait(10);
     }
 }
 
 std::string SelectFile(std::string oldFileArg) {
-    HardwareEvent event;
+    StageEvent event;
     std::vector<PathPtr> paths;
     std::vector<FileEntry> entries;
     char buf[0x100];
     int key;
 
-    auto lastFileName = hostEnv->storage()->path(oldFileArg)->fileName();
-    auto currentDirPath = hostEnv->storage()->path(oldFileArg)->parent()->canonical();
+    auto lastFileName = host->storage()->path(oldFileArg)->fileName();
+    auto currentDirPath = host->storage()->path(oldFileArg)->parent()->canonical();
 
     int bottom = HEIGHT - font->Height() - 8;
     int lineHeight = font->Height();
@@ -225,20 +225,20 @@ std::string SelectFile(std::string oldFileArg) {
 
         do {
             do {
-                for (key = 0; hostEnv->hardware()->pollEvent(&event);) {
-                    if (event.type == HW_EVENT_QUIT) {
+                for (key = 0; host->stage()->pollEvent(&event);) {
+                    if (event.type == STAGE_EVENT_QUIT) {
                         exit(0);
                     }
 
-                    if (event.type == HW_EVENT_KEYDOWN) {
+                    if (event.type == STAGE_EVENT_KEYDOWN) {
                         key = event.keyCode;
                     }
                 }
 
                 DlgClearScreen();
-                Bar(0, bottom, WIDTH - 1, HEIGHT - 1, HW_MAKERGB(0x80, 0x20, 0x20));
+                Bar(0, bottom, WIDTH - 1, HEIGHT - 1, STAGE_MAKERGB(0x80, 0x20, 0x20));
 
-                Bar(4 + currentDrive * 16, bottom + 4, 4 + currentDrive * 16 + 12, bottom + 4 + 12, HW_MAKERGB(0x40, 0x10, 0x10));
+                Bar(4 + currentDrive * 16, bottom + 4, 4 + currentDrive * 16 + 12, bottom + 4 + 12, STAGE_MAKERGB(0x40, 0x10, 0x10));
                 font->PrintString(5, bottom + 5, "A");
                 font->PrintString(5 + 0x10 + 1, bottom + 5, "B");
                 font->PrintString(5 + 0x20 + 1, bottom + 5, "C");
@@ -249,7 +249,7 @@ std::string SelectFile(std::string oldFileArg) {
                     bottom + 4,
                     4 + 0x50 + 20,
                     bottom + 4 + 12,
-                    wd1793_is_disk_wprotected(currentDrive) ? HW_MAKERGB(255, 128, 32) : HW_MAKERGB(0x40, 0x10, 0x10)
+                    wd1793_is_disk_wprotected(currentDrive) ? STAGE_MAKERGB(255, 128, 32) : STAGE_MAKERGB(0x40, 0x10, 0x10)
                 );
 
                 Bar(
@@ -257,7 +257,7 @@ std::string SelectFile(std::string oldFileArg) {
                     bottom + 4,
                     4 + 0x68 + 20,
                     bottom + 4 + 12,
-                    wd1793_is_disk_loaded(currentDrive) ? HW_MAKERGB(255, 128, 32) : HW_MAKERGB(0x40, 0x10, 0x10)
+                    wd1793_is_disk_loaded(currentDrive) ? STAGE_MAKERGB(255, 128, 32) : STAGE_MAKERGB(0x40, 0x10, 0x10)
                 );
 
                 Bar(
@@ -265,7 +265,7 @@ std::string SelectFile(std::string oldFileArg) {
                     bottom + 4,
                     4 + 0x80 + 20,
                     bottom + 4 + 12,
-                    wd1793_is_disk_changed(currentDrive) ? HW_MAKERGB(255,128,32) : HW_MAKERGB(0x40,0x10,0x10)
+                    wd1793_is_disk_changed(currentDrive) ? STAGE_MAKERGB(255,128,32) : STAGE_MAKERGB(0x40,0x10,0x10)
                 );
 
                 font->PrintString(5 + 0x50, bottom + 5, "WP");
@@ -277,7 +277,7 @@ std::string SelectFile(std::string oldFileArg) {
                     bottom + 4,
                     4 + 0xB0 + 72,
                     bottom + 4 + 12,
-                    C_Tape::IsActive() ? HW_MAKERGB(255, 128, 32) : HW_MAKERGB(0x40, 0x10, 0x10)
+                    C_Tape::IsActive() ? STAGE_MAKERGB(255, 128, 32) : STAGE_MAKERGB(0x40, 0x10, 0x10)
                 );
 
                 if (C_Tape::IsLoaded()) {
@@ -295,7 +295,7 @@ std::string SelectFile(std::string oldFileArg) {
                             i * lineHeight,
                             padding + font->StrLenPx(entries[i + pos].fileName.c_str()) + padding,
                             i * lineHeight + lineHeight - 1,
-                            HW_MAKERGB(0x80, 0x20, 0x20)
+                            STAGE_MAKERGB(0x80, 0x20, 0x20)
                         );
                     }
 
@@ -308,14 +308,14 @@ std::string SelectFile(std::string oldFileArg) {
 
                 OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage*)((void*) &img_zemuIco));
                 UpdateScreen();
-                hostEnv->hardware()->delay(10);
+                host->timer()->wait(10);
             } while (key == 0);
 
-            if (key == HW_KEYCODE_s) {
+            if (key == STAGE_KEYCODE_s) {
                 if (DlgConfirm("Are you sure to save disk? (Y/N)")) {
                     printf("Saving \"%s\" (drive %c) ... ", oldFileName[currentDrive].c_str(), "ABCD"[currentDrive]);
 
-                    auto path = hostEnv->storage()->path(oldFileName[currentDrive]);
+                    auto path = host->storage()->path(oldFileName[currentDrive]);
 
                     if (path->extensionLc() != ".trd") {
                         path = path->concat(".trd");
@@ -329,21 +329,21 @@ std::string SelectFile(std::string oldFileArg) {
                         oldFileName[currentDrive] = path->string();
                     }
                 }
-            } else if (key == HW_KEYCODE_e) {
+            } else if (key == STAGE_KEYCODE_e) {
                 wd1793_eject_dimage(currentDrive);
-            } else if (key == HW_KEYCODE_d) {
+            } else if (key == STAGE_KEYCODE_d) {
                 C_Tape::Eject();
-            } else if (key == HW_KEYCODE_r) {
+            } else if (key == STAGE_KEYCODE_r) {
                 C_Tape::Rewind();
-            } else if (key == HW_KEYCODE_t) {
+            } else if (key == STAGE_KEYCODE_t) {
                 if (C_Tape::IsActive()) {
                     C_Tape::Stop();
                 } else {
                     C_Tape::Start();
                 }
-            } else if (key == HW_KEYCODE_w) {
+            } else if (key == STAGE_KEYCODE_w) {
                 wd1793_set_disk_wprotected(currentDrive, !wd1793_is_disk_wprotected(currentDrive));
-            } else if (key == HW_KEYCODE_UP) {
+            } else if (key == STAGE_KEYCODE_UP) {
                 csr--;
 
                 if (csr - pos < 0) {
@@ -353,7 +353,7 @@ std::string SelectFile(std::string oldFileArg) {
                         csr++;
                     }
                 }
-            } else if (key == HW_KEYCODE_DOWN) {
+            } else if (key == STAGE_KEYCODE_DOWN) {
                 csr++;
 
                 if (csr - pos >= lastEntry) {
@@ -363,10 +363,10 @@ std::string SelectFile(std::string oldFileArg) {
                         csr--;
                     }
                 }
-            } else if (key == HW_KEYCODE_HOME) {
+            } else if (key == STAGE_KEYCODE_HOME) {
                 csr = 0;
                 pos = 0;
-            } else if (key == HW_KEYCODE_END) {
+            } else if (key == STAGE_KEYCODE_END) {
                 csr = filesCnt - 1;
 
                 if (filesCnt > maxLines) {
@@ -374,7 +374,7 @@ std::string SelectFile(std::string oldFileArg) {
                 } else {
                     pos = 0;
                 }
-            } else if (key == HW_KEYCODE_PAGEUP) {
+            } else if (key == STAGE_KEYCODE_PAGEUP) {
                 pos -= maxLines;
                 csr -= maxLines;
 
@@ -382,7 +382,7 @@ std::string SelectFile(std::string oldFileArg) {
                     pos = 0;
                     csr = 0;
                 }
-            } else if (key == HW_KEYCODE_PAGEDOWN) {
+            } else if (key == STAGE_KEYCODE_PAGEDOWN) {
                 pos += maxLines;
                 csr += maxLines;
 
@@ -395,41 +395,41 @@ std::string SelectFile(std::string oldFileArg) {
                         csr = filesCnt - 1;
                     }
                 }
-            } else if (key == HW_KEYCODE_LEFT) {
+            } else if (key == STAGE_KEYCODE_LEFT) {
                 currentDrive--;
 
                 if (currentDrive < 0) {
                     currentDrive = 0;
                 }
-            } else if (key == HW_KEYCODE_RIGHT) {
+            } else if (key == STAGE_KEYCODE_RIGHT) {
                 currentDrive++;
 
                 if (currentDrive > 3) {
                     currentDrive = 3;
                 }
             }
-        } while (key != HW_KEYCODE_RETURN && key != HW_KEYCODE_ESCAPE && key != HW_KEYCODE_BACKSPACE);
+        } while (key != STAGE_KEYCODE_RETURN && key != STAGE_KEYCODE_ESCAPE && key != STAGE_KEYCODE_BACKSPACE);
 
         int keyx;
 
         do {
-            hostEnv->hardware()->delay(1);
+            host->timer()->wait(1);
 
-            for (keyx = 0; hostEnv->hardware()->pollEvent(&event);) {
-                if (event.type == HW_EVENT_QUIT) {
+            for (keyx = 0; host->stage()->pollEvent(&event);) {
+                if (event.type == STAGE_EVENT_QUIT) {
                     exit(0);
                 }
 
-                if (event.type == HW_EVENT_KEYUP) {
+                if (event.type == STAGE_EVENT_KEYUP) {
                     keyx = event.keyCode;
                 }
             }
         } while (key != keyx);
 
-        if (key == HW_KEYCODE_BACKSPACE) {
+        if (key == STAGE_KEYCODE_BACKSPACE) {
             lastFileName = currentDirPath->fileName();
             currentDirPath = currentDirPath->parent();
-        } else if (key == HW_KEYCODE_RETURN) {
+        } else if (key == STAGE_KEYCODE_RETURN) {
             if (!entries[csr].isDirectory) {
                 return entries[csr].path->string();
             }
@@ -442,15 +442,15 @@ std::string SelectFile(std::string oldFileArg) {
                 currentDirPath = entries[csr].path->canonical();
             }
         }
-    } while (key != HW_KEYCODE_ESCAPE);
+    } while (key != STAGE_KEYCODE_ESCAPE);
 
     return "";
 }
 
 void FileDialog(void) {
-    hostEnv->hardware()->setKeyRepeat(true);
+    host->stage()->setKeyRepeat(true);
     auto fname = SelectFile(oldFileName[currentDrive]);
-    hostEnv->hardware()->setKeyRepeat(false);
+    host->stage()->setKeyRepeat(false);
 
     if (!fname.empty()) {
         TryNLoadFile(fname.c_str(), currentDrive);
@@ -458,7 +458,7 @@ void FileDialog(void) {
 }
 
 void FileDialogInit(void) {
-    auto str = hostEnv->config()->getString("beta128", "diskA", "/");
+    auto str = host->config()->getString("beta128", "diskA", "/");
     oldFileName[0] = (str.empty() ? "/" : str);
 }
 
@@ -470,34 +470,34 @@ int DbgAskHexNum(const char* message) {
     int bufferSz = 0;
 
     int key;
-    HardwareEvent event;
+    StageEvent event;
 
     int scrEnd = HEIGHT - fixed_font->Height() - 8;
 
     for (;;) {
         sprintf(buf, "%s: %s", message, buffer);
 
-        Bar(0, scrEnd, WIDTH - 1, HEIGHT - 1, HW_MAKERGB(0x80, 0x20, 0x20));
+        Bar(0, scrEnd, WIDTH - 1, HEIGHT - 1, STAGE_MAKERGB(0x80, 0x20, 0x20));
         fixed_font->PrintString(4, scrEnd + 4, buf);
         UpdateScreen();
 
         do {
-            for (key = 0; hostEnv->hardware()->pollEvent(&event);) {
-                if (event.type == HW_EVENT_QUIT) {
+            for (key = 0; host->stage()->pollEvent(&event);) {
+                if (event.type == STAGE_EVENT_QUIT) {
                     exit(0);
                 }
 
-                if (event.type == HW_EVENT_KEYDOWN) {
+                if (event.type == STAGE_EVENT_KEYDOWN) {
                     key = event.keyCode;
                 }
             }
         } while (key == 0);
 
-        if (key == HW_KEYCODE_ESCAPE) {
+        if (key == STAGE_KEYCODE_ESCAPE) {
             return -1;
         }
 
-        if (key == HW_KEYCODE_RETURN) {
+        if (key == STAGE_KEYCODE_RETURN) {
             if (!bufferSz) {
                 return -1;
             }
@@ -511,7 +511,7 @@ int DbgAskHexNum(const char* message) {
             return res;
         }
 
-        if (key == HW_KEYCODE_BACKSPACE) {
+        if (key == STAGE_KEYCODE_BACKSPACE) {
             if (bufferSz > 0) {
                 buffer[--bufferSz] = 0;
             }
@@ -522,7 +522,7 @@ int DbgAskHexNum(const char* message) {
             }
         }
 
-        hostEnv->hardware()->delay(10);
+        host->timer()->wait(10);
     }
 }
 
@@ -578,7 +578,7 @@ const char* ReplaceLabels(const char* cmd) {
 void DebugIt(void) {
     int key;
     int keyx;
-    HardwareEvent event;
+    StageEvent event;
 
     int scrEnd = HEIGHT - fixed_font->Height() - 8;
     int h = fixed_font->Height();
@@ -662,43 +662,43 @@ void DebugIt(void) {
         }
 
         do {
-            for (key = 0; hostEnv->hardware()->pollEvent(&event);) {
-                if (event.type == HW_EVENT_QUIT) {
+            for (key = 0; host->stage()->pollEvent(&event);) {
+                if (event.type == STAGE_EVENT_QUIT) {
                     exit(0);
                 }
 
-                if (event.type == HW_EVENT_KEYDOWN) {
+                if (event.type == STAGE_EVENT_KEYDOWN) {
                     key = event.keyCode;
                 }
             }
 
             DlgClearScreen();
-            Bar(0, scrEnd, WIDTH - 1, HEIGHT - 1, HW_MAKERGB(0x80, 0x20, 0x20));
+            Bar(0, scrEnd, WIDTH - 1, HEIGHT - 1, STAGE_MAKERGB(0x80, 0x20, 0x20));
 
             int lx = WIDTH / 2;
 
             for (int i = 0; i < mx; i++) {
                 if ((dispBuf[i].addr <= curAddr) && ((dispBuf[i].addr + dispBuf[i].size) > curAddr)) {
-                    Bar(0, i * h, lx, i * h + h - 1, HW_MAKERGB(0x80, 0x20, 0x20));
+                    Bar(0, i * h, lx, i * h + h - 1, STAGE_MAKERGB(0x80, 0x20, 0x20));
                 }
 
                 if (dispBuf[i].addr == userAddr) {
-                    Bar(0, i * h, lx, i * h, HW_MAKERGB(0xFF, 0xCC, 0x00));
-                    Bar(0, i * h + h - 1, lx, i * h + h - 1, HW_MAKERGB(0xFF, 0xCC, 0x00));
-                    Bar(0, i * h + 1, 0, i * h + h - 2, HW_MAKERGB(0xFF, 0xCC, 0x00));
-                    Bar(lx, i * h + 1, lx, i * h + h - 2, HW_MAKERGB(0xFF, 0xCC, 0x00));
+                    Bar(0, i * h, lx, i * h, STAGE_MAKERGB(0xFF, 0xCC, 0x00));
+                    Bar(0, i * h + h - 1, lx, i * h + h - 1, STAGE_MAKERGB(0xFF, 0xCC, 0x00));
+                    Bar(0, i * h + 1, 0, i * h + h - 2, STAGE_MAKERGB(0xFF, 0xCC, 0x00));
+                    Bar(lx, i * h + 1, lx, i * h + h - 2, STAGE_MAKERGB(0xFF, 0xCC, 0x00));
 
                     userPos = i;
                 }
 
                 if (breakpoints[dispBuf[i].addr]) {
-                    Bar(lx - 5, i * h + h / 2 - 2, lx - 2, i * h + h / 2 + 1, HW_MAKERGB(0x00, 0x00, 0x00));
-                    Bar(lx - 4, i * h + h / 2 - 1, lx - 3, i * h + h / 2, HW_MAKERGB(0xFF, 0x00, 0x00));
+                    Bar(lx - 5, i * h + h / 2 - 2, lx - 2, i * h + h / 2 + 1, STAGE_MAKERGB(0x00, 0x00, 0x00));
+                    Bar(lx - 4, i * h + h / 2 - 1, lx - 3, i * h + h / 2, STAGE_MAKERGB(0xFF, 0x00, 0x00));
                 }
 
                 if (IsWatched(dispBuf[i].addr)) {
-                    Bar(lx - 10, i * h + h / 2 - 2, lx - 7, i * h + h / 2 + 1, HW_MAKERGB(0x00, 0x00, 0x00));
-                    Bar(lx - 9, i * h + h / 2 - 1, lx - 8, i * h + h / 2, HW_MAKERGB(0x00, 0x00, 0xFF));
+                    Bar(lx - 10, i * h + h / 2 - 2, lx - 7, i * h + h / 2 + 1, STAGE_MAKERGB(0x00, 0x00, 0x00));
+                    Bar(lx - 9, i * h + h / 2 - 1, lx - 8, i * h + h / 2, STAGE_MAKERGB(0x00, 0x00, 0xFF));
                 }
 
                 const char* lbl = (showLabels ? GetLabel(dispBuf[i].addr) : nullptr);
@@ -758,21 +758,21 @@ void DebugIt(void) {
 
             OutputGimpImage(WIDTH - img_zemuIco.width - 8, 8, (s_GimpImage*)((void*) &img_zemuIco));
             UpdateScreen();
-            hostEnv->hardware()->delay(10);
+            host->timer()->wait(10);
         } while (key == 0);
 
-        if (key == HW_KEYCODE_UP) {
+        if (key == STAGE_KEYCODE_UP) {
             userAddr = dispBuf[userPos > 0 ? userPos - 1 : 0].addr;
-        } else if (key == HW_KEYCODE_DOWN) {
+        } else if (key == STAGE_KEYCODE_DOWN) {
             userAddr = dispBuf[userPos < mx - 1 ? userPos + 1 : mx - 1].addr;
-        } else if (key == HW_KEYCODE_PAGEUP) {
+        } else if (key == STAGE_KEYCODE_PAGEUP) {
             userAddr = dispBuf[0].addr;
-        } else if (key == HW_KEYCODE_PAGEDOWN) {
+        } else if (key == STAGE_KEYCODE_PAGEDOWN) {
             userAddr = dispBuf[mx - 2].addr;
-        } else if (key == HW_KEYCODE_F2) {
+        } else if (key == STAGE_KEYCODE_F2) {
             breakpoints[userAddr] = !breakpoints[userAddr];
             exactAddr = true;
-        } else if (key == HW_KEYCODE_w) {
+        } else if (key == STAGE_KEYCODE_w) {
             if (IsWatched(userAddr)) {
                 unsigned l = 0;
 
@@ -792,32 +792,32 @@ void DebugIt(void) {
             }
 
             exactAddr = true;
-        } else if (key == HW_KEYCODE_F4) {
+        } else if (key == STAGE_KEYCODE_F4) {
             hexMode = !hexMode;
             exactAddr = true;
-        } else if (key == HW_KEYCODE_F3) {
+        } else if (key == STAGE_KEYCODE_F3) {
             showLabels = !showLabels;
             exactAddr = true;
-        } else if (key == HW_KEYCODE_g) {
+        } else if (key == STAGE_KEYCODE_g) {
             int newAddr = DbgAskHexNum("GoTo address");
 
             if (newAddr >= 0 && newAddr <= 0xFFFF) {
                 userAddr = newAddr;
                 exactAddr = true;
             }
-        } else if (key == HW_KEYCODE_p) {
+        } else if (key == STAGE_KEYCODE_p) {
             sprintf(buf, "Poke to #%04X", userAddr);
             int val = DbgAskHexNum(buf);
 
             if (val >= 0 && val <= 0xFF) {
                 WriteByteDasm(userAddr, (uint8_t)val);
             }
-        } else if (key == HW_KEYCODE_F7) {
+        } else if (key == STAGE_KEYCODE_F7) {
             DebugStep();
             curAddr = z80ex_get_reg(cpu, regPC);
             userAddr = curAddr;
             correctAddr = true;
-        } else if (key == HW_KEYCODE_F8) {
+        } else if (key == STAGE_KEYCODE_F8) {
             addr = z80ex_get_reg(cpu, regPC);
             unsigned int maxCnt = 71680 / 4;
 
@@ -829,29 +829,29 @@ void DebugIt(void) {
             curAddr = z80ex_get_reg(cpu, regPC);
             userAddr = curAddr;
             correctAddr = true;
-        } else if (key == HW_KEYCODE_F9) {
+        } else if (key == STAGE_KEYCODE_F9) {
             restoreBpAddr = userAddr;
             restoreBpVal = breakpoints[userAddr];
 
             breakpoints[userAddr] = true;
             break;
-        } else if (key == HW_KEYCODE_F12) {
+        } else if (key == STAGE_KEYCODE_F12) {
             wdDebug = !wdDebug;
             DlgConfirm(wdDebug ? "WD1793 debug enabled" : "WD1793 debug disabled");
         }
-    } while (key != HW_KEYCODE_ESCAPE);
+    } while (key != STAGE_KEYCODE_ESCAPE);
 
     delete[] dispBuf;
 
     do {
-        hostEnv->hardware()->delay(1);
+        host->timer()->wait(1);
 
-        for (keyx = 0; hostEnv->hardware()->pollEvent(&event);) {
-            if (event.type == HW_EVENT_QUIT) {
+        for (keyx = 0; host->stage()->pollEvent(&event);) {
+            if (event.type == STAGE_EVENT_QUIT) {
                 exit(0);
             }
 
-            if (event.type == HW_EVENT_KEYUP) {
+            if (event.type == STAGE_EVENT_KEYUP) {
                 keyx = event.keyCode;
             }
         }
@@ -859,7 +859,7 @@ void DebugIt(void) {
 }
 
 void RunDebugger(void) {
-    hostEnv->hardware()->setKeyRepeat(true);
+    host->stage()->setKeyRepeat(true);
     DebugIt();
-    hostEnv->hardware()->setKeyRepeat(false);
+    host->stage()->setKeyRepeat(false);
 }

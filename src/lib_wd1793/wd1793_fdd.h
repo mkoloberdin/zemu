@@ -6,7 +6,7 @@
 #include "wd1793_trkcache.h"
 #include "wd1793_crc_utils.h"
 #include "wd1793_chip.h"
-#include "platform/storage.h"
+#include "host/storage.h"
 
 enum DISKSNAP {
     snHOB,

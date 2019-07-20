@@ -15,7 +15,7 @@ void CpuTrace_Init(void) {
     }
 
     if (params.cpuTraceEnabled && *params.cpuTraceFormat && *params.cpuTraceFileName) {
-        traceWriter = hostEnv->storage()->path(params.cpuTraceFileName)->dataWriter();
+        traceWriter = host->storage()->path(params.cpuTraceFileName)->dataWriter();
     }
 }
 

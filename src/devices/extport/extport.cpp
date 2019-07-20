@@ -23,7 +23,7 @@ bool C_ExtPort::useEFF7Turbo;
 bool C_ExtPort::enabled;
 
 void C_ExtPort::Init(void) {
-    auto config = hostEnv->config();
+    auto config = host->config();
 
     portEFF7 = 0;
     enabled = config->getBool("core", "enableEFF7", false);

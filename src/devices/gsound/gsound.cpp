@@ -26,7 +26,7 @@ uint8_t* C_GSound::writeMap[4];
 #define GS_INT_PERIOD (384)
 
 void C_GSound::Init(void) {
-    auto config = hostEnv->config();
+    auto config = host->config();
     enabled = config->getBool("sound", "enablegs", false);
 
     if (!enabled) {
@@ -47,7 +47,7 @@ void C_GSound::Init(void) {
     filename = config->getString("sound", "gsrom", "gs105a.rom");
     filename = split_romname(filename, &offset);
 
-    if (hostEnv->storage()->readExtras("roms", filename, mem, 0x8000, offset) != 0x8000) {
+    if (host->storage()->readExtras("roms", filename, mem, 0x8000, offset) != 0x8000) {
         throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
     }
 

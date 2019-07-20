@@ -1,12 +1,12 @@
-#ifndef PLATFORM_IMPL__STORAGE_IMPL_H__INCLUDED
-#define PLATFORM_IMPL__STORAGE_IMPL_H__INCLUDED
+#ifndef HOST_IMPL__STORAGE_IMPL_H__INCLUDED
+#define HOST_IMPL__STORAGE_IMPL_H__INCLUDED
 
 #include <vector>
 #include <map>
 #include <set>
 #include <fstream>
 #include <boost/filesystem.hpp>
-#include "platform/storage.h"
+#include "host/storage.h"
 
 class FilePathImpl;
 class ArchivePathImpl;

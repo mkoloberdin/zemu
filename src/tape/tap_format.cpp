@@ -32,7 +32,7 @@ uint8_t C_TapFormat::Data(long pos) {
 }
 
 bool C_TapFormat::Load(const char* fname) {
-    auto fpath = hostEnv->storage()->path(fname);
+    auto fpath = host->storage()->path(fname);
 
     if (!fpath->isFile()) {
         return false;
@@ -49,7 +49,7 @@ bool C_TapFormat::Load(const char* fname) {
     }
 
     data = new uint8_t[size];
-    hostEnv->storage()->path(fname)->dataReader()->readBlock(data, size);
+    host->storage()->path(fname)->dataReader()->readBlock(data, size);
 
     blockPos = 0;
     blockSize = 0;

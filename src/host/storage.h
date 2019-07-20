@@ -1,5 +1,5 @@
-#ifndef PLATFORM__STORAGE_H__INCLUDED
-#define PLATFORM__STORAGE_H__INCLUDED
+#ifndef HOST__STORAGE_H__INCLUDED
+#define HOST__STORAGE_H__INCLUDED
 
 #include <memory>
 #include <string>

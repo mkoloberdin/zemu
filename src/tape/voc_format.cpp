@@ -8,7 +8,7 @@
 
 bool C_VocFormat::Load(const char* fname) {
     active = false;
-    reader = hostEnv->storage()->path(fname)->dataReader();
+    reader = host->storage()->path(fname)->dataReader();
 
     char buf[21];
     buf[20] = 0;

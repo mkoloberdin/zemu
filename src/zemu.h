@@ -2,7 +2,7 @@
 #define _ZEMU_H_INCLUDED_
 
 #include "defines.h"
-#include "platform/hardware.h"
+#include "host/stage.h"
 #include <z80ex.h>
 #include "sound/mixer.h"
 
@@ -13,7 +13,7 @@
 #endif
 
 #include "params.h"
-#define SOUND_ENABLED (!params.maxSpeed && hostEnv->hardware()->isSoundEnabled())
+#define SOUND_ENABLED (!params.maxSpeed && host->stage()->isSoundEnabled())
 
 struct s_Action {
     const char* name;
@@ -28,7 +28,7 @@ struct s_Params {
     bool sound;
     bool maxSpeed;
     bool antiFlicker;
-    HardwareSoundDriver soundDriver;
+    StageSoundDriver soundDriver;
     int audioBufferSize;
     int mouseDiv;
     bool showInactiveIcons;
@@ -68,7 +68,7 @@ void AttachZ80InputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uin
 void AttachZ80OutputHandler(bool (* check)(uint16_t), bool (* func)(uint16_t, uint8_t));
 void AttachFrameStartHandler(void (* func)(void));
 void AttachAfterFrameRenderHandler(void (* func)(void));
-void AttachHwHandler(HardwareEventType eventType, bool (* func)(HardwareEvent&));
+void AttachHwHandler(StageEventType eventType, bool (* func)(StageEvent&));
 void AttachResetHandler(void (* func)(void));
 
 extern ptrOnReadByteFunc* devMapRead;

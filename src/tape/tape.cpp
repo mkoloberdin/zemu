@@ -74,7 +74,7 @@ void C_Tape::Eject(void) {
 }
 
 bool C_Tape::IsTapeFormat(const char* fname) {
-    auto ext = hostEnv->storage()->path(fname)->extensionLc();
+    auto ext = host->storage()->path(fname)->extensionLc();
     return (ext == ".tap" || ext == ".wav" || ext == ".voc");
 }
 
@@ -84,7 +84,7 @@ bool C_Tape::Insert(const char* fname) {
         currentFormat = nullptr;
     }
 
-    auto ext = hostEnv->storage()->path(fname)->extensionLc();
+    auto ext = host->storage()->path(fname)->extensionLc();
 
     if (ext == ".tap") {
         currentFormat = new C_TapFormat();
