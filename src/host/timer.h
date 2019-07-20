@@ -1,6 +1,8 @@
 #ifndef HOST__TIMER_H__INCLUDED
 #define HOST__TIMER_H__INCLUDED
 
+#include <cstdint>
+
 class Timer {
 public:
 

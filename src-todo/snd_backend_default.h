@@ -1,3 +1,4 @@
+/*
 #ifndef _SND_BACKEND_DEFAULT_H_INCLUDED_
 #define _SND_BACKEND_DEFAULT_H_INCLUDED_
 
@@ -42,3 +43,4 @@ private:
 };
 
 #endif
+*/

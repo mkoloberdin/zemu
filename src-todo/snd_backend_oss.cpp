@@ -1,6 +1,7 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+/*
 #ifdef __unix__
 
 #include "defines.h"
@@ -14,6 +15,9 @@
 #include <cmath>
 
 CSndBackendOSS::CSndBackendOSS(unsigned frag_num, unsigned frag_size) {
+    // int frag = (max_fragments << 16) | (size_selector);
+    // ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &frag);
+
     frag = (frag_num << 16) | (int)ceil(std::log2(frag_size));
 }
 
@@ -75,3 +79,4 @@ CSndBackendOSS::~CSndBackendOSS() {
 }
 
 #endif
+*/

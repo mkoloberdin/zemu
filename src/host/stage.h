@@ -2,17 +2,27 @@
 #define HOST__STAGE_H__INCLUDED
 
 #include <cstdint>
+#include <string>
 #include <SDL_mouse.h>
 #include "ZEmuConfig.h"
 #include "keycode.h"
 
-#define STAGE_MAKERGB(r, g, b) (((r) << 0x10) | ((g) << 8) | (b))
-#define STAGE_GETR(c) ((c) >> 0x10)
-#define STAGE_GETG(c) (((c) >> 0x8) & 0xFF)
-#define STAGE_GETB(c) ((c) & 0xFF)
+#if defined(USE_SDL1) && defined(__APPLE__)
+    #define STAGE_MAKERGB(r, g, b) (((b) << 0x18) | ((g) << 0x10) | ((r) << 8))
+    #define STAGE_GETR(c) (((c) >> 8) & 0xFF)
+    #define STAGE_GETG(c) (((c) >> 0x10) & 0xFF)
+    #define STAGE_GETB(c) ((c) >> 0x18)
 
-#ifdef ZEMU_BIG_ENDIAN
     #define STAGE_FLIPPED_ARGB
+#else
+    #define STAGE_MAKERGB(r, g, b) (((r) << 0x10) | ((g) << 8) | (b))
+    #define STAGE_GETR(c) ((c) >> 0x10)
+    #define STAGE_GETG(c) (((c) >> 0x8) & 0xFF)
+    #define STAGE_GETB(c) ((c) & 0xFF)
+
+    #ifdef ZEMU_BIG_ENDIAN
+        #define STAGE_FLIPPED_ARGB
+    #endif
 #endif
 
 #define STAGE_MOUSE_LMASK SDL_BUTTON_LMASK
@@ -31,12 +41,27 @@ enum StageRenderMode {
     STAGE_RENDER_MODE_2X_SCANLINES
 };
 
-struct StageConfig {
-    int initialWidth;
-    int initialHeight;
-    StageSoundDriver soundDriver;
+enum StageHint {
+    STAGE_HINT_FLIP_SURFACE = 1 // Has effect only for SDL1
+};
+
+struct StageConfig { //-V730
+    int hints = 0; // Implementation-specific
+    std::string title;
+    bool withJoystick;
+
     StageRenderMode renderMode;
-    bool isFullscreen;
+    int desiredFrameWidth;
+    int desiredFrameHeight;
+    bool fullscreen;
+
+    StageSoundDriver soundDriver;
+    int soundFreq; // eg. 44100
+    int soundParams[3] = {0}; // Implementation-specific
+
+    #ifdef _WIN32
+        WORD windowsIconResource;
+    #endif
 };
 
 enum StageEventType {
@@ -79,16 +104,16 @@ public:
     virtual void setRenderMode(StageRenderMode mode) = 0;
 
     virtual bool isKeyRepeat() = 0;
-    virtual void setKeyRepeat(bool repeat) = 0;
+    virtual void setKeyRepeat(bool keyRepeat) = 0;
 
     virtual bool isFullscreen() = 0;
     virtual void setFullscreen(bool fullscreen) = 0;
 
     virtual bool isSoundEnabled() = 0;
-    virtual void setSoundEnabled(bool enabled) = 0;
+    virtual void setSoundEnabled(bool soundEnabled) = 0;
 
     virtual bool pollEvent(StageEvent* into) = 0;
-    virtual void getMouseState(StageMouseState* info) = 0;
+    virtual void getMouseState(StageMouseState* into) = 0;
 
     virtual void renderFrame(uint32_t* pixels, int width, int height) = 0; // In ARGB format
     virtual void renderSound(uint32_t* buffer, int samples) = 0; // 2 x int16_t (stereo) for each sample

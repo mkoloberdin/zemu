@@ -4,7 +4,6 @@
 #include <assert.h>
 #include "mixer.h"
 
-#define AUDIO_NATIVE_BUFFER 1024
 #define MIXER_FULL_VOL_MASK 1
 #define MIXER_SMART_MASK 2
 

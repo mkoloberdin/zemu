@@ -1,6 +1,7 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+/*
 #include "defines.h"
 #include "platform_hardware.h"
 #include "snd_backend_default.h"
@@ -221,3 +222,4 @@ void CSndBackendDefault::AudioCallback(void* userData, uint8_t* stream, int len)
 
     self->audioPtr = (self->audioPtr + len) & self->mask;
 }
+*/

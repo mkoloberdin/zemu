@@ -1,3 +1,4 @@
+/*
 #ifndef _SND_BACKEND_OSS_H_INCLUDED_
 #define _SND_BACKEND_OSS_H_INCLUDED_
 
@@ -24,3 +25,4 @@ private:
 #endif
 
 #endif
+*/
