@@ -1,8 +1,9 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+#include <string>
+#include <stdexcept>
 #include "trdos.h"
-#include "exceptions.h"
 #include "../mmanager/mmanager.h"
 
 extern C_MemoryManager dev_mman;
@@ -11,14 +12,13 @@ bool C_TrDos::trdos;
 uint8_t C_TrDos::rom[0x4000];
 
 void C_TrDos::ReadFile(void) {
-    string filename;
     size_t offset;
 
-    filename = host->config()->getString("beta128", "rom", "trdos.rom");
+    std::string filename = host->config()->getString("beta128", "rom", "trdos.rom");
     filename = split_romname(filename, &offset);
 
     if (host->storage()->readExtras("roms", filename, rom, 0x4000, offset) != 0x4000) {
-        throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
+        throw std::runtime_error(std::string("Couldn't find \"roms/") + filename + "\"");
     }
 }
 

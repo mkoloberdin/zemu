@@ -1,9 +1,9 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+#include <stdexcept>
 #include <stdio.h>
 #include "zemu_env.h"
-#include "exceptions.h"
 #include "snap_z80.h"
 
 #define HANDLE_PRAGMA_PACK_PUSH_POP
@@ -173,7 +173,7 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
 
         try {
             if (reader->readBlock(header_add, tmp) != tmp) {
-                throw C_E(E_SnapZ80Error);
+                throw std::runtime_error("SnapZ80: Unexpected EOF");
             }
 
             z80ex_set_reg(cpu, regPC, ZEMU_MAKEWORD(header_add[1], header_add[0]));
@@ -181,7 +181,7 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
 
             if (mode == 10) {
                 // TODO: Scorpion256 mode
-                throw C_E(E_SnapZ80Error);
+                throw std::runtime_error("SnapZ80: Scorpion256 mode is not supported");
             } else if ((ver == 2 && mode < 3) || (ver == 3 && mode < 4)) {
                 // 48k or 16k mode
                 int pages;
@@ -197,14 +197,14 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
 
                 for (int i = 0; i < pages; ++i) {
                     if (reader->isEof()) {
-                        throw C_E(E_SnapZ80Error);
+                        throw std::runtime_error("SnapZ80: Unexpected EOF");
                     }
 
                     tmp = reader->readWord();
                     is_compressed = (tmp != 0xFFFF);
 
                     if (reader->isEof()) {
-                        throw C_E(E_SnapZ80Error);
+                        throw std::runtime_error("SnapZ80: Unexpected EOF");
                     }
 
                     uint8_t page_num = reader->readByte();
@@ -212,27 +212,27 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
                     switch (page_num) {
                         case 4:
                             if (!block_read(reader, mmgr, 0x8000, 0x4000, is_compressed)) {
-                                throw C_E(E_SnapZ80Error);
+                                throw std::runtime_error("SnapZ80: Unexpected EOF");
                             }
 
                             break;
 
                         case 5:
                             if (!block_read(reader, mmgr, 0xC000, 0x4000, is_compressed)) {
-                                throw C_E(E_SnapZ80Error);
+                                throw std::runtime_error("SnapZ80: Unexpected EOF");
                             }
 
                             break;
 
                         case 8:
                             if (!block_read(reader, mmgr, 0x4000, 0x4000, is_compressed)) {
-                                throw C_E(E_SnapZ80Error);
+                                throw std::runtime_error("SnapZ80: Unexpected EOF");
                             }
 
                             break;
 
                         default: // unknown page
-                            throw C_E(E_SnapZ80Error);
+                            throw std::runtime_error(std::string("SnapZ80: Unknown page number: ") + std::to_string(page_num));
                     }
                 }
             } else {
@@ -240,21 +240,21 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
 
                 for (int i = 0; i < 8; i++) {
                     if (reader->isEof()) {
-                        throw C_E(E_SnapZ80Error);
+                        throw std::runtime_error("SnapZ80: Unexpected EOF");
                     }
 
                     tmp = reader->readWord();
                     is_compressed = (tmp != 0xFFFF);
 
                     if (reader->isEof()) {
-                        throw C_E(E_SnapZ80Error);
+                        throw std::runtime_error("SnapZ80: Unexpected EOF");
                     }
 
                     uint8_t page_num = reader->readByte();
                     mmgr.OnOutputByte(0x7ffd, page_num - 3);
 
                     if (!block_read(reader, mmgr, 0xC000, 0x4000, is_compressed)) {
-                        throw C_E(E_SnapZ80Error);
+                        throw std::runtime_error("SnapZ80: Unexpected EOF");
                     }
                 }
 
@@ -263,7 +263,9 @@ bool load_z80_snap(const char* filename, Z80EX_CONTEXT* cpu, C_MemoryManager& mm
 
             // TODO: set fffd, 1ffd ports, AY/YM registers
             delete[] header_add;
-        } catch (C_E &e) {
+        } catch (std::exception &e) {
+            printf("%s\n", e.what());
+
             delete[] header_add;
             return false;
         }

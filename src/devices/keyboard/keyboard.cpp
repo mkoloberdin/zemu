@@ -1,10 +1,11 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+#include <string>
+#include <stdexcept>
 #include <string.h>
 #include "zemu_env.h"
 #include "tape/tape.h"
-#include "exceptions.h"
 #include "keyboard.h"
 #include "keys.h"
 
@@ -16,11 +17,11 @@ void C_Keyboard::ReadKbdConfig(void) {
     char buf[0x1000];
     s_ZxKeys zxKeys;
 
-    string value = host->config()->getString("input", "keymap", "keys.config");
-    string keysConfigPath = host->storage()->findExtras(value)->string();
+    std::string value = host->config()->getString("input", "keymap", "keys.config");
+    std::string keysConfigPath = host->storage()->findExtras(value)->string();
 
     if (keysConfigPath.empty()) {
-        throw C_E(E_FileNotFound, value.c_str());
+        throw std::runtime_error(std::string("Couldn't find \"" + value + "\""));
     }
 
     int lineNum = 0;

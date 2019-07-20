@@ -1,8 +1,9 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+#include <string>
+#include <stdexcept>
 #include "mmanager.h"
-#include "exceptions.h"
 #include "../extport/extport.h"
 
 #include <stdlib.h>
@@ -47,14 +48,14 @@ void C_MemoryManager::ReadFile(void) {
     filename = split_romname(filename, &offset);
 
     if (host->storage()->readExtras("roms", filename, &rom[0x4000], 0x4000, offset) != 0x4000) {
-        throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
+        throw std::runtime_error(std::string("Couldn't find \"roms/") + filename + "\"");
     }
 
     filename = config->getString("core", "rom_128", "pentagon.rom:0");
     filename = split_romname(filename, &offset);
 
     if (host->storage()->readExtras("roms", filename, rom, 0x4000, offset) != 0x4000) {
-        throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
+        throw std::runtime_error(std::string("Couldn't find \"roms/") + filename + "\"");
     }
 
     enable512 = config->getBool("core", "enable512", false);

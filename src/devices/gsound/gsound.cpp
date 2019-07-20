@@ -1,8 +1,9 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+#include <string>
+#include <stdexcept>
 #include "gsound.h"
-#include "exceptions.h"
 #include "../mmanager/mmanager.h"
 
 C_SndRenderer C_GSound::sndRenderer;
@@ -41,14 +42,14 @@ void C_GSound::Init(void) {
 
     soundMixer.AddSource(&sndRenderer);
 
-    string filename;
+    std::string filename;
     size_t offset;
 
     filename = config->getString("sound", "gsrom", "gs105a.rom");
     filename = split_romname(filename, &offset);
 
     if (host->storage()->readExtras("roms", filename, mem, 0x8000, offset) != 0x8000) {
-        throw C_E(E_General, string("Can't find \"roms/") + filename + "\"");
+        throw std::runtime_error(std::string("Couldn't find \"roms/") + filename + "\"");
     }
 
     gsCpu = z80ex_create(

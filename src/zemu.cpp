@@ -1,6 +1,7 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+#include <stdexcept>
 #include <string.h>
 #include <ctype.h>
 #include <cctype>
@@ -9,7 +10,6 @@
 #include <list>
 #include "zemu_env.h"
 #include "zemu.h"
-#include "exceptions.h"
 #include "lib_wd1793/wd1793_chip.h"
 #include "font.h"
 #include "dialog.h"
@@ -1188,10 +1188,8 @@ int main(int argc, char *argv[]) {
     auto config = host->config();
 
     try {
-        string str;
-
         // core
-        str = config->getString("core", "snapformat", "sna");
+        std::string str = config->getString("core", "snapformat", "sna");
         transform(str.begin(), str.end(), str.begin(), (int (*)(int))tolower);
 
         if (str == "sna") {
@@ -1329,8 +1327,8 @@ int main(int argc, char *argv[]) {
         if (params.cpuTraceEnabled) {
             CpuTrace_Close();
         }
-    } catch (C_E &e) {
-        StrikeError("Error %d: %s", e.exc, e.Descr());
+    } catch (std::exception &e) {
+        StrikeError("%s", e.what());
     }
 
     return 0;
