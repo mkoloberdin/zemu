@@ -11,7 +11,7 @@
 #include "devs.h"
 #include "tape/tape.h"
 #include "labels.h"
-#include "images/zemu_ico.h"
+#include "data/img_zemu_ico.h"
 #include <boost/algorithm/string.hpp>
 
 #define MAX_INPUT_STRING 64

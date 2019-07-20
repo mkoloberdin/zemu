@@ -23,13 +23,13 @@
 #include "devs.h"
 #include "snap_z80.h"
 #include "snap_sna.h"
-#include "ftbos_font.h"
-#include "font_64.h"
-#include "images/floppy.h"
-#include "images/floppy_read.h"
-#include "images/floppy_write.h"
-#include "images/turbo_off.h"
-#include "images/turbo_on.h"
+#include "data/font_bold.h"
+#include "data/font_thin.h"
+#include "data/img_floppy.h"
+#include "data/img_floppy_read.h"
+#include "data/img_floppy_write.h"
+#include "data/img_turbo_off.h"
+#include "data/img_turbo_on.h"
 #include "platform_impl/hostenv_impl.h"
 
 #define SNAP_FORMAT_Z80 0
@@ -714,12 +714,12 @@ void InitDevMaps(void) {
 //--------------------------------------------------------------------------------------------------------------
 
 void InitFont(void) {
-    font = new C_Font(ftbos_font_data);
+    font = new C_Font(font_boldData);
     font->CopySym('-', '_');
     font->SetSymOff('_', 0, 4);
     font->SetSymOff('-', 0, 1);
 
-    fixed_font = new C_Font(font_64_data);
+    fixed_font = new C_Font(font_thinData);
 }
 
 void InitAll(void) {
