@@ -15,6 +15,8 @@ public:
     Host() {}
     virtual ~Host() {}
 
+    virtual void setStageConfig(const StageConfig& stageConfig) = 0;
+
     virtual Logger* logger() = 0;
     virtual Storage* storage() = 0;
     virtual Config* config() = 0;

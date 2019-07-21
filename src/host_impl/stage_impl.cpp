@@ -4,15 +4,15 @@
 #include <string>
 #include <stdexcept>
 #include "stage_impl.h"
-#include "driver/sound_driver_generic.h"
+#include "host_driver/sound_driver_generic.h"
 
 #ifdef __unix__
-    #include "driver/sound_driver_oss.h"
+    #include "host_driver/sound_driver_oss.h"
 #endif
 
 #ifdef _WIN32
     #include <SDL_syswm.h>
-    #include "driver/sound_driver_win32.h"
+    #include "host_driver/sound_driver_win32.h"
 #endif
 
 int stageImplRenderThreadFunction(void* data) {
@@ -21,6 +21,10 @@ int stageImplRenderThreadFunction(void* data) {
 }
 
 StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
+    if (stageConfig.desiredFrameWidth <= 0 || stageConfig.desiredFrameHeight <= 0) {
+        throw std::logic_error(std::string("\"desiredFrameWidth\" and \"desiredFrameHeight\" must be greater than zero"));
+    }
+
     #ifdef USE_SDL1
         uint32_t flags = SDL_INIT_VIDEO;
     #else
@@ -31,7 +35,7 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
         flags |= SDL_INIT_AUDIO;
     }
 
-    if (stageConfig.withJoystick) {
+    if (stageConfig.joystickEnabled) {
         flags |= SDL_INIT_JOYSTICK;
     }
 
@@ -39,7 +43,7 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
         throw std::runtime_error(std::string("SDL_InitSubSystem() failed: ") + SDL_GetError());
     }
 
-    if (stageConfig.withJoystick) {
+    if (stageConfig.joystickEnabled) {
         SDL_JoystickEventState(SDL_ENABLE);
     }
 
@@ -74,12 +78,8 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
     // #endif
 
     switch (stageConfig.soundDriver) {
-        case STAGE_SOUND_DRIVER_NONE:
-            soundEnabled = false;
-            break;
-
         case STAGE_SOUND_DRIVER_GENERIC:
-            soundEnabled = true;
+            soundEnabled = stageConfig.soundEnabled;
 
             soundDriver.reset(new SoundDriverGeneric(
                 stageConfig.soundFreq,
@@ -89,22 +89,28 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
             ));
             break;
 
-        case STAGE_SOUND_DRIVER_NATIVE:
-            #ifdef __unix__
-                soundEnabled = true;
+        #ifdef _WIN32
+            case STAGE_SOUND_DRIVER_WIN32:
+                soundEnabled = stageConfig.soundEnabled;
+                soundDriver.reset(new SoundDriverWin32(stageConfig.soundFreq, stageConfig.soundParams[0]));
+                break;
+        #endif
+
+        #ifdef __unix__
+            case STAGE_SOUND_DRIVER_OSS:
+                soundEnabled = stageConfig.soundEnabled;
 
                 soundDriver.reset(new SoundDriverOss(
                     stageConfig.soundFreq,
                     stageConfig.soundParams[0],
                     stageConfig.soundParams[1]
                 ));
-            #elif _WIN32
-                soundEnabled = true;
-                soundDriver.reset(new SoundDriverWin32(stageConfig.soundFreq, stageConfig.soundParams[0]));
-            #else
-                soundEnabled = false;
-            #endif
 
+                break;
+        #endif
+
+        default:
+            soundEnabled = false;
             break;
     }
 
@@ -242,6 +248,86 @@ void StageImpl::setSoundEnabled(bool soundEnabled) {
 }
 
 bool StageImpl::pollEvent(StageEvent* into) {
+    if (!SDL_PollEvent(&nativeEvent)) {
+        return false;
+    }
+
+    switch (nativeEvent.type) {
+        case SDL_QUIT:
+            into->type = STAGE_EVENT_QUIT;
+            return true;
+
+        case SDL_KEYDOWN: {
+            #ifndef USE_SDL1
+                if (!keyRepeat && nativeEvent.key.repeat != 0) {
+                    return false;
+                }
+            #endif
+
+            into->type = STAGE_EVENT_KEYDOWN;
+            into->keyCode = nativeEvent.key.keysym.sym;
+            return true;
+        }
+
+        case SDL_KEYUP:
+            into->type = STAGE_EVENT_KEYUP;
+            into->keyCode = nativeEvent.key.keysym.sym;
+            return true;
+
+// SDL_Joystick
+// SDL_JoystickEventState
+// SDL_NumJoysticks
+// SDL_JoystickOpen
+// SDL_JOYAXISMOTION
+// SDL_JOYBUTTONDOWN
+// SDL_JOYBUTTONUP
+
+// STAGE_EVENT_JOYDOWN
+// STAGE_EVENT_JOYUP
+// into->joyButton
+// STAGE_JOYSTICK_UP ; STAGE_JOYSTICK_DOWN ; STAGE_JOYSTICK_LEFT ; STAGE_JOYSTICK_RIGHT ; STAGE_JOYSTICK_FIRE
+
+        #ifdef USE_SDL1
+            case SDL_MOUSEBUTTONDOWN:
+                into->type = STAGE_EVENT_MOUSEWHEEL;
+
+                switch (nativeEvent.button.button) {
+                    case SDL_BUTTON_WHEELUP:
+                        into->mouseWheelDirection = -1;
+                        break;
+
+                    case SDL_BUTTON_WHEELDOWN:
+                        into->mouseWheelDirection = 1;
+                        break;
+
+                    default:
+                        into->mouseWheelDirection = 0;
+                        break;
+                }
+
+                return true;
+        #else
+            case SDL_MOUSEWHEEL:
+                into->type = STAGE_EVENT_MOUSEWHEEL;
+
+                switch (nativeEvent.wheel.direction) {
+                    case SDL_MOUSEWHEEL_FLIPPED:
+                        into->mouseWheelDirection = -1;
+                        break;
+
+                    case SDL_MOUSEWHEEL_NORMAL:
+                        into->mouseWheelDirection = 1;
+                        break;
+
+                    default:
+                        into->mouseWheelDirection = 0;
+                        break;
+                }
+
+                return true;
+        #endif
+    }
+
     return false;
 }
 
@@ -271,16 +357,16 @@ void StageImpl::renderSound(uint32_t* buffer, int samples) {
 
 void StageImpl::refreshVideoSubsystem() {
     bool wasRenderThreadActive = isRenderThreadActive;
+    isRenderThreadActive = false;
 
-    if (wasRenderThreadActive) {
-        isRenderThreadActive = false;
+    if (wasRenderThreadActive && renderThread) {
         SDL_SemPost(renderThreadPixelsReadySem);
         SDL_WaitThread(renderThread, nullptr);
+    }
 
-        if (renderThreadPixels) {
-            delete[] renderThreadPixels;
-            renderThreadPixels = nullptr;
-        }
+    if (renderThreadPixels) {
+        delete[] renderThreadPixels;
+        renderThreadPixels = nullptr;
     }
 
     int width = lastFrameWidth;
@@ -362,6 +448,8 @@ void StageImpl::refreshVideoSubsystem() {
 
     if (wasRenderThreadActive) {
         renderThreadPixels = new uint32_t[lastFrameWidth * lastFrameHeight];
+        isRenderThreadActive = true;
+        isRenderThreadPixelsConsumed = true;
 
         #ifdef USE_SDL1
             renderThread = SDL_CreateThread(stageImplRenderThreadFunction, (void*)this);
@@ -372,8 +460,6 @@ void StageImpl::refreshVideoSubsystem() {
         if (!renderThread) {
             throw std::runtime_error(std::string("SDL_CreateThread() failed: ") + SDL_GetError());
         }
-
-        isRenderThreadPixelsConsumed = true;
     }
 }
 

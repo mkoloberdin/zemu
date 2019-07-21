@@ -13,7 +13,7 @@
 #endif
 
 #include "params.h"
-#define SOUND_ENABLED (!params.maxSpeed && host->stage()->isSoundEnabled())
+#define SHOULD_OUTPUT_SOUND (!params.maxSpeed && host->stage()->isSoundEnabled())
 
 struct s_Action {
     const char* name;
@@ -21,26 +21,15 @@ struct s_Action {
 };
 
 struct s_Params {
-    bool useFlipSurface;
-    bool fullscreen;
-    bool scale2x;
-    bool scanlines;
-    bool sound;
     bool maxSpeed;
     bool antiFlicker;
-    StageSoundDriver soundDriver;
-    int audioBufferSize;
     int mouseDiv;
     bool showInactiveIcons;
-    int soundParam;
     bool cpuTraceEnabled;
     char cpuTraceFormat[MAX_TRACE_FORMAT];
     char cpuTraceFileName[MAX_PATH];
     int mixerMode;
     int snapFormat;
-    bool kempstonEnable;
-    int kempstonOnStickNum;
-    int kempstonAxisTreshold;
 };
 
 extern uint32_t* screen;

@@ -122,14 +122,14 @@ bool C_TsFm::OnOutputByte(uint16_t port, uint8_t value) {
     } else { // 0xBFFD
         if (mode >= TSFM_MODE_TSFM) {
             if (selectedReg < 0x10) {
-                ayChip[CHIP_NUM].Write(SOUND_ENABLED ? devClk : 0, value);
+                ayChip[CHIP_NUM].Write(SHOULD_OUTPUT_SOUND ? devClk : 0, value);
             } else {
                 ym2203Chip[CHIP_NUM].Write(value);
             }
         } else if (mode >= TSFM_MODE_TS) {
-            ayChip[CHIP_NUM].Write(SOUND_ENABLED ? devClk : 0, value);
+            ayChip[CHIP_NUM].Write(SHOULD_OUTPUT_SOUND ? devClk : 0, value);
         } else {
-            ayChip[0].Write(SOUND_ENABLED ? devClk : 0, value);
+            ayChip[0].Write(SHOULD_OUTPUT_SOUND ? devClk : 0, value);
         }
     }
 
@@ -137,7 +137,7 @@ bool C_TsFm::OnOutputByte(uint16_t port, uint8_t value) {
 }
 
 void C_TsFm::OnFrameStart(void) {
-    if (!SOUND_ENABLED) {
+    if (!SHOULD_OUTPUT_SOUND) {
         return;
     }
 
@@ -158,7 +158,7 @@ void C_TsFm::OnFrameStart(void) {
 }
 
 void C_TsFm::OnAfterFrameRender(void) {
-    if (!SOUND_ENABLED) {
+    if (!SHOULD_OUTPUT_SOUND) {
         return;
     }
 

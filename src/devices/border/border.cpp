@@ -24,7 +24,7 @@ bool C_Border::OutputByteCheckPort(uint16_t port) {
 }
 
 bool C_Border::OnOutputByte(uint16_t port, uint8_t value) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         unsigned vol = 0;
 
         if (value & 0x10) {
@@ -47,13 +47,13 @@ bool C_Border::OnOutputByte(uint16_t port, uint8_t value) {
 }
 
 void C_Border::OnFrameStart(void) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.StartFrame();
     }
 }
 
 void C_Border::OnAfterFrameRender(void) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.EndFrame(lastDevClk);
     }
 }

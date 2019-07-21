@@ -4,9 +4,9 @@
 // ZHW_Window* window;
 // int actualWidth;
 // int actualHeight;
-
+//
 // ----
-
+//
 // void Action_Fullscreen(void) {
 //     ZHW_Video_ToggleFullScreen(window);
 //
@@ -18,22 +18,22 @@
 //         PITCH = REAL_PITCH;
 //     }
 // }
-
+//
 // ----
-
+//
 // at main
-
+//
 //         if (ZHW_Core_Init(params.sound && params.sndBackend == SND_BACKEND_DEFAULT) < 0) {
 //             StrikeError("Unable to init: %s\n", ZHW_Error_Get());
 //         }
-
+//
 //         #ifdef _WIN32
 //             windows_init();
 //             atexit(windows_cleanup);
 //         #else
-            atexit(ZHW_Core_Quit);
+//            atexit(ZHW_Core_Quit);
 //         #endif
-
+//
 //        int actualWidth = WIDTH;
 //        int actualHeight = HEIGHT;
 //
@@ -41,13 +41,13 @@
 //            actualWidth *= 2;
 //            actualHeight *= 2;
 //        }
-
+//
 //        window = ZHW_Video_CreateWindow("ZEmu", actualWidth, actualHeight, params.fullscreen, params.useFlipSurface);
-
+//
 //        if (window == nullptr) {
 //            StrikeError("Unable to create window: %s\n", ZHW_Error_Get());
 //        }
-
+//
 //         realScreen = window->surface;
 //         REAL_PITCH = realScreen->pitch / 4;
 //
@@ -63,54 +63,54 @@
 //             screen = realScreen;
 //             PITCH = REAL_PITCH;
 //         }
-
+//
 //        C_JoystickManager::Instance()->Init();
-
+//
 // ----
-
+//
 // at FreeAll
-
+//
 //    if (upadteScreenThread) {
 //        updateScreenThreadActive = false;
 //        ZHW_Mutex_SemPost(updateScreenThreadSem);
 //        ZHW_Thread_Wait(upadteScreenThread, nullptr);
 //    }
-
+//
 //    if (params.scale2x) {
 //        ZHW_Video_FreeSurface(screen);
 //    }
 //
 //    ZHW_Video_CloseWindow(window);
-
+//
 // ----
-
-void InitAudio(void) {
-    if (params.sndBackend == SND_BACKEND_DEFAULT) {
-        soundMixer.InitBackendDefault(params.audioBufferSize);
-    }
-    #ifdef _WIN32
-        else if (params.sndBackend == SND_BACKEND_WIN32) {
-            soundMixer.InitBackendWin32(params.soundParam);
-        }
-    #endif
-    #ifdef __unix__
-        else if (params.sndBackend == SND_BACKEND_OSS) {
-            soundMixer.InitBackendOSS(params.soundParam);
-        }
-    #endif
-
-    soundMixer.Init(params.mixerMode, recordWav, wavFileName);
-}
-
+//
+// void InitAudio(void) {
+//     if (params.sndBackend == SND_BACKEND_DEFAULT) {
+//         soundMixer.InitBackendDefault(params.audioBufferSize);
+//     }
+//     #ifdef _WIN32
+//         else if (params.sndBackend == SND_BACKEND_WIN32) {
+//             soundMixer.InitBackendWin32(params.soundParam);
+//         }
+//     #endif
+//     #ifdef __unix__
+//         else if (params.sndBackend == SND_BACKEND_OSS) {
+//             soundMixer.InitBackendOSS(params.soundParam);
+//         }
+//     #endif
+//
+//     soundMixer.Init(params.mixerMode, recordWav, wavFileName);
+// }
+//
 // ----
-
+//
 // ZHW_Thread *upadteScreenThread = nullptr;
 // ZHW_Mutex_Sem *updateScreenThreadSem;
 // volatile bool updateScreenThreadActive = true;
 // int UpdateScreenThreadFunc(void *param);
-
+//
 // ----
-
+//
 // void InitSurfaces(void) {
 //     scrSurf[0] = ZHW_Video_CreateSurface(WIDTH, HEIGHT, screen);
 //
@@ -124,16 +124,16 @@ void InitAudio(void) {
 //         StrikeError("Unable to create secondary surface: %s\n", ZHW_Error_Get());
 //     }
 // }
-
+//
 // ----
-
+//
 // in InitAll
-
+//
 //    updateScreenThreadSem = ZHW_Mutex_CreateSemaphore(0);
 //    upadteScreenThread = ZHW_Thread_Create(UpdateScreenThreadFunc, nullptr);
-
+//
 // ----
-
+//
 // int UpdateScreenThreadFunc(void* param) {
 //     while (updateScreenThreadActive) {
 //         ZHW_Mutex_SemWait(updateScreenThreadSem);
@@ -142,7 +142,7 @@ void InitAudio(void) {
 //
 //     return 0;
 // }
-
+//
 // // Tries to update screen.
 // // If screen is already updating, do nothing, therefore this function must be called in a loop,
 // // to ensure that screen is really updated
@@ -204,16 +204,16 @@ void InitAudio(void) {
 //
 //     ZHW_Mutex_SemPost(updateScreenThreadSem);
 // }
-
+//
 // ----
-
-#ifdef _WIN32
-
+//
+// #ifdef _WIN32
+//
 // HICON windows_icon;
 // HWND hwnd;
-
-#include "windows/resource.h"
-
+//
+// #include "windows/resource.h"
+//
 // void windows_init() {
 //     HINSTANCE handle = ::GetModuleHandle(nullptr);
 //     windows_icon = ::LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
@@ -232,10 +232,10 @@ void InitAudio(void) {
 //     hwnd = wminfo.window;
 //     ::SetClassLongPtr(hwnd, GCLP_HICON, (LONG_PTR)windows_icon);
 // }
-
+//
 // void windows_cleanup() {
 //     ZHW_Core_Quit();
 //     ::DestroyIcon(windows_icon);
 // }
-
+//
 #endif // _WIN32

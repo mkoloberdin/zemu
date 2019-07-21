@@ -28,7 +28,7 @@ bool C_Covox::OutputByteCheckPort(uint16_t port) {
 }
 
 bool C_Covox::OnOutputByte(uint16_t port, uint8_t value) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         unsigned vol = ((unsigned)value << 7);
         sndRenderer.Update(devClk, vol, vol);
     }
@@ -37,19 +37,19 @@ bool C_Covox::OnOutputByte(uint16_t port, uint8_t value) {
 }
 
 void C_Covox::OnFrameStart(void) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.StartFrame();
     }
 }
 
 void C_Covox::OnAfterFrameRender(void) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.EndFrame(lastDevClk);
     }
 }
 
 void C_Covox::OnReset(void) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.Update(0, 0, 0);
     }
 }

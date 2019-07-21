@@ -16,6 +16,10 @@ SoundDriverWin32::SoundDriverWin32(int soundFreq, int wqSize) {
         ).str());
     }
 
+    if (wqSize == 0) {
+        wqSize = 4;
+    }
+
     this->wqSize = wqSize;
 
     WAVEFORMATEX wf = {0};

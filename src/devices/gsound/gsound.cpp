@@ -111,7 +111,7 @@ bool C_GSound::OnOutputByte(uint16_t port, uint8_t value) {
 }
 
 void C_GSound::OnFrameStart(void) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.StartFrame();
     }
 }
@@ -120,7 +120,7 @@ void C_GSound::OnAfterFrameRender(void) {
     Update(lastDevClk);
     gsClk -= GS_DEV_TO_CLK(lastDevClk);
 
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.EndFrame(lastDevClk);
     }
 }
@@ -197,7 +197,7 @@ uint8_t C_GSound::GsReadByte(Z80EX_CONTEXT_PARAM uint16_t addr, int m1_state, vo
     if ((addr & 0xE000) == 0x6000) {
         channel[(addr >> 8) & 3] = value;
 
-        if (SOUND_ENABLED) {
+        if (SHOULD_OUTPUT_SOUND) {
             UpdateSound();
         }
     }
@@ -263,7 +263,7 @@ void C_GSound::GsOutputByte(Z80EX_CONTEXT_PARAM uint16_t port, uint8_t value, vo
         case 0x09:
             volume[(port & 0x0F) - 0x06] = value & 0x3F;
 
-            if (SOUND_ENABLED) {
+            if (SHOULD_OUTPUT_SOUND) {
                 UpdateSound();
             }
 

@@ -32,7 +32,8 @@
 enum StageSoundDriver {
     STAGE_SOUND_DRIVER_NONE,
     STAGE_SOUND_DRIVER_GENERIC,
-    STAGE_SOUND_DRIVER_NATIVE
+    STAGE_SOUND_DRIVER_WIN32,
+    STAGE_SOUND_DRIVER_OSS
 };
 
 enum StageRenderMode {
@@ -45,22 +46,25 @@ enum StageHint {
     STAGE_HINT_FLIP_SURFACE = 1 // Has effect only for SDL1
 };
 
-struct StageConfig { //-V730
+struct StageConfig {
     int hints = 0; // Implementation-specific
     std::string title;
-    bool withJoystick;
 
-    StageRenderMode renderMode;
-    int desiredFrameWidth;
-    int desiredFrameHeight;
-    bool fullscreen;
+    bool joystickEnabled = true;
+    int joystickAxisThreshold = 3200;
 
-    StageSoundDriver soundDriver;
-    int soundFreq; // eg. 44100
+    StageRenderMode renderMode = STAGE_RENDER_MODE_1X;
+    int desiredFrameWidth = 0;
+    int desiredFrameHeight = 0;
+    bool fullscreen = false;
+
+    StageSoundDriver soundDriver = STAGE_SOUND_DRIVER_GENERIC;
+    bool soundEnabled = true;
+    int soundFreq = 44100;
     int soundParams[3] = {0}; // Implementation-specific
 
     #ifdef _WIN32
-        WORD windowsIconResource;
+        WORD windowsIconResource = 0;
     #endif
 };
 

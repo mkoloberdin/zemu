@@ -32,6 +32,10 @@
 #include "data/img_turbo_on.h"
 #include "host_impl/host_impl.h"
 
+#ifdef _WIN32
+    #include "windows/resource.h"
+#endif
+
 #define SNAP_FORMAT_Z80 0
 #define SNAP_FORMAT_SNA 1
 #define INT_LENGTH 32
@@ -1009,7 +1013,7 @@ void Process(void) {
     lastDevClk = 0;
     frames = 0;
     params.maxSpeed = false;
-    uint32_t ntick = host->timer()->getElapsedMillis() + (params.sound ? 0 : FRAME_WAIT_MS);
+    uint32_t ntick = host->timer()->getElapsedMillis() + ((params.maxSpeed || host->stage()->isSoundEnabled()) ? 0 : FRAME_WAIT_MS);
 
     for (;;) {
         if (!isPaused) {
@@ -1065,10 +1069,10 @@ void Process(void) {
                 i--;
             }
 
-            soundMixer.FlushFrame(SOUND_ENABLED);
+            soundMixer.FlushFrame(SHOULD_OUTPUT_SOUND);
         }
 
-        ntick = host->timer()->getElapsedMillis() + (params.sound ? 0 : FRAME_WAIT_MS);
+        ntick = host->timer()->getElapsedMillis() + ((params.maxSpeed || host->stage()->isSoundEnabled()) ? 0 : FRAME_WAIT_MS);
         isPaused = isPausedNx;
         bool quitMode = false;
 
@@ -1123,14 +1127,29 @@ void FreeAll(void) {
 
     C_Tape::Close();
 
-    delete fixed_font;
-    delete font;
+    if (fixed_font) {
+        delete fixed_font;
+    }
 
-    z80ex_destroy(cpu);
+    if (font) {
+        delete font;
+    }
 
-    delete[] renderScreenBuffer[1];
-    delete[] renderScreenBuffer[0];
-    delete[] screen;
+    if (cpu) {
+        z80ex_destroy(cpu);
+    }
+
+    if (renderScreenBuffer[1]) {
+        delete[] renderScreenBuffer[1];
+    }
+
+    if (renderScreenBuffer[0]) {
+        delete[] renderScreenBuffer[0];
+    }
+
+    if (screen) {
+        delete[] screen;
+    }
 
     delete host;
 }
@@ -1185,9 +1204,22 @@ int main(int argc, char *argv[]) {
     OutputLogo();
 
     host = new HostImpl(argc, argv, "zemu");
+    atexit(FreeAll);
+
     auto config = host->config();
 
     try {
+        StageConfig stageConfig;
+
+        stageConfig.title = "zEmu";
+        stageConfig.desiredFrameWidth = WIDTH;
+        stageConfig.desiredFrameHeight = HEIGHT;
+        stageConfig.soundFreq = SOUND_FREQ;
+
+        #ifdef _WIN32
+            stageConfig.windowsIconResource = MAKEINTRESOURCE(IDI_ICON1);
+        #endif
+
         // core
         std::string str = config->getString("core", "snapformat", "sna");
         transform(str.begin(), str.end(), str.begin(), (int (*)(int))tolower);
@@ -1232,10 +1264,22 @@ int main(int argc, char *argv[]) {
         }
 
         // display
-        params.fullscreen = config->getBool("display", "fullscreen", false);
-        params.scale2x = config->getBool("display", "scale2x", true);
-        params.scanlines = config->getBool("display", "scanlines", false);
-        params.useFlipSurface = config->getBool("display", "sdl_useflipsurface", false);
+        stageConfig.fullscreen = config->getBool("display", "fullscreen", false);
+
+        if (!config->getBool("display", "scale2x", true)) {
+            stageConfig.renderMode = STAGE_RENDER_MODE_1X;
+        } else if (config->getBool("display", "scanlines", false)) {
+            stageConfig.renderMode = STAGE_RENDER_MODE_2X_SCANLINES;
+        } else {
+            stageConfig.renderMode = STAGE_RENDER_MODE_2X;
+        }
+
+        #ifdef USE_SDL1
+            if (config->getBool("display", "sdl_useflipsurface", false)) {
+                stageConfig.hints |= STAGE_HINT_FLIP_SURFACE;
+            }
+        #endif
+
         params.antiFlicker = config->getBool("display", "antiflicker", false);
         params.showInactiveIcons = config->getBool("display", "showinactiveicons", false);
 
@@ -1249,44 +1293,42 @@ int main(int argc, char *argv[]) {
         }
 
         // sound
-        params.sound = config->getBool("sound", "enable", true);
+        stageConfig.soundEnabled = config->getBool("sound", "enable", true);
         params.mixerMode = config->getInt("sound", "mixermode", 1);
-
-        /*
-        #ifdef _WIN32
-            eSndBackend default_snd_backend = SND_BACKEND_WIN32;
-        #else
-            eSndBackend default_snd_backend = SND_BACKEND_DEFAULT;
-        #endif
 
         str = config->getString("sound", "sound_backend", "auto");
         transform(str.begin(), str.end(), str.begin(), (int (*)(int))tolower);
 
-        if (str == "sdl") {
-            params.sndBackend = SND_BACKEND_DEFAULT;
+        if (str == "none") {
+            stageConfig.soundDriver = STAGE_SOUND_DRIVER_NONE;
+        } else if (str == "sdl") {
+            stageConfig.soundDriver = STAGE_SOUND_DRIVER_GENERIC;
+            stageConfig.soundParams[0] = config->getInt("sound", "sdlbuffersize", 0);
         }
         #ifdef _WIN32
             else if (str == "win32") {
-                params.sndBackend = SND_BACKEND_WIN32;
+                stageConfig.soundDriver = STAGE_SOUND_DRIVER_WIN32;
+                stageConfig.soundParams[0] = config->getInt("sound", "wqsize", 0);
             }
-        #endif
-        #ifdef __unix__
+        #elif __unix__
             else if (str == "oss") {
-                params.sndBackend = SND_BACKEND_OSS;
+                stageConfig.soundDriver = STAGE_SOUND_DRIVER_OSS;
+                stageConfig.soundParams[0] = config->getInt("sound", "ossfragnum", 0);
             }
         #endif
         else {
-            params.sndBackend = default_snd_backend;
+            #ifdef _WIN32
+                stageConfig.soundDriver = STAGE_SOUND_DRIVER_NATIVE;
+            #else
+                stageConfig.soundDriver = STAGE_SOUND_DRIVER_GENERIC;
+            #endif
         }
-        */
 
-        params.audioBufferSize = config->getInt("sound", "sdlbuffersize", 4);
+        soundMixer.Init(params.mixerMode, recordWav, wavFileName);
 
-        #ifndef _WIN32
-            params.soundParam = config->getInt("sound", "ossfragnum", 8);
-        #else
-            params.soundParam = config->getInt("sound", "wqsize", 4);
-        #endif
+        // joystick
+        stageConfig.joystickEnabled = (config->getInt("kempstonjoystick", "sysjoysticknum", -1) >= 0);
+        stageConfig.joystickAxisThreshold = config->getInt("kempstonjoystick", "axisthreshold", stageConfig.joystickAxisThreshold);
 
         // cputrace
         params.cpuTraceEnabled = config->getBool("cputrace", "enable", false);
@@ -1301,8 +1343,8 @@ int main(int argc, char *argv[]) {
         str = config->getString("cputrace", "filename", "cputrace.log");
         strcpy(params.cpuTraceFileName, str.c_str());
 
+        host->setStageConfig(stageConfig);
         host->stage(); // force stage initialization
-        atexit(FreeAll);
 
         if (params.cpuTraceEnabled) {
             DoCpuStep = TraceCpuStep;

@@ -7,7 +7,7 @@
 #include "ZEmuConfig.h"
 #include "host/stage.h"
 #include "host/logger.h"
-#include "driver/sound_driver.h"
+#include "host_driver/sound_driver.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -46,12 +46,12 @@ private:
     bool fullscreen;
     bool soundEnabled;
     SDL_Surface* nativeSurface = nullptr;
-    // SDL_Event nativeEvent;
+    SDL_Event nativeEvent;
 
     volatile bool isRenderThreadActive = true;
     volatile bool isRenderThreadPixelsConsumed = true;
-    SDL_sem* renderThreadPixelsReadySem;
-    SDL_Thread* renderThread;
+    SDL_sem* renderThreadPixelsReadySem = nullptr;
+    SDL_Thread* renderThread = nullptr;
     uint32_t* volatile renderThreadPixels = nullptr;
 
     std::unique_ptr<SoundDriver> soundDriver;

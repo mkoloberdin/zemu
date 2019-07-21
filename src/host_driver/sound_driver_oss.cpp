@@ -13,12 +13,12 @@
 #include "sound_driver_oss.h"
 
 SoundDriverOss::SoundDriverOss(int soundFreq, int maxFragments, int sizeSelector) {
-    if (maxFragments < 0 || maxFragments > 255) {
-        throw std::logic_error("\"maxFragments\" should be 0 (default value) or between 1 and 255 inclusive");
+    if (maxFragments < 0 || maxFragments > 1024) {
+        throw std::logic_error("\"maxFragments\" should be 0 (default value) or between 1 and 1024 inclusive");
     }
 
-    if (sizeSelector < 0 || sizeSelector > 255) {
-        throw std::logic_error("\"sizeSelector\" should be 0 (default value) or between 1 and 255 inclusive");
+    if (sizeSelector < 0 || sizeSelector > 1024) {
+        throw std::logic_error("\"sizeSelector\" should be 0 (default value) or between 1 and 1024 inclusive");
     }
 
     if (maxFragments == 0) {

@@ -24,13 +24,13 @@ void C_Tape::Close(void) {
 }
 
 void C_Tape::OnFrameStart(void) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.StartFrame();
     }
 }
 
 void C_Tape::OnAfterFrameRender(void) {
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         sndRenderer.EndFrame(lastDevClk);
     }
 }
@@ -44,7 +44,7 @@ void C_Tape::Process(void) {
         return;
     }
 
-    if (SOUND_ENABLED) {
+    if (SHOULD_OUTPUT_SOUND) {
         unsigned val = (currentFormat->GetCurrBit() ? MAX_TAPE_VOL : 0);
         sndRenderer.Update(devClk, val, val);
     }
