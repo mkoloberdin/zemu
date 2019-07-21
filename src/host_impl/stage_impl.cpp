@@ -15,6 +15,11 @@
     #include "host_driver/sound_driver_win32.h"
 #endif
 
+// SDL_Joystick
+// SDL_JoystickOpen
+// SDL_JoystickEventState
+// SDL1: SDL_NumJoysticks
+
 int stageImplRenderThreadFunction(void* data) {
     static_cast<StageImpl*>(data)->renderThreadLoop();
     return 0;
@@ -52,6 +57,7 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
     lastFrameWidth = stageConfig.desiredFrameWidth;
     lastFrameHeight = stageConfig.desiredFrameHeight;
     fullscreen = stageConfig.fullscreen;
+    joystickAxisThreshold = stageConfig.joystickAxisThreshold;
 
     #ifndef USE_SDL1
         stageTitle = stageConfig.title;
@@ -248,6 +254,10 @@ void StageImpl::setSoundEnabled(bool soundEnabled) {
 }
 
 bool StageImpl::pollEvent(StageEvent* into) {
+    if (processPendingJoystickButtons(into)) {
+        return true;
+    }
+
     if (!SDL_PollEvent(&nativeEvent)) {
         return false;
     }
@@ -274,18 +284,50 @@ bool StageImpl::pollEvent(StageEvent* into) {
             into->keyCode = nativeEvent.key.keysym.sym;
             return true;
 
-// SDL_Joystick
-// SDL_JoystickEventState
-// SDL_NumJoysticks
-// SDL_JoystickOpen
-// SDL_JOYAXISMOTION
-// SDL_JOYBUTTONDOWN
-// SDL_JOYBUTTONUP
+        case SDL_JOYAXISMOTION: {
+            switch (nativeEvent.jaxis.axis) {
+                case 0: // axis 0: left-right
+                    if (nativeEvent.jaxis.value <= joystickAxisThreshold) {
+                        joystickPendingButtonsMask |= (1 << STAGE_JOYSTICK_LEFT);
+                        joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_RIGHT);
+                    } else if (nativeEvent.jaxis.value >= joystickAxisThreshold) {
+                        joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_LEFT);
+                        joystickPendingButtonsMask |= (1 << STAGE_JOYSTICK_RIGHT);
+                    } else {
+                        joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_LEFT);
+                        joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_RIGHT);
+                    }
+                    break;
 
-// STAGE_EVENT_JOYDOWN
-// STAGE_EVENT_JOYUP
-// into->joyButton
-// STAGE_JOYSTICK_UP ; STAGE_JOYSTICK_DOWN ; STAGE_JOYSTICK_LEFT ; STAGE_JOYSTICK_RIGHT ; STAGE_JOYSTICK_FIRE
+                case 1: // axis 1: up-down
+                    if (nativeEvent.jaxis.value <= joystickAxisThreshold) {
+                        joystickPendingButtonsMask |= (1 << STAGE_JOYSTICK_UP);
+                        joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_DOWN);
+                    } else if (nativeEvent.jaxis.value >= joystickAxisThreshold) {
+                        joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_UP);
+                        joystickPendingButtonsMask |= (1 << STAGE_JOYSTICK_DOWN);
+                    } else {
+                        joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_UP);
+                        joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_DOWN);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+            return processPendingJoystickButtons(into);
+        }
+
+        case SDL_JOYBUTTONDOWN:
+            into->type = STAGE_EVENT_JOYDOWN;
+            into->joyButton = STAGE_JOYSTICK_FIRE;
+            break;
+
+        case SDL_JOYBUTTONUP:
+            into->type = STAGE_EVENT_JOYUP;
+            into->joyButton = STAGE_JOYSTICK_FIRE;
+            break;
 
         #ifdef USE_SDL1
             case SDL_MOUSEBUTTONDOWN:
@@ -353,6 +395,42 @@ void StageImpl::renderSound(uint32_t* buffer, int samples) {
     if (soundEnabled && soundDriver) {
         soundDriver->render(buffer, samples);
     }
+}
+
+bool StageImpl::processPendingJoystickButtons(StageEvent* into) {
+    if (joystickPressedButtonsMask == joystickPendingButtonsMask) {
+        return false;
+    }
+
+    if (processPendingSingleJoystickButton(into, STAGE_JOYSTICK_UP)
+        || processPendingSingleJoystickButton(into, STAGE_JOYSTICK_DOWN)
+        || processPendingSingleJoystickButton(into, STAGE_JOYSTICK_LEFT)
+        || processPendingSingleJoystickButton(into, STAGE_JOYSTICK_RIGHT)
+    ) {
+        return true;
+    }
+
+    // Should not happen
+    joystickPressedButtonsMask = joystickPendingButtonsMask;
+    return false;
+}
+
+bool StageImpl::processPendingSingleJoystickButton(StageEvent* into, StageJoystickButton joyButton) {
+    if (!(joystickPressedButtonsMask & (1 << joyButton)) && (joystickPendingButtonsMask & (1 << joyButton))) {
+        into->type = STAGE_EVENT_JOYDOWN;
+        into->joyButton = joyButton;
+        joystickPressedButtonsMask |= (1 << joyButton);
+        return true;
+    }
+
+    if ((joystickPressedButtonsMask & (1 << joyButton)) && !(joystickPendingButtonsMask & (1 << joyButton))) {
+        into->type = STAGE_EVENT_JOYUP;
+        into->joyButton = joyButton;
+        joystickPressedButtonsMask &= ~(1 << joyButton);
+        return true;
+    }
+
+    return false;
 }
 
 void StageImpl::refreshVideoSubsystem() {

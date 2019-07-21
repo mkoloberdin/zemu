@@ -78,11 +78,11 @@ enum StageEventType {
 };
 
 enum StageJoystickButton {
-    STAGE_JOYSTICK_UP,
-    STAGE_JOYSTICK_DOWN,
-    STAGE_JOYSTICK_LEFT,
-    STAGE_JOYSTICK_RIGHT,
-    STAGE_JOYSTICK_FIRE
+    STAGE_JOYSTICK_UP = 0,
+    STAGE_JOYSTICK_DOWN = 1,
+    STAGE_JOYSTICK_LEFT = 2,
+    STAGE_JOYSTICK_RIGHT = 3,
+    STAGE_JOYSTICK_FIRE = 4
 };
 
 struct StageEvent {

@@ -45,6 +45,9 @@ private:
     bool keyRepeat = false;
     bool fullscreen;
     bool soundEnabled;
+    int joystickAxisThreshold;
+    int joystickPressedButtonsMask = 0;
+    int joystickPendingButtonsMask = 0;
     SDL_Surface* nativeSurface = nullptr;
     SDL_Event nativeEvent;
 
@@ -67,6 +70,8 @@ private:
         HICON windowsIcon = nullptr;
     #endif
 
+    bool processPendingJoystickButtons(StageEvent* into);
+    bool processPendingSingleJoystickButton(StageEvent* into, StageJoystickButton joyButton);
     void refreshVideoSubsystem();
     void renderThreadLoop();
     void renderThreadUpdateSurface1x();
