@@ -26,7 +26,7 @@ SoundDriverGeneric::SoundDriverGeneric(int soundFreq, int bufferScale, int preBu
         bufferScale = 2;
     }
 
-    int bufferFragments = (2 << bufferScale);
+    int bufferFragments = (1 << bufferScale);
 
     if (preBufferFragments < 0 || preBufferFragments >= bufferFragments) {
         throw std::logic_error((
@@ -87,7 +87,7 @@ void SoundDriverGeneric::render(uint32_t* buffer, int samples) {
     }
 
     uint8_t* byteBuffer = (uint8_t*)buffer;
-    int totalLen = samples * 4;
+    int byteSamples = samples * 4;
     int waitMillis = 0;
 
     for (;;) {
@@ -115,8 +115,8 @@ void SoundDriverGeneric::render(uint32_t* buffer, int samples) {
         }
 
         waitMillis = 0;
-        int len = std::min(distance - 1, totalLen);
-        totalLen -= len;
+        int len = std::min(distance - 1, byteSamples);
+        byteSamples -= len;
 
         SDL_LockAudio();
 
@@ -133,7 +133,7 @@ void SoundDriverGeneric::render(uint32_t* buffer, int samples) {
 
         SDL_UnlockAudio();
 
-        if (totalLen <= 0) {
+        if (byteSamples <= 0) {
             break;
         }
     }
