@@ -9,12 +9,13 @@ C_Font::C_Font(uint8_t* data) {
     data += 4;
 
     pixels = new uint32_t[pixelsWidth * pixelsHeight];
+    uint32_t* p = pixels;
 
     for (int i = pixelsWidth * pixelsHeight; i--;) {
         int r = *(data++);
         int g = *(data++);
         int b = *(data++);
-        pixels[i] = STAGE_MAKERGB(r, g, b);
+        *(p++) = STAGE_MAKERGB(r, g, b);
     }
 
     CalcFont();

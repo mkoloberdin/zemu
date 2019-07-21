@@ -47,7 +47,7 @@ void Bar(int x1, int y1, int x2, int y2, int c) {
     ey = std::min(HEIGHT - 1, ey);
 
     for (int y = sy; y <= ey; y++) {
-        for (int x = sx; x <= sy; x++) {
+        for (int x = sx; x <= ex; x++) {
             screen[y * WIDTH + x] = c;
         }
     }
