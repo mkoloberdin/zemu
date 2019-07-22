@@ -7,8 +7,8 @@ void OutputGimpImage(int x, int y, s_GimpImage* img) {
     uint8_t* o = img->data;
 
     if (img->bpp == 3) {
-        for (unsigned int i = img->height; i--;) {
-            for (unsigned int j = img->width; j--;) {
+        for (int i = 0, height = img->height; i < height; i++) {
+            for (int j = 0, width = img->width; j < width; j++) {
                 int r = *(o++);
                 int g = *(o++);
                 int b = *(o++);
@@ -16,8 +16,8 @@ void OutputGimpImage(int x, int y, s_GimpImage* img) {
             }
         }
     } else if (img->bpp == 4) {
-        for (unsigned int i = img->height; i--;) {
-            for (unsigned int j = img->width; j--;) {
+        for (int i = 0, height = img->height; i < height; i++) {
+            for (int j = 0, width = img->width; j < width; j++) {
                 int r = *(o++);
                 int g = *(o++);
                 int b = *(o++);

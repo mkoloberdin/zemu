@@ -1,5 +1,5 @@
-#ifndef STAGE__KEYCODE_H__INCLUDED
-#define STAGE__KEYCODE_H__INCLUDED
+#ifndef HOST__KEYCODE_H__INCLUDED
+#define HOST__KEYCODE_H__INCLUDED
 
 #include "ZEmuConfig.h"
 

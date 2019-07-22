@@ -36,8 +36,7 @@ SoundDriverGeneric::SoundDriverGeneric(int soundFreq, int bufferScale, int preBu
     }
 
     if (preBufferFragments == 0) {
-        // bufferFragments >= 2, so will be preBufferFragments >= 1
-        preBufferFragments = bufferFragments * 2 / 3;
+        preBufferFragments = (bufferFragments * 2 + 1) / 3;
     }
 
     if (fragmentSamplesScale < 0 || fragmentSamplesScale > 5) {
@@ -65,7 +64,7 @@ SoundDriverGeneric::SoundDriverGeneric(int soundFreq, int bufferScale, int preBu
         throw std::runtime_error(std::string("SDL_OpenAudio() failed: ") + SDL_GetError());
     }
 
-    bufferSize = (samples << bufferScale) * 4;
+    bufferSize = samples * bufferFragments * 4;
     bufferSizeMask = bufferSize - 1;
     preBufferSize = samples * preBufferFragments * 4;
     ringBuffer = new uint8_t[bufferSize];
@@ -87,16 +86,17 @@ void SoundDriverGeneric::render(uint32_t* buffer, int samples) {
     }
 
     uint8_t* byteBuffer = (uint8_t*)buffer;
-    int byteSamples = samples * 4;
+    int byteSamples = samples * sizeof(uint32_t);
     int waitMillis = 0;
 
     for (;;) {
+        // Never can be zero (if writePosition == playPosition, that mean that all buffer is available for writing)
         int distance = ((writePosition >= playPosition)
             ? (bufferSize - writePosition + playPosition)
             : (playPosition - writePosition)
         );
 
-        if (distance < 8) {
+        if (distance < (int)sizeof(uint32_t)) {
             SDL_Delay(1);
             waitMillis++;
 
@@ -128,7 +128,7 @@ void SoundDriverGeneric::render(uint32_t* buffer, int samples) {
             memcpy(ringBuffer, byteBuffer + partSize, len - partSize);
         }
 
-        writePosition = (writePosition + len) % bufferSizeMask;
+        writePosition = (writePosition + len) & bufferSizeMask;
         byteBuffer += len;
 
         SDL_UnlockAudio();
@@ -153,12 +153,13 @@ void SoundDriverGeneric::fillStream(uint8_t* stream, int len) {
         isInitialLoop = false;
     }
 
-    int distance = ((playPosition >= writePosition)
+    // Can be zero (playPosition == writePosition, means that all writted data is already played)
+    int distance = ((playPosition > writePosition)
         ? (bufferSize - playPosition + writePosition)
         : (writePosition - playPosition)
     );
 
-    if (distance <= len) {
+    if (distance < len) {
         memset(stream, 0, len);
         emptyFills += 2;
 
@@ -184,5 +185,5 @@ void SoundDriverGeneric::fillStream(uint8_t* stream, int len) {
         memcpy(stream + partSize, ringBuffer, len - partSize);
     }
 
-    playPosition = (playPosition + len) % bufferSizeMask;
+    playPosition = (playPosition + len) & bufferSizeMask;
 }

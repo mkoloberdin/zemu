@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_thread.h>
 #include <SDL_mutex.h>
+#include <map>
 #include "ZEmuConfig.h"
 #include "host/stage.h"
 #include "host/logger.h"
@@ -45,6 +46,7 @@ private:
     bool keyRepeat = false;
     bool fullscreen;
     bool soundEnabled;
+    bool joystickEnabled;
     int joystickAxisThreshold;
     int joystickPressedButtonsMask = 0;
     int joystickPendingButtonsMask = 0;
@@ -58,6 +60,12 @@ private:
     uint32_t* volatile renderThreadPixels = nullptr;
 
     std::unique_ptr<SoundDriver> soundDriver;
+
+    #ifdef USE_SDL1
+        std::map<int, SDL_Joystick*> openedJoysticksMap;
+    #else
+        std::map<SDL_JoystickID, SDL_Joystick*> openedJoysticksMap;
+    #endif
 
     #ifndef USE_SDL1
         std::string stageTitle;

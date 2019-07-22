@@ -294,7 +294,7 @@ bool C_Keyboard::OnKeyDown(StageEvent& event) {
         return false;
     }
 
-    std::map<int, s_HostKey>::iterator keyIt = hostKeys.find(key);
+    auto keyIt = hostKeys.find(key);
 
     if (keyIt == hostKeys.end()) {
         return false;
@@ -356,7 +356,7 @@ bool C_Keyboard::OnKeyUp(StageEvent& event) {
         return false;
     }
 
-    std::map<int, s_HostKey>::iterator keyIt = hostKeys.find(key);
+    auto keyIt = hostKeys.find(key);
 
     if (keyIt == hostKeys.end()) {
         return false;
@@ -391,7 +391,7 @@ bool C_Keyboard::OnKeyUp(StageEvent& event) {
     }
 
     if (hostKey->mods.count) {
-        for (std::map<int, s_HostKey>::iterator it = hostKeys.begin(); it != hostKeys.end(); ++it) {
+        for (auto it = hostKeys.begin(); it != hostKeys.end(); ++it) {
             if (hostKeyPressed.find(it->first) != hostKeyPressed.end() && it->second.normal.count) {
                 for (int i = 0; i < it->second.normal.count; i++) {
                     keyboard[it->second.normal.portnum[i]] &= ~it->second.normal.bitmask[i];

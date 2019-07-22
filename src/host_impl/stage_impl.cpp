@@ -15,11 +15,6 @@
     #include "host_driver/sound_driver_win32.h"
 #endif
 
-// SDL_Joystick
-// SDL_JoystickOpen
-// SDL_JoystickEventState
-// SDL1: SDL_NumJoysticks
-
 int stageImplRenderThreadFunction(void* data) {
     static_cast<StageImpl*>(data)->renderThreadLoop();
     return 0;
@@ -40,7 +35,9 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
         flags |= SDL_INIT_AUDIO;
     }
 
-    if (stageConfig.joystickEnabled) {
+    joystickEnabled = stageConfig.joystickEnabled;
+
+    if (joystickEnabled) {
         flags |= SDL_INIT_JOYSTICK;
     }
 
@@ -48,7 +45,7 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
         throw std::runtime_error(std::string("SDL_InitSubSystem() failed: ") + SDL_GetError());
     }
 
-    if (stageConfig.joystickEnabled) {
+    if (joystickEnabled) {
         SDL_JoystickEventState(SDL_ENABLE);
     }
 
@@ -75,13 +72,6 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
         SDL_WM_SetCaption(stageConfig.title.c_str(), stageConfig.title.c_str());
         SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
     #endif
-
-    // #ifdef USE_SDL1
-    //     SDL_ShowCursor(SDL_DISABLE);
-    //     SDL_WM_GrabInput(SDL_GRAB_ON);
-    // #else
-    //     SDL_SetRelativeMouseMode(SDL_TRUE);
-    // #endif
 
     switch (stageConfig.soundDriver) {
         case STAGE_SOUND_DRIVER_GENERIC:
@@ -120,6 +110,35 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
             break;
     }
 
+    if (joystickEnabled) {
+        #ifndef USE_SDL1
+            SDL_LockJoysticks();
+        #endif
+
+        for (int i = 0, len = SDL_NumJoysticks(); i < len; i++) {
+            SDL_Joystick* joystick = SDL_JoystickOpen(i);
+
+            if (joystick) {
+                #ifdef USE_SDL1
+                    openedJoysticksMap[i] = joystick;
+                #else
+                    openedJoysticksMap[SDL_JoystickInstanceID(joystick)] = joystick;
+                #endif
+            }
+        }
+
+        #ifndef USE_SDL1
+            SDL_UnlockJoysticks();
+        #endif
+    }
+
+    // #ifdef USE_SDL1
+    //     SDL_ShowCursor(SDL_DISABLE);
+    //     SDL_WM_GrabInput(SDL_GRAB_ON);
+    // #else
+    //     SDL_SetRelativeMouseMode(SDL_TRUE);
+    // #endif
+
     #ifdef _WIN32
         if (!stageConfig.windowsIconResource) {
             return;
@@ -152,6 +171,12 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
 }
 
 StageImpl::~StageImpl() {
+    if (joystickEnabled) {
+        for (auto& entry : openedJoysticksMap) {
+            SDL_JoystickClose(entry.second);
+        }
+    }
+
     if (isRenderThreadActive && renderThread) {
         isRenderThreadActive = false;
         SDL_SemPost(renderThreadPixelsReadySem);
@@ -287,7 +312,7 @@ bool StageImpl::pollEvent(StageEvent* into) {
         case SDL_JOYAXISMOTION: {
             switch (nativeEvent.jaxis.axis) {
                 case 0: // axis 0: left-right
-                    if (nativeEvent.jaxis.value <= joystickAxisThreshold) {
+                    if (nativeEvent.jaxis.value <= -joystickAxisThreshold) {
                         joystickPendingButtonsMask |= (1 << STAGE_JOYSTICK_LEFT);
                         joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_RIGHT);
                     } else if (nativeEvent.jaxis.value >= joystickAxisThreshold) {
@@ -300,7 +325,7 @@ bool StageImpl::pollEvent(StageEvent* into) {
                     break;
 
                 case 1: // axis 1: up-down
-                    if (nativeEvent.jaxis.value <= joystickAxisThreshold) {
+                    if (nativeEvent.jaxis.value <= -joystickAxisThreshold) {
                         joystickPendingButtonsMask |= (1 << STAGE_JOYSTICK_UP);
                         joystickPendingButtonsMask &= ~(1 << STAGE_JOYSTICK_DOWN);
                     } else if (nativeEvent.jaxis.value >= joystickAxisThreshold) {
@@ -367,6 +392,33 @@ bool StageImpl::pollEvent(StageEvent* into) {
                 }
 
                 return true;
+        #endif
+
+        #ifndef USE_SDL1
+            // The joystick device index for the ADDED event, instance id for the REMOVED event
+
+            case SDL_JOYDEVICEADDED:
+                if (joystickEnabled) {
+                    SDL_Joystick* joystick = SDL_JoystickOpen(nativeEvent.jdevice.which);
+
+                    if (joystick) {
+                        openedJoysticksMap[SDL_JoystickInstanceID(joystick)] = joystick;
+                    }
+                }
+
+                break;
+
+            case SDL_JOYDEVICEREMOVED:
+                if (joystickEnabled) {
+                    auto it = openedJoysticksMap.find(nativeEvent.jdevice.which);
+
+                    if (it != openedJoysticksMap.end()) {
+                        SDL_JoystickClose(it->second);
+                        openedJoysticksMap.erase(it);
+                    }
+                }
+
+                break;
         #endif
     }
 

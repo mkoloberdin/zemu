@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <boost/format.hpp>
 #include <list>
+#include <cmath>
 #include "zemu_env.h"
 #include "zemu.h"
 #include "lib_wd1793/wd1793_chip.h"
@@ -1303,7 +1304,7 @@ int main(int argc, char *argv[]) {
             stageConfig.soundDriver = STAGE_SOUND_DRIVER_NONE;
         } else if (str == "sdl") {
             stageConfig.soundDriver = STAGE_SOUND_DRIVER_GENERIC;
-            stageConfig.soundParams[0] = config->getInt("sound", "sdlbuffersize", 0);
+            stageConfig.soundParams[0] = std::log2(config->getInt("sound", "sdlbuffersize", 0));
         }
         #ifdef _WIN32
             else if (str == "win32") {
@@ -1323,8 +1324,6 @@ int main(int argc, char *argv[]) {
                 stageConfig.soundDriver = STAGE_SOUND_DRIVER_GENERIC;
             #endif
         }
-
-        soundMixer.Init(params.mixerMode, recordWav, wavFileName);
 
         // joystick
         stageConfig.joystickEnabled = (config->getInt("kempstonjoystick", "sysjoysticknum", -1) >= 0);
@@ -1352,16 +1351,18 @@ int main(int argc, char *argv[]) {
             CpuTrace_Init();
         }
 
+        if (argc != 1) {
+            ParseCmdLine(argc, argv);
+        }
+
+        soundMixer.Init(params.mixerMode, recordWav, wavFileName);
+
         InitAll();
         ResetSequence();
 
         if (config->getBool("core", "trdos_at_start", false)) {
             dev_mman.OnOutputByte(0x7FFD, 0x10);
             dev_trdos.Enable();
-        }
-
-        if (argc != 1) {
-            ParseCmdLine(argc, argv);
         }
 
         Process();
