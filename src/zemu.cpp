@@ -1351,14 +1351,14 @@ int main(int argc, char *argv[]) {
             CpuTrace_Init();
         }
 
+        InitAll();
+        ResetSequence();
+
         if (argc != 1) {
             ParseCmdLine(argc, argv);
         }
 
         soundMixer.Init(params.mixerMode, recordWav, wavFileName);
-
-        InitAll();
-        ResetSequence();
 
         if (config->getBool("core", "trdos_at_start", false)) {
             dev_mman.OnOutputByte(0x7FFD, 0x10);
