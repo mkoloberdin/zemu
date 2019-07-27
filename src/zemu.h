@@ -23,7 +23,8 @@ struct s_Action {
 struct s_Params {
     bool maxSpeed;
     bool antiFlicker;
-    int mouseDiv;
+    int mouseDivX;
+    int mouseDivY;
     bool showInactiveIcons;
     bool cpuTraceEnabled;
     char cpuTraceFormat[MAX_TRACE_FORMAT];

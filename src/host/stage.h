@@ -26,8 +26,8 @@
 #endif
 
 #define STAGE_MOUSE_LMASK SDL_BUTTON_LMASK
-#define STAGE_MOUSE_RMASK SDL_BUTTON_MMASK
-#define STAGE_MOUSE_MMASK SDL_BUTTON_RMASK
+#define STAGE_MOUSE_RMASK SDL_BUTTON_RMASK
+#define STAGE_MOUSE_MMASK SDL_BUTTON_MMASK
 
 enum StageSoundDriver {
     STAGE_SOUND_DRIVER_NONE,
@@ -117,7 +117,7 @@ public:
     virtual void setSoundEnabled(bool soundEnabled) = 0;
 
     virtual bool pollEvent(StageEvent* into) = 0;
-    virtual void getMouseState(StageMouseState* into) = 0;
+    virtual void getRelativeMouseState(StageMouseState* into) = 0;
 
     virtual void renderFrame(uint32_t* pixels, int width, int height) = 0; // In ARGB format
     virtual void renderSound(uint32_t* buffer, int samples) = 0; // 2 x int16_t (stereo) for each sample

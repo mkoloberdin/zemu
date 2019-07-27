@@ -23,10 +23,10 @@ void C_Mouse::Close(void) {
 
 void C_Mouse::UpdateState(void) {
     StageMouseState state;
-    host->stage()->getMouseState(&state);
+    host->stage()->getRelativeMouseState(&state);
 
-    portFBDF += state.x / params.mouseDiv;
-    portFFDF -= state.y / params.mouseDiv;
+    portFBDF += state.x / params.mouseDivX;
+    portFFDF -= state.y / params.mouseDivY;
     portFADF = (wheelCnt << 4) | 0x0F;
 
     if (state.buttons & STAGE_MOUSE_LMASK) {

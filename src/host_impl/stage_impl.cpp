@@ -132,13 +132,6 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
         #endif
     }
 
-    // #ifdef USE_SDL1
-    //     SDL_ShowCursor(SDL_DISABLE);
-    //     SDL_WM_GrabInput(SDL_GRAB_ON);
-    // #else
-    //     SDL_SetRelativeMouseMode(SDL_TRUE);
-    // #endif
-
     #ifdef _WIN32
         if (!stageConfig.windowsIconResource) {
             return;
@@ -347,51 +340,61 @@ bool StageImpl::pollEvent(StageEvent* into) {
         case SDL_JOYBUTTONDOWN:
             into->type = STAGE_EVENT_JOYDOWN;
             into->joyButton = STAGE_JOYSTICK_FIRE;
-            break;
+            return true;
 
         case SDL_JOYBUTTONUP:
             into->type = STAGE_EVENT_JOYUP;
             into->joyButton = STAGE_JOYSTICK_FIRE;
-            break;
+            return true;
 
-        #ifdef USE_SDL1
-            case SDL_MOUSEBUTTONDOWN:
-                into->type = STAGE_EVENT_MOUSEWHEEL;
+        case SDL_MOUSEBUTTONDOWN:
+            switch (nativeEvent.button.button) {
+                case SDL_BUTTON_LEFT: // fallthrough
+                case SDL_BUTTON_MIDDLE: // fallthrough
+                case SDL_BUTTON_RIGHT:
+                    if (!isMouseGrabbed) {
+                        isMouseGrabbed = true;
 
-                switch (nativeEvent.button.button) {
+                        #ifdef USE_SDL1
+                            SDL_ShowCursor(SDL_DISABLE);
+                            SDL_WM_GrabInput(SDL_GRAB_ON);
+                        #else
+                            SDL_SetRelativeMouseMode(SDL_TRUE);
+                        #endif
+                    }
+
+                    break;
+
+                #ifdef USE_SDL1
                     case SDL_BUTTON_WHEELUP:
+                        into->type = STAGE_EVENT_MOUSEWHEEL;
                         into->mouseWheelDirection = -1;
-                        break;
+                        return true;
 
                     case SDL_BUTTON_WHEELDOWN:
+                        into->type = STAGE_EVENT_MOUSEWHEEL;
                         into->mouseWheelDirection = 1;
-                        break;
+                        return true;
+                #endif
+            }
 
-                    default:
-                        into->mouseWheelDirection = 0;
-                        break;
-                }
+            break;
 
-                return true;
-        #else
+        #ifndef USE_SDL1
             case SDL_MOUSEWHEEL:
-                into->type = STAGE_EVENT_MOUSEWHEEL;
-
                 switch (nativeEvent.wheel.direction) {
                     case SDL_MOUSEWHEEL_FLIPPED:
+                        into->type = STAGE_EVENT_MOUSEWHEEL;
                         into->mouseWheelDirection = -1;
-                        break;
+                        return true;
 
                     case SDL_MOUSEWHEEL_NORMAL:
+                        into->type = STAGE_EVENT_MOUSEWHEEL;
                         into->mouseWheelDirection = 1;
-                        break;
-
-                    default:
-                        into->mouseWheelDirection = 0;
-                        break;
+                        return true;
                 }
 
-                return true;
+                break;
         #endif
 
         #ifndef USE_SDL1
@@ -420,12 +423,30 @@ bool StageImpl::pollEvent(StageEvent* into) {
 
                 break;
         #endif
+
+        #ifdef USE_SDL1
+            case SDL_ACTIVEEVENT:
+                if (!nativeEvent.active.gain && isMouseGrabbed) {
+                    isMouseGrabbed = false;
+                    SDL_WM_GrabInput(SDL_GRAB_OFF);
+                    SDL_ShowCursor(SDL_ENABLE);
+                }
+                break;
+        #else
+            case SDL_WINDOWEVENT:
+                if (nativeEvent.window.event == SDL_WINDOWEVENT_LEAVE && isMouseGrabbed) {
+                    isMouseGrabbed = false;
+                    SDL_SetRelativeMouseMode(SDL_FALSE);
+                }
+
+                break;
+        #endif
     }
 
     return false;
 }
 
-void StageImpl::getMouseState(StageMouseState* into) {
+void StageImpl::getRelativeMouseState(StageMouseState* into) {
     into->buttons = SDL_GetRelativeMouseState(&into->x, &into->y);
 }
 

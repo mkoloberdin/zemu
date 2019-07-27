@@ -32,7 +32,7 @@ public:
     void setSoundEnabled(bool soundEnabled);
 
     bool pollEvent(StageEvent* into);
-    void getMouseState(StageMouseState* into);
+    void getRelativeMouseState(StageMouseState* into);
 
     void renderFrame(uint32_t* pixels, int width, int height);
     void renderSound(uint32_t* buffer, int samples);
@@ -50,6 +50,7 @@ private:
     int joystickAxisThreshold;
     int joystickPressedButtonsMask = 0;
     int joystickPendingButtonsMask = 0;
+    bool isMouseGrabbed = false;
     SDL_Surface* nativeSurface = nullptr;
     SDL_Event nativeEvent;
 

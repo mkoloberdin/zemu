@@ -1285,12 +1285,26 @@ int main(int argc, char *argv[]) {
         params.showInactiveIcons = config->getBool("display", "showinactiveicons", false);
 
         // input
-        params.mouseDiv = config->getInt("input", "mousediv", 1);
+        params.mouseDivX = 1;
+        params.mouseDivY = 1;
 
-        if (params.mouseDiv <= 0) {
-            params.mouseDiv = 1;
-        } else if (params.mouseDiv > 8) {
-            params.mouseDiv = 8;
+        int mouseDiv = config->getInt("input", "mousediv", 0);
+
+        if (mouseDiv > 0) {
+            params.mouseDivX = std::max(1, std::min(8, mouseDiv));
+            params.mouseDivY = params.mouseDivX;
+        }
+
+        mouseDiv = config->getInt("input", "mousediv_x", 0);
+
+        if (mouseDiv > 0) {
+            params.mouseDivX = std::max(1, std::min(8, mouseDiv));
+        }
+
+        mouseDiv = config->getInt("input", "mousediv_y", 0);
+
+        if (mouseDiv > 0) {
+            params.mouseDivY = std::max(1, std::min(8, mouseDiv));
         }
 
         // sound
