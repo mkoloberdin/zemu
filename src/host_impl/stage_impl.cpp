@@ -71,6 +71,11 @@ StageImpl::StageImpl(const StageConfig& stageConfig, Logger* logger) {
     #ifdef USE_SDL1
         SDL_WM_SetCaption(stageConfig.title.c_str(), stageConfig.title.c_str());
         SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
+    #else
+        // When TextInput is enabled, SDL_KEYUP event may have big latency for regular keys (eg. letters or numbers),
+        // for example you press "P" (SDL_KEYDOWN fires), wait for a 5-10 seconds, than take finger from the "P",
+        // but SDL_KEYUP fill be fired only after a second or two.
+        SDL_StopTextInput();
     #endif
 
     switch (stageConfig.soundDriver) {
