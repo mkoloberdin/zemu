@@ -44,6 +44,7 @@ public:
     static void ReadKbdConfig(void);
     void Init(void);
     void Close(void);
+    void ResetPressedState(void);
 
     static bool OnKeyDown(StageEvent& event);
     static bool OnKeyUp(StageEvent& event);

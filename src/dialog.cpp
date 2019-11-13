@@ -860,6 +860,7 @@ void DebugIt(void) {
 
 void RunDebugger(void) {
     host->stage()->setKeyRepeat(true);
+    dev_keyboard.ResetPressedState();
     DebugIt();
     host->stage()->setKeyRepeat(false);
 }

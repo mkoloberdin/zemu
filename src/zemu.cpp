@@ -548,7 +548,6 @@ void Action_JoyOnKeyb(void) {
     SetMessage(joyOnKeyb ? "Kempston on keyboard ON" : "Kempston on keyboard OFF");
 }
 
-
 s_Action cfgActions[] = {
     {"reset",           Action_Reset},
     {"reset_trdos",     Action_ResetTrDos},

@@ -281,6 +281,14 @@ void C_Keyboard::Init(void) {
 void C_Keyboard::Close(void) {
 }
 
+void C_Keyboard::ResetPressedState(void) {
+    hostKeyPressed.clear();
+
+    for (int i = 0; i < 8; i++) {
+        keyboard[i] = 255;
+    }
+}
+
 bool C_Keyboard::OnKeyDown(StageEvent& event) {
     int key = event.keyCode;
 
