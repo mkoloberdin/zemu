@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdint>
 #include <stdexcept>
+#include <vector>
 
 class Storage;
 class Path;

@@ -15,7 +15,7 @@ public:
 
 private:
 
-    void ioctlApply(unsigned long request, int value);
+    void ioctlApply(unsigned long request, int value, const char* errorMessage);
 
     int audioDescriptor;
 };
